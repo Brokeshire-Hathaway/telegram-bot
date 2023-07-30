@@ -6,7 +6,8 @@
   "author": "firepot_devs",
   "license": "MIT",
   "dependencies": {
-    "fastify": "^4.21.0"
+    "fastify": "^4.21.0",
+    "openai": "^3.3.0"
   },
   "devDependencies": {
     "@types/node": "^20.4.5",
