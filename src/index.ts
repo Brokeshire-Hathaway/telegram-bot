@@ -1,5 +1,8 @@
 import Fastify from "fastify";
 import chatgptRoutes from "./chatgpt";
+import { createEmbeddings } from "./embeddings";
+
+createEmbeddings();
 
 const server = Fastify({ logger: true });
 
