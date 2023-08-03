@@ -8,7 +8,8 @@
   "dependencies": {
     "chromadb": "^1.5.5",
     "fastify": "^4.21.0",
-    "openai": "^3.3.0"
+    "openai": "^3.3.0",
+    "ts-node": "^10.9.1"
   },
   "devDependencies": {
     "@types/node": "^20.4.5",

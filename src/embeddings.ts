@@ -1,11 +1,11 @@
 import { insertEmbeddings } from "./database";
 
 class Document {
-  text: String;
-  embeddings: Number[];
+  text: string;
+  embeddings: number[];
   isInDb: boolean;
 
-  constructor(text: String) {
+  constructor(text: string) {
     this.text = text;
     this.embeddings = [];
     this.isInDb = false;
@@ -18,7 +18,7 @@ class Document {
     return this.isInDb;
   }
 
-  generateEmbedding(): Number[] {
+  generateEmbedding(): number[] {
     // TODO
     // call openai embedding API and get embeddings
     let results = [0];
@@ -26,18 +26,9 @@ class Document {
   }
 }
 
-function loadDocumentForEmbeddings(): String[] {
-  return ["TODO"];
-}
-
-function addEmbeddingsToDb(lines: String[], embeddings: Number[][]) {
-    insertEmbeddings(lines, embeddings);
-}
-
-export function createEmbeddings() {
-  const documents = loadDocumentForEmbeddings();
-  const textToAdd = [];
-  const embeddingsToAdd = [];
+export function createEmbeddings(documents: string[]) {
+  const textToAdd: string[] = [];
+  const embeddingsToAdd: number[][] = [];
   for (const text of documents) {
     const doc = new Document(text);
     if (!doc.isInVectorDb()) {
@@ -45,5 +36,5 @@ export function createEmbeddings() {
         embeddingsToAdd.push(doc.generateEmbedding());
     }
   }
-  addEmbeddingsToDb(textToAdd, embeddingsToAdd);
+  insertEmbeddings(textToAdd, embeddingsToAdd);
 }
