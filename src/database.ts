@@ -1,10 +1,11 @@
-import { ChromaClient, Collection } from "chromadb";
+import { ChromaClient, Collection, OpenAIEmbeddingFunction } from "chromadb";
 import { collectionName } from "./config";
 
 /*
  * Singleton client
  */
 let client: ChromaClient;
+let collection: Collection;
 
 /*
  * Gets/gives singleton chroma client
@@ -31,8 +32,16 @@ async function getDbClient(): Promise<ChromaClient> {
 }
 
 export async function getDbCollection(): Promise<Collection> {
-  const client = await getDbClient();
-  return await client.getOrCreateCollection({ name: collectionName });
+  if (!collection) {
+    const client = await getDbClient();
+    collection = await client.getOrCreateCollection({
+      name: collectionName,
+      embeddingFunction: new OpenAIEmbeddingFunction({
+        openai_api_key: process.env.OPENAI_API_KEY!,
+      }),
+    });
+  }
+  return collection;
 }
 
 /*
@@ -43,6 +52,7 @@ export async function queryVectorDatabase(
   nResults: number,
 ): Promise<(string | null)[][]> {
   const collection = await getDbCollection();
+ // TODO: is queryVectorDatabase failing?
   const results = await collection.query({
     nResults,
     queryTexts: queryString,

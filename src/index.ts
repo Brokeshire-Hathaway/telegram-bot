@@ -4,6 +4,7 @@ import { createEmbeddings } from "./embeddings";
 import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
+import { HOST, PORT } from "./config";
 
 async function main() {
   dotenv.config();
@@ -16,10 +17,10 @@ async function main() {
   await createEmbeddings(documents);
 
   const server = Fastify({ logger: true });
-
   server.register(chatgptRoutes);
 
-  server.listen({ port: 3000 }, function (err, address) {
+  // 0.0.0.0 because docker
+  server.listen({ host: HOST, port: PORT }, function (err, address) {
     server.log.info(address);
     if (err) {
       server.log.error(err);
