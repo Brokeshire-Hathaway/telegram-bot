@@ -2,7 +2,7 @@ import { ChatbotBody } from "../src/chatgpt";
 
 async function queryFirepotChatbot(prompt: string) {
   const body: ChatbotBody = {
-    msg: prompt,
+    prompt: prompt,
   };
   const res = await fetch("http://localhost:3000/query", {
     method: "POST",

@@ -14,7 +14,7 @@ import {
 import { queryVectorDatabase } from "./database";
 
 export type ChatbotBody = {
-  msg: string;
+  prompt: string;
 };
 
 export default function routes(
@@ -31,10 +31,10 @@ export async function chatgptHandler(
   response: FastifyReply,
 ) {
   try {
-    if (!(request.body as ChatbotBody).msg) {
+    if (!(request.body as ChatbotBody).prompt) {
       throw new Error("Malformed request");
     }
-    const chatResult = await chatGippity((request.body as ChatbotBody).msg);
+    const chatResult = await chatGippity((request.body as ChatbotBody).prompt);
     response.send(chatResult);
   } catch (e) {
     console.error(e);
