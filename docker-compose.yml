@@ -4,15 +4,13 @@ networks:
   net:
     driver: bridge
 services:
-  server:
-    image: ghcr.io/chroma-core/chroma:latest
+  chroma_server:
+    image: ghcr.io/chroma-core/chroma:0.4.4
     volumes:
       - index_data:/chroma/.chroma/index
     ports:
-      - 8000:8000
-    networks:
-      - net
-  app:
+      - "8000:8000"
+  firepot_chatgpt_app:
     image: node:18-alpine
     command: sh -c "yarn install && yarn run start"
     ports:
@@ -20,6 +18,8 @@ services:
     working_dir: /app
     volumes:
       - ./:/app
+    depends_on:
+      - chroma_server
 #     environment:
 #       MYSQL_HOST: mysql
 #       MYSQL_USER: root

@@ -1,40 +1,23 @@
+import { Configuration, OpenAIApi } from "openai";
 import { insertEmbeddings } from "./database";
+import { embeddingsModel } from "./config";
 
-class Document {
-  text: string;
-  embeddings: number[];
-  isInDb: boolean;
-
-  constructor(text: string) {
-    this.text = text;
-    this.embeddings = [];
-    this.isInDb = false;
-  }
-
-  isInVectorDb() {
-    // TODO: Check if text is currently in vector db
-    let isInDb = true;
-    this.isInDb = isInDb;
-    return this.isInDb;
-  }
-
-  generateEmbedding(): number[] {
-    // TODO
-    // call openai embedding API and get embeddings
-    let results = [0];
-    return results;
-  }
+async function generateEmbeddings(documents: string[]): Promise<number[][]> {
+  const configuration = new Configuration({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+  const openai = new OpenAIApi(configuration);
+  // send request to generate embeddings
+  const res = await openai.createEmbedding({
+    input: documents,
+    model: embeddingsModel,
+  });
+  // Flatten embeddings, then retur. Not error handling because if this fails 
+  // our whole application should fail.
+  return res.data.data.map((data) => data.embedding);
 }
 
-export function createEmbeddings(documents: string[]) {
-  const textToAdd: string[] = [];
-  const embeddingsToAdd: number[][] = [];
-  for (const text of documents) {
-    const doc = new Document(text);
-    if (!doc.isInVectorDb()) {
-        textToAdd.push(doc.text);
-        embeddingsToAdd.push(doc.generateEmbedding());
-    }
-  }
-  insertEmbeddings(textToAdd, embeddingsToAdd);
+export async function createEmbeddings(documents: string[]) {
+  const embeddings = await generateEmbeddings(documents);
+  await insertEmbeddings(documents, embeddings);
 }

@@ -1,17 +1,31 @@
 import Fastify from "fastify";
 import chatgptRoutes from "./chatgpt";
 import { createEmbeddings } from "./embeddings";
+import fs from "fs";
+import path from "path";
+import dotenv from "dotenv";
 
-createEmbeddings();
+async function main() {
+  dotenv.config();
+  const documents = fs
+    .readFileSync(path.join(__dirname, "documents.txt"))
+    .toString()
+    .split("\n")
+    .filter((val) => !!val);
 
-const server = Fastify({ logger: true });
+  await createEmbeddings(documents);
 
-server.register(chatgptRoutes);
+  const server = Fastify({ logger: true });
 
-server.listen({ port: 3000 }, function (err, address) {
+  server.register(chatgptRoutes);
+
+  server.listen({ port: 3000 }, function (err, address) {
     server.log.info(address);
     if (err) {
-        server.log.error(err);
-        process.exit(1);
+      server.log.error(err);
+      process.exit(1);
     }
-});
+  });
+}
+
+main();
