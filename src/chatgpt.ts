@@ -8,6 +8,7 @@ import {
   availableFunctions,
   chatgptModel,
   chatgptTemperature,
+  modelPrompt,
   nDocumentsToInclude,
   role,
 } from "./config";
@@ -63,9 +64,7 @@ export async function chatGippity(
   );
   const openai = getOpenAiInstance();
   const prompt = `
-    You are a representative that is very helpful when it comes to talking about Firepot Finance! 
-    Only ever answer truthfully and be as helpful as you can!
-    You can also respond with a function action to take if appropriate.
+    ${modelPrompt}
     Context sections:
     ${relevantDocuments}
     Question: """
