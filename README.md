@@ -7,9 +7,5 @@
 
 ## Getting Started
 ```sh
-docker compose up
-```
-If you want to run in the background 
-```sh
-docker compose up -d
+./development.bash # starts chroma vector db and fastify server with docker compose
 ```

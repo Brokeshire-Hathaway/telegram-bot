@@ -9,7 +9,7 @@ import { HOST, PORT } from "./config";
 async function main() {
   dotenv.config();
   const documents = fs
-    .readFileSync(path.join(__dirname, "documents.txt"))
+    .readFileSync(path.join(__dirname, "../documents.txt"))
     .toString()
     .split("\n")
     .filter((val) => !!val);
