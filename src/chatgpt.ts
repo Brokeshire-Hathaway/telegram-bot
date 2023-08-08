@@ -1,11 +1,11 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import {
+    ChatCompletionFunctions,
   ChatCompletionResponseMessage,
   Configuration,
   OpenAIApi,
 } from "openai";
 import {
-  availableFunctions,
   chatgptModel,
   chatgptTemperature,
   modelPrompt,
@@ -16,6 +16,7 @@ import { queryVectorDatabase } from "./database";
 
 export type ChatbotBody = {
   prompt: string;
+  functions: ChatCompletionFunctions[];
 };
 
 export default function routes(
@@ -32,10 +33,13 @@ export async function chatgptHandler(
   response: FastifyReply,
 ) {
   try {
-    if (!(request.body as ChatbotBody).prompt) {
+    if (
+      !(request.body as ChatbotBody).prompt ||
+      !(request.body as ChatbotBody).functions
+    ) {
       throw new Error("Malformed request");
     }
-    const chatResult = await chatGippity((request.body as ChatbotBody).prompt);
+    const chatResult = await chatGippity(request.body as ChatbotBody);
     response.send(chatResult);
   } catch (e) {
     console.error(e);
@@ -56,10 +60,10 @@ function getOpenAiInstance() {
 }
 
 export async function chatGippity(
-  query: string,
+    query: ChatbotBody
 ): Promise<ChatCompletionResponseMessage> {
   const relevantDocuments = await queryVectorDatabase(
-    query,
+    query.prompt,
     nDocumentsToInclude,
   );
   const openai = getOpenAiInstance();
@@ -68,7 +72,7 @@ export async function chatGippity(
     Context sections:
     ${relevantDocuments}
     Question: """
-    ${query}
+    ${query.prompt}
     """
     Answer as simple text:
   `.replace(/[\n\t]/g, "");
@@ -76,7 +80,7 @@ export async function chatGippity(
     messages: [{ role: role, content: prompt }],
     model: chatgptModel,
     temperature: chatgptTemperature,
-    functions: availableFunctions,
+    functions: query.functions,
     function_call: "auto",
   });
   const message = chat_completion.data.choices[0].message;
