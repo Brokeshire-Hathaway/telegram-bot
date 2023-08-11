@@ -1,7 +1,6 @@
 {
-  "name": "chatgpt-companion",
-  "version": "1.0.0",
-  "main": "index.js",
+  "name": "ember-engine",
+  "version": "0.1.0",
   "repository": "https://github.com/Firepot-Finance/chatgpt-companion.git",
   "author": "firepot_devs",
   "license": "MIT",

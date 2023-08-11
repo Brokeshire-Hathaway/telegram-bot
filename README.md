@@ -1,4 +1,4 @@
-# chatgpt-companion
+# ember-engine
 
 ## Requirements
 - [Docker](https://docs.docker.com/engine/install)
@@ -6,6 +6,11 @@
 - [yarn](https://classic.yarnpkg.com/lang/en/docs/install)
 
 ## Getting Started
+```sh
+cp .env.template .env
+```
+Get an [OpenAI key](https://platform.openai.com/account/api-keys).
+echo "OPENAI_API_KEY={{your openai key}}" > .env
 ```sh
 ./development.bash # starts chroma vector db and fastify server with docker compose
 ```
