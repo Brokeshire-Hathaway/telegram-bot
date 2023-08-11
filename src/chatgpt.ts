@@ -1,8 +1,9 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import {
-    ChatCompletionFunctions,
+  ChatCompletionFunctions,
   ChatCompletionResponseMessage,
   Configuration,
+  CreateChatCompletionRequest,
   OpenAIApi,
 } from "openai";
 import {
@@ -16,7 +17,7 @@ import { queryVectorDatabase } from "./database";
 
 export type ChatbotBody = {
   prompt: string;
-  functions: ChatCompletionFunctions[];
+  functions?: ChatCompletionFunctions[];
 };
 
 export default function routes(
@@ -34,8 +35,7 @@ export async function chatgptHandler(
 ) {
   try {
     if (
-      !(request.body as ChatbotBody).prompt ||
-      !(request.body as ChatbotBody).functions
+      !(request.body as ChatbotBody).prompt
     ) {
       throw new Error("Malformed request");
     }
@@ -60,7 +60,7 @@ function getOpenAiInstance() {
 }
 
 export async function chatGippity(
-    query: ChatbotBody
+  query: ChatbotBody,
 ): Promise<ChatCompletionResponseMessage> {
   const relevantDocuments = await queryVectorDatabase(
     query.prompt,
@@ -76,13 +76,16 @@ export async function chatGippity(
     """
     Answer as simple text:
   `.replace(/[\n\t]/g, "");
-  const chat_completion = await openai.createChatCompletion({
+  const chat_object: CreateChatCompletionRequest = {
     messages: [{ role: role, content: prompt }],
     model: chatgptModel,
     temperature: chatgptTemperature,
-    functions: query.functions,
-    function_call: "auto",
-  });
+  };
+  if (query.functions) {
+    chat_object.functions = query.functions;
+    chat_object.function_call = "auto";
+  }
+  const chat_completion = await openai.createChatCompletion(chat_object);
   const message = chat_completion.data.choices[0].message;
   if (!message) throw new Error("Message not available");
   return message;
