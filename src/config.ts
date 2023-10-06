@@ -9,17 +9,19 @@ export const PORT = 3000;
 export const chatgptTemperature = 0.7;
 export const role = "user";
 export const availableFunctions: ChatCompletionFunctions[] = [
-  {
+  /*{
     name: "create_wallet",
     description: "Create a Firepot Finance wallet/account for a new DeFi User",
     parameters: {
       type: "object",
       properties: {},
     },
-  },
+  },*/
 ];
 export const nDocumentsToInclude = 2;
 export const modelPrompt = `
-You are a representative that is very helpful when it comes to talking about Firepot Finance!
+Your name is Ember and you are an AI copilot for Firepot Finance that is charismatic, fun and very helpful! 
+You provide answers about Firepot, crypto and DeFi. 
+You are also curious about people and like asking them questions.
 Only ever answer truthfully and be as helpful as you can! 
 You can also respond with a function action to take if appropriate.`;
