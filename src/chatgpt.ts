@@ -23,7 +23,7 @@ export type ChatbotBody = {
 export default function routes(
   server: FastifyInstance,
   _options: Object,
-  done: any,
+  done: any
 ) {
   server.post("/query", chatgptHandler);
   done();
@@ -31,12 +31,10 @@ export default function routes(
 
 export async function chatgptHandler(
   request: FastifyRequest,
-  response: FastifyReply,
+  response: FastifyReply
 ) {
   try {
-    if (
-      !(request.body as ChatbotBody).prompt
-    ) {
+    if (!(request.body as ChatbotBody).prompt) {
       throw new Error("Malformed request");
     }
     const chatResult = await chatGippity(request.body as ChatbotBody);
@@ -60,12 +58,18 @@ function getOpenAiInstance() {
 }
 
 export async function chatGippity(
-  query: ChatbotBody,
+  query: ChatbotBody
 ): Promise<ChatCompletionResponseMessage> {
   const relevantDocuments = await queryVectorDatabase(
     query.prompt,
-    nDocumentsToInclude,
+    nDocumentsToInclude
   );
+
+  relevantDocuments[0].forEach((chunk, index) => {
+    console.log("=====================================");
+    console.log(`Relevant Chunk ${index + 1}: ${chunk}`);
+  });
+
   const openai = getOpenAiInstance();
   const prompt = `
     ${modelPrompt}
@@ -75,7 +79,10 @@ export async function chatGippity(
     ${query.prompt}
     """
     Answer as simple text:
-  `.replace(/[\n\t]/g, "");
+  `; //.replace(/[\n\t]/g, "");
+
+  //console.log(`prompt: ${prompt}`);
+
   const chat_object: CreateChatCompletionRequest = {
     messages: [{ role: role, content: prompt }],
     model: chatgptModel,
