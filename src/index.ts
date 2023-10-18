@@ -1,20 +1,56 @@
 import Fastify from "fastify";
 import chatgptRoutes from "./chatgpt";
 import { createEmbeddings } from "./embeddings";
-import fs from "fs";
-import path from "path";
+//import fs from "fs";
+//import path from "path";
+import { DirectoryLoader } from "langchain/document_loaders/fs/directory";
+import { TextLoader } from "langchain/document_loaders/fs/text";
+import {
+  RecursiveCharacterTextSplitter,
+  TokenTextSplitter,
+} from "langchain/text_splitter";
 import dotenv from "dotenv";
-import { HOST, PORT } from "./config";
+import { HOST, PORT, chunkSize, chunkOverlap } from "./config";
 
 async function main() {
   dotenv.config();
-  const documents = fs
+  /*const documents = fs
     .readFileSync(path.join(__dirname, "../documents.txt"))
     .toString()
     .split("\n")
-    .filter((val) => !!val);
+    .filter((val) => !!val);*/
 
-  await createEmbeddings(documents);
+  const loader = new DirectoryLoader("documents", {
+    ".txt": (path) => new TextLoader(path),
+  });
+  const documents = await loader.load();
+
+  //console.log({ documents });
+
+  /*const splitter = new RecursiveCharacterTextSplitter({
+    chunkSize,
+    chunkOverlap,
+  });
+
+  const splitDocs = await splitter.splitDocuments(documents);*/
+
+  const splitter = new TokenTextSplitter({
+    chunkSize,
+    chunkOverlap,
+  });
+
+  const splitDocs = await splitter.splitDocuments(documents);
+
+  const chunks = splitDocs.map((doc) => doc.pageContent);
+
+  console.log(`chunk count: ${chunks.length}`);
+
+  chunks.forEach((chunk, index) => {
+    console.log("=====================================");
+    console.log(`chunk ${index + 1}: ${chunk}`);
+  });
+
+  await createEmbeddings(chunks);
 
   const server = Fastify({ logger: true });
   server.register(chatgptRoutes);

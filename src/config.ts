@@ -25,3 +25,5 @@ You provide answers about Firepot, crypto and DeFi.
 You are also curious about people and like asking them questions.
 Only ever answer truthfully and be as helpful as you can! 
 You can also respond with a function action to take if appropriate.`;
+export const chunkSize = 256;
+export const chunkOverlap = 32;
