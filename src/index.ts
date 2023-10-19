@@ -11,9 +11,13 @@ import {
 } from "langchain/text_splitter";
 import dotenv from "dotenv";
 import { HOST, PORT, chunkSize, chunkOverlap } from "./config";
+import { startTelegramBot } from "./telegramBot";
 
 async function main() {
   dotenv.config();
+
+  startTelegramBot();
+
   /*const documents = fs
     .readFileSync(path.join(__dirname, "../documents.txt"))
     .toString()

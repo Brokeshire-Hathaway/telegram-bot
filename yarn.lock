@@ -49,6 +49,11 @@
   dependencies:
     fast-json-stringify "^5.7.0"
 
+"@grammyjs/types@3.3.0":
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/@grammyjs/types/-/types-3.3.0.tgz#04cf44943c789635a8e7dcd37846a962d57fb14f"
+  integrity sha512-18Qb12jXiIptqZAlboJMvFxNxydLskUjvE5PbU8ergKQlNIr8jRvYoHDm4t/x3qEfpf+FNhGw23lyZfgEE6e/g==
+
 "@jridgewell/resolve-uri@^3.0.3":
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/@jridgewell/resolve-uri/-/resolve-uri-3.1.1.tgz#c08679063f279615a3326583ba3a90d1d82cc721"
@@ -284,7 +289,7 @@ crypt@0.0.2:
   resolved "https://registry.yarnpkg.com/crypt/-/crypt-0.0.2.tgz#88d7ff7ec0dfb86f713dc87bbb42d044d3e6c41b"
   integrity sha512-mCxBlsHFYh9C+HVpiEacem8FEBnMXgU9gy4zmNC+SXAZNB/1idgp/aulFJ4FgCi7GPEVbfyng092GqL2k2rmow==
 
-debug@^4.0.0:
+debug@^4.0.0, debug@^4.3.4:
   version "4.3.4"
   resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.4.tgz#1319f6579357f2338d3337d2cdd4914bb5dcc865"
   integrity sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==
@@ -457,6 +462,16 @@ forwarded@0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/forwarded/-/forwarded-0.2.0.tgz#2269936428aad4c15c7ebe9779a84bf0b2a81811"
   integrity sha512-buRG0fpBtRHSTCOASe6hD258tEubFoRLb4ZNA6NxMVHNw2gOcwHo9wyablzMzOA5z9xA9L1KNjk/Nt6MT9aYow==
+
+grammy@^1.19.2:
+  version "1.19.2"
+  resolved "https://registry.yarnpkg.com/grammy/-/grammy-1.19.2.tgz#9cf960f2191acc2e0dd4d6360df864b29f2b0126"
+  integrity sha512-bvDWesJgLn65MOsWhShVTVG1bSnh6Yo3OtUwoFzTG21CdPt6r8nzPWcuBSzxMDUQyv8I1c0TXH7zIxXFxiH4sw==
+  dependencies:
+    "@grammyjs/types" "3.3.0"
+    abort-controller "^3.0.0"
+    debug "^4.3.4"
+    node-fetch "^2.7.0"
 
 humanize-ms@^1.2.1:
   version "1.2.1"
@@ -661,7 +676,7 @@ node-fetch@^2.6.1:
   dependencies:
     whatwg-url "^5.0.0"
 
-node-fetch@^2.6.7:
+node-fetch@^2.6.7, node-fetch@^2.7.0:
   version "2.7.0"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.7.0.tgz#d0f0fa6e3e2dc1d27efcd8ad99d550bda94d187d"
   integrity sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==
