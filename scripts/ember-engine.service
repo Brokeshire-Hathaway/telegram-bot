@@ -1,0 +1,12 @@
+[Unit]
+After=network.target
+Description=Ember crypto copilot service
+
+[Service]
+ExecStartPre=/bin/bash -c 'mv /var/log/ember-engine/output.log /var/log/ember-engine/output-$$(date -Is).log; mv /var/log/ember-engine/error.log /var/log/ember-engine/error-$$(date -Is).log'
+ExecStart=/opt/ember-engine/scripts/production.bash
+StandardOutput=file:/var/log/ember-engine/output.log
+StandardError=file:/var/log/ember-engine/error.log
+
+[Install]
+WantedBy=multi-user.target
