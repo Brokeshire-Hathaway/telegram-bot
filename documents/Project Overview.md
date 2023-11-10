@@ -60,13 +60,13 @@ This positions Ember as a dynamic assistant that adapts to meet your unique dema
 
 # Roadmap
 
-- ✅ Ember beta MVP on Telegram – Crypto insights and community ambassador
-- Trading tools and opportunity sniping (Ethereum & Arbitrum)
-- CEX listing
-- Phone as biometric hardware wallet w/ FIDO 2 passkeys
-- Omnichain functionality & additional networks
-- Ember integrated web and mobile app
-- P2P fiat on/off ramp
+1. ✅ Ember beta MVP on Telegram – Crypto insights and community ambassador
+2. Trading tools and opportunity sniping (Ethereum & Arbitrum)
+3. CEX listing
+4. Phone as biometric hardware wallet w/ FIDO 2 passkeys
+5. Omnichain functionality & additional networks
+6. Ember integrated web and mobile app
+7. P2P fiat on/off ramp
 
 
 # Tokenomics
