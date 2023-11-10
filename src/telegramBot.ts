@@ -22,7 +22,7 @@ export function startTelegramBot() {
 
     const text = ctx.message?.text;
 
-    const emberMention = "@ember_crypto_bot";
+    const emberMention = "@EmberAIBot";
     if (!text?.toLowerCase().includes(emberMention)) return;
 
     const chatbotBody: ChatbotBody = {
