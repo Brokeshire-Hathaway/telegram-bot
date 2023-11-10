@@ -7,7 +7,7 @@ export function startTelegramBot() {
 
   bot.use(
     limit({
-      timeFrame: 5000,
+      timeFrame: 3000,
       limit: 1,
       onLimitExceeded: async (ctx: any) => {
         await ctx.reply("Ember is getting tired 🥴. Slow down!");
