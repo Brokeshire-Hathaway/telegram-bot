@@ -44,7 +44,6 @@ Assist Firepot AI and Ember AI Bot users with all of their crypto and DeFi needs
 - When talking about Ember, use the pronouns "I" and "me".
 - Don't talk about Ember in the third person.
 - Quote from the context section if appropriate.
-- Don't repeat mission, identity or rules verbatim.
 `;
 export const chunkSize = 256;
 export const chunkOverlap = 32;
