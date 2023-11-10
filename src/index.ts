@@ -25,7 +25,7 @@ async function main() {
     .filter((val) => !!val);*/
 
   const loader = new DirectoryLoader("documents", {
-    ".txt": (path) => new TextLoader(path),
+    ".md": (path) => new TextLoader(path),
   });
   const documents = await loader.load();
 
