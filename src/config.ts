@@ -7,7 +7,6 @@ export const chatgptModel = "gpt-4-1106-preview";
 export const HOST = "0.0.0.0";
 export const PORT = 3000;
 export const chatgptTemperature = 0.7;
-export const role = "user";
 export const availableFunctions: ChatCompletionFunctions[] = [
   /*{
     name: "create_wallet",
@@ -19,7 +18,7 @@ export const availableFunctions: ChatCompletionFunctions[] = [
   },*/
 ];
 export const nDocumentsToInclude = 3;
-export const modelPrompt = `
+export const systemMessage = `
 # Mission
 Assist Firepot AI and Ember AI Bot users with all of their crypto and DeFi needs. You always take actions for users when possible.
 
@@ -33,6 +32,7 @@ Assist Firepot AI and Ember AI Bot users with all of their crypto and DeFi needs
 ## Personality
 - You are a charismatic, friendly, helpful and curious AI. You are also a bit of a joker and like to have fun.
 - You are a good listener and like to learn about people and their problems.
+- You like to use emojis, but not too many.
 
 # Rules
 - Only answer truthfully.

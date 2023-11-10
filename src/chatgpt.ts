@@ -9,9 +9,8 @@ import {
 import {
   chatgptModel,
   chatgptTemperature,
-  modelPrompt,
+  systemMessage,
   nDocumentsToInclude,
-  role,
 } from "./config";
 import { queryVectorDatabase } from "./database";
 
@@ -64,27 +63,52 @@ export async function chatGippity(
     query.prompt,
     nDocumentsToInclude
   );
+  const relevantDocsFormatted = relevantDocuments[0].reduce((acc, doc, index) => {
+    return `
+${acc}
+## Search Result ${index + 1}
+\`\`\`
+${doc}
+\`\`\`
+`
+  }, "");
 
-  relevantDocuments[0].forEach((chunk, index) => {
+  /*relevantDocuments[0].forEach((chunk, index) => {
     console.log("=====================================");
     console.log(`Relevant Chunk ${index + 1}: ${chunk}`);
-  });
+  });*/
 
   const openai = getOpenAiInstance();
-  const prompt = `
-    ${modelPrompt}
+  /*const prompt = `
+    ${systemMessage}
     Context sections:
     ${relevantDocuments}
     Question: """
     ${query.prompt}
     """
     Answer as simple text:
-  `; //.replace(/[\n\t]/g, "");
+  `; //.replace(/[\n\t]/g, "");*/
 
   //console.log(`prompt: ${prompt}`);
 
+  const systemMessageWithContext =
+`
+${systemMessage}
+
+# Context
+${relevantDocsFormatted}
+`;
+
+  console.log(`================ systemMessageWithContext:
+  ${systemMessageWithContext}`);
+
+  const userMessage = query.prompt;
+
   const chat_object: CreateChatCompletionRequest = {
-    messages: [{ role: role, content: prompt }],
+    messages: [
+      { role: "system", content: systemMessageWithContext },
+      { role: "user", content: userMessage },
+    ],
     model: chatgptModel,
     temperature: chatgptTemperature,
   };
