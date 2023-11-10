@@ -72,25 +72,6 @@ ${doc}
 \`\`\`
 `
   }, "");
-
-  /*relevantDocuments[0].forEach((chunk, index) => {
-    console.log("=====================================");
-    console.log(`Relevant Chunk ${index + 1}: ${chunk}`);
-  });*/
-
-  const openai = getOpenAiInstance();
-  /*const prompt = `
-    ${systemMessage}
-    Context sections:
-    ${relevantDocuments}
-    Question: """
-    ${query.prompt}
-    """
-    Answer as simple text:
-  `; //.replace(/[\n\t]/g, "");*/
-
-  //console.log(`prompt: ${prompt}`);
-
   const systemMessageWithContext =
 `
 ${systemMessage}
@@ -98,12 +79,11 @@ ${systemMessage}
 # Context
 ${relevantDocsFormatted}
 `;
-
   console.log(`================ systemMessageWithContext:
   ${systemMessageWithContext}`);
 
   const userMessage = query.prompt;
-
+  const openai = getOpenAiInstance();
   const chat_object: CreateChatCompletionRequest = {
     messages: [
       { role: "system", content: systemMessageWithContext },
@@ -118,6 +98,8 @@ ${relevantDocsFormatted}
   }
   const chat_completion = await openai.createChatCompletion(chat_object);
   const message = chat_completion.data.choices[0].message;
+
   if (!message) throw new Error("Message not available");
+
   return message;
 }
