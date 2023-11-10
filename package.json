@@ -5,6 +5,7 @@
   "author": "firepot_devs",
   "license": "MIT",
   "dependencies": {
+    "@grammyjs/ratelimiter": "^1.2.0",
     "chromadb": "^1.5.5",
     "dotenv": "^16.3.1",
     "fastify": "^4.21.0",
