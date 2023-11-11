@@ -5,45 +5,32 @@ import { limit } from "@grammyjs/ratelimiter";
 export function startTelegramBot() {
   const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN!);
 
+  const privateBot = bot.chatType("private");
+  const groupBot = bot.chatType("group");
+
   bot.use(
     limit({
       timeFrame: 3000,
       limit: 1,
       onLimitExceeded: async (ctx: any) => {
-        await ctx.reply("Ember is getting tired 🥴. Slow down!");
+        await ctx.reply("You're going to fry my circuits. 🥴 Please slow down.");
       },
     })
   );
 
-  bot.on("::mention", async (ctx) => {
-    console.log("=====================================");
-    console.log(`Mention: `);
-    console.log(ctx.message?.entities);
-
-    const text = ctx.message?.text;
-
+  groupBot.on("::mention", async (ctx) => {
     const emberMention = "@emberaibot";
-    if (!text?.toLowerCase().includes(emberMention)) return;
+    if (ctx.message?.text?.toLowerCase().includes(emberMention)) return;
+  });
 
+  bot.on("message:text", async (ctx) => {
+    const text = ctx.message?.text;
     const chatbotBody: ChatbotBody = {
       prompt: text,
     };
     const chatResult = await chatGippity(chatbotBody);
     ctx.reply(chatResult.content ?? "**Ember is sleeping 😴**");
   });
-
-  /*bot.on("message:text", async (ctx) => {
-    console.log("=====================================");
-    console.log(`Telegram Message: ${ctx.message.text}`);
-    console.log("=====================================");
-    console.log(`ctx: ${JSON.stringify(ctx)}`);
-
-    const chatbotBody: ChatbotBody = {
-      prompt: ctx.message.text,
-    };
-    const chatResult = await chatGippity(chatbotBody);
-    ctx.reply(chatResult.content ?? "**Ember is sleeping**");
-  });*/
 
   bot.start(); // Promise only resolves when bot stops
 }
