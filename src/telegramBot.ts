@@ -21,16 +21,21 @@ export function startTelegramBot() {
   groupBot.on("::mention", async (ctx) => {
     const emberMention = "@emberaibot";
     if (ctx.message?.text?.toLowerCase().includes(emberMention)) return;
+    await emberReply(ctx);
   });
 
   bot.on("message:text", async (ctx) => {
-    const text = ctx.message?.text;
+    await emberReply(ctx);
+  });
+
+  bot.start(); // Promise only resolves when bot stops
+}
+
+async function emberReply(ctx: any) {
+  const text = ctx.message?.text;
     const chatbotBody: ChatbotBody = {
       prompt: text,
     };
     const chatResult = await chatGippity(chatbotBody);
     ctx.reply(chatResult.content ?? "**Ember is sleeping 😴**");
-  });
-
-  bot.start(); // Promise only resolves when bot stops
 }
