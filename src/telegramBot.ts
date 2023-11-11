@@ -24,7 +24,7 @@ export function startTelegramBot() {
     await emberReply(ctx);
   });
 
-  bot.on("message:text", async (ctx) => {
+  privateBot.on("message:text", async (ctx) => {
     await emberReply(ctx);
   });
 
