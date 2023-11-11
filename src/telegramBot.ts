@@ -6,7 +6,7 @@ export function startTelegramBot() {
   const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN!);
 
   const privateBot = bot.chatType("private");
-  const groupBot = bot.chatType("group");
+  const groupBot = bot.chatType(["group", "supergroup"]);
 
   bot.use(
     limit({
@@ -18,11 +18,25 @@ export function startTelegramBot() {
     })
   );
 
-  groupBot.on("::mention", async (ctx) => {
-    const emberMention = "@emberaibot";
-    if (ctx.message?.text?.toLowerCase().includes(emberMention)) return;
+  groupBot.hears(/.*@emberaibot.*/i, async (ctx) => {
+    const text = ctx.message?.text;
+
+    console.log("Mentioned in group");
+    console.log(`Text: ${text}`);
+
     await emberReply(ctx);
   });
+
+  /*groupBot.on("::mention", async (ctx) => {
+    const text = ctx.message?.text;
+
+    console.log("Mentioned in group");
+    console.log(`Text: ${text}`);
+
+    const emberMention = "@emberaibot";
+    if (text?.toLowerCase().includes(emberMention)) return;
+    await emberReply(ctx);
+  });*/
 
   privateBot.on("message:text", async (ctx) => {
     await emberReply(ctx);
