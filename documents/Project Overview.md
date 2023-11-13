@@ -1,21 +1,23 @@
 ---
 filename: "Project Overview.md"
-company name: "Firepot AI"
-product name: "Ember AI Bot"
+company name: "Firepot AI (formerly Firepot Finance)"
+product name: "Ember AI"
 tagline: "DeFi for Degens. Crypto for Your Mom."
 slogan: "Your Personal Crypto Hub on Telegram and Beyond."
 value proposition: "Intelligent – Seamless – Safe"
-website: https://www.firepot.finance/
-telegram chat: https://t.me/emberchat
-telegram annoucements: https://t.me/firepotfinance
-twitter: https://twitter.com/FirepotFinance
-x: https://twitter.com/FirepotFinance
-github: https://github.com/Firepot-Finance
-docs: http://docs.firepot.finance/
+links:
+    website: https://www.firepot.finance/
+    telegram chat: https://t.me/emberchat
+    telegram annoucements: https://t.me/firepotfinance
+    twitter: https://twitter.com/FirepotFinance
+    x: https://twitter.com/FirepotFinance
+    github: https://github.com/Firepot-Finance
+    docs: http://docs.firepot.finance/
+    zealy: https://zealy.io/c/firepotfinance/questboard
 ---
 
 
-# Ember AI Bot
+# Ember AI
 ## DeFi for Degens. Crypto for Your Mom.
 
 
@@ -25,7 +27,7 @@ _Intelligent – Seamless – Safe_
 
 # What is Ember?
 
-Manage all your assets, trades, yield positions, and wallets in one intuitive place with an expert advisor by your side every step of the way. The Ember AI Bot is powered by a cutting-edge cognitive computing architecture, integrating an LLM reasoning engine and multi-agent system for autonomous decision-making.
+Manage all your assets, trades, yield positions, and wallets in one intuitive place with an expert advisor by your side every step of the way. The Ember AI is powered by a cutting-edge cognitive computing architecture, integrating an LLM reasoning engine and multi-agent system for autonomous decision-making.
 
 This positions Ember as a dynamic assistant that adapts to meet your unique demands of crypto trading and DeFi management without the underlying complexity. Ember also brings hardware wallet security everywhere – allowing you to safely transact through Telegram, Discord, web, mobile, or even text and email.
 
@@ -34,14 +36,14 @@ This positions Ember as a dynamic assistant that adapts to meet your unique dema
 
 **Intelligent** – Navigate the complex world of DeFi with AI-driven insights and personalized guidance tailored to your investment style. Stay informed, stay ahead.
 
-**Seamless** – Ember’s unified crypto hub provides access to your portfolio everywhere you connect, completing advanced omnichain crypto trading across networks and protocols all through the convenience of Telegram.
+**Seamless** – Ember’s unified crypto hub provides access to your portfolio everywhere you connect, completing advanced omnichain crypto trading across networks and protocols all through the convenience of Telegram. (coming soon)
 
-**Safe** – The device you already own is the only hardware wallet you’ll ever need. Transform the device in your hand into a biometric hardware wallet using the same multi-factor authentication and encryption that protects your bank account. Consent to Ember’s suggestions by signing with a simple touch or glance.
+**Safe** – The device you already own is the only hardware wallet you’ll ever need. Transform the device in your hand into a biometric hardware wallet using the same multi-factor authentication and encryption that protects your bank account. Consent to Ember’s suggestions by signing with a simple touch or glance. (coming soon)
 
 
 # Accomplishments
 
-- Raised $500,000 pre-seed from leading ecosystem funds and angel investors (AirDAO, Flutter Finance)
+- Raised $500,000 pre-seed from leading ecosystem fund (AirDAO) and private angel investors
 - Ember beta MVP launched
 - 30,000+ community
 - 20,000+ waitlist
@@ -54,19 +56,25 @@ This positions Ember as a dynamic assistant that adapts to meet your unique dema
 
 - Founders KYC’d – Tom Daniel (CEO) & Sebastian Varela (COO)  
 - Crypto OGs (2013) – Dogecoin mining (2014) – Crypto-native builder since 2015
-- Founder of AI hardware company inventing U.S. Patent No. 10,154,379 (2018)
+- Founder of AI hardware company. The team invented U.S. Patent No. 10,154,379 (2018)
 - We are an AI company building crypto products with our sights on the digital evolution of democracy and AGI
 
 
 # Roadmap
+**Key Words**: ember features, ember functionality
 
-1. ✅ Ember beta MVP on Telegram – Crypto insights and community ambassador
-2. Trading tools and opportunity sniping (Ethereum & Arbitrum)
-3. CEX listing
-4. Phone as biometric hardware wallet w/ FIDO 2 passkeys
-5. Omnichain functionality & additional networks
-6. Ember integrated web and mobile app
-7. P2P fiat on/off ramp
+## Released
+- ✅ Ember beta MVP on Telegram – Crypto insights and community ambassador
+
+## Upcoming
+1. Live market data
+2. Trading tools
+3. Opportunity sniping (Ethereum & Arbitrum)
+4. CEX listing on top exchange
+5. Phone as biometric hardware wallet w/ FIDO 2 passkeys
+6. Omnichain functionality & additional networks
+7. Ember integrated web and mobile app
+8. P2P fiat on/off ramp
 
 
 # Tokenomics
@@ -85,16 +93,24 @@ Endowment Seed – 5%
 Airdrop – 1%
 Public Bonds – 1%
 
+## Contracts
+
+### $HOTT
+- **Contract Address**: 0x871cC5d7D06Da24eE9dc618ca7e1b3e8406B4A75
+- **Explorer Link**: https://arbiscan.io/address/0x871cC5d7D06Da24eE9dc618ca7e1b3e8406B4A75
+
+### $rHOTT
+- **Contract Address**: 0x0D96eAd8eC5F2840aB6A62f44768c36582608E09
+- **Explorer Link**: https://arbiscan.io/address/0x0D96eAd8eC5F2840aB6A62f44768c36582608E09
+
 
 ## Plugins and Token Locking
 
-**HOTT** is Ember's native token. It can be earned as platform rewards.
+**$HOTT** is Ember's native token. It can be earned as platform rewards.
 
-**rHOTT** is a non-transferable token, corresponding to locked HOTT. It can be earned as platform rewards, or through direct HOTT conversion. Users have the option to lock their HOTT tokens and redeem them for rHOTT, which grants access to various rewards plug-ins. These plug-ins include but are not limited to:
+**$rHOTT** is a non-transferable token, corresponding to locked $HOTT. It can be earned as platform rewards, or through direct $HOTT conversion. Users have the option to lock their $HOTT tokens and redeem them for $rHOTT, which grants access to various rewards plug-ins. These plug-ins include but are not limited to:
 
 - **Ember Premium Subscription (QoL features)** – Become a subscriber to Ember Premium and get access to unlimited message insights, unlimited automated token sniping and additional AI-driven features.
-
-- **Revenue Sharing** – 5% of fees generated will be used to buy back and burn HOTT tokens, 60% will go to the treasury and 35% will be redistributed to those who allocated rHOTT to this plugin once per week.
 
 - **Ember Fuel (fees)** – Feed Ember’s tank to transact on DeFi through the tailored conversational AI experience made possible by our platform. 5% of these fees will be burnt.
 
