@@ -49,10 +49,10 @@ async function main() {
 
   console.log(`chunk count: ${chunks.length}`);
 
-  chunks.forEach((chunk, index) => {
+  /*chunks.forEach((chunk, index) => {
     console.log("=====================================");
     console.log(`chunk ${index + 1}: ${chunk}`);
-  });
+  });*/
 
   await createEmbeddings(chunks);
 

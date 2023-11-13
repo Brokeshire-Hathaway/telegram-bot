@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import {
   ChatCompletionFunctions,
+  ChatCompletionRequestMessage,
   ChatCompletionResponseMessage,
   Configuration,
   CreateChatCompletionRequest,
@@ -9,13 +10,20 @@ import {
 import {
   chatgptModel,
   chatgptTemperature,
-  systemMessage,
+  systemMessageContent,
   nDocumentsToInclude,
 } from "./config";
 import { queryVectorDatabase } from "./database";
 
+export type Role = "system" | "user" | "assistant";
+export type Content = string;
+export interface Message {
+  role: Role;
+  content: Content;
+}
+
 export type ChatbotBody = {
-  prompt: string;
+  messages: Message[];
   functions?: ChatCompletionFunctions[];
 };
 
@@ -33,7 +41,7 @@ export async function chatgptHandler(
   response: FastifyReply
 ) {
   try {
-    if (!(request.body as ChatbotBody).prompt) {
+    if (!(request.body as ChatbotBody).messages) {
       throw new Error("Malformed request");
     }
     const chatResult = await chatGippity(request.body as ChatbotBody);
@@ -59,13 +67,19 @@ function getOpenAiInstance() {
 export async function chatGippity(
   query: ChatbotBody
 ): Promise<ChatCompletionResponseMessage> {
+  /*console.log(`================ query:`);
+  console.log(query);
+  console.log(`================ end query`);*/
+
+
+  const userMessage = query.messages.slice(-1)[0]?.content ?? "";
+  const assistantMessage = query.messages.slice(-2)[0]?.content ?? "";
   const relevantDocuments = await queryVectorDatabase(
-    query.prompt,
+    `${assistantMessage}\n${userMessage}`,
     nDocumentsToInclude
   );
   const relevantDocsFormatted = relevantDocuments[0].reduce((acc, doc, index) => {
-    return `
-${acc}
+    return `${acc}
 ## Search Result ${index + 1}
 \`\`\`
 ${doc}
@@ -74,29 +88,33 @@ ${doc}
   }, "");
   const systemMessageWithContext =
 `
-${systemMessage}
+${systemMessageContent}
 
-# Context
-${relevantDocsFormatted}
-`;
-  console.log(`================ systemMessageWithContext:
-  ${systemMessageWithContext}`);
+# Context${relevantDocsFormatted}`;
 
-  const userMessage = query.prompt;
+  //console.log(`================ systemMessageWithContext:
+  //${systemMessageWithContext}`);
+
   const openai = getOpenAiInstance();
-  const chat_object: CreateChatCompletionRequest = {
-    messages: [
-      { role: "system", content: systemMessageWithContext },
-      { role: "user", content: userMessage },
-    ],
+
+  const systemMessage: Message = { role: "system", content: systemMessageWithContext };
+  const messages = [systemMessage, ...query.messages];
+  const chatObject: CreateChatCompletionRequest = {
+    messages,
     model: chatgptModel,
     temperature: chatgptTemperature,
   };
+
+  console.log(`================ chatObject:`);
+  console.log(chatObject);
+  console.log(`================ end chatObject`);
+
   if (query.functions) {
-    chat_object.functions = query.functions;
-    chat_object.function_call = "auto";
+    chatObject.functions = query.functions;
+    chatObject.function_call = "auto";
   }
-  const chat_completion = await openai.createChatCompletion(chat_object);
+
+  const chat_completion = await openai.createChatCompletion(chatObject);
   const message = chat_completion.data.choices[0].message;
 
   if (!message) throw new Error("Message not available");

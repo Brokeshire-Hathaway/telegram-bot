@@ -1,5 +1,5 @@
 import { Bot } from "grammy";
-import { ChatbotBody, chatGippity } from "./chatgpt";
+import { ChatbotBody, Message, chatGippity } from "./chatgpt";
 import { limit } from "@grammyjs/ratelimiter";
 
 export function startTelegramBot() {
@@ -18,38 +18,48 @@ export function startTelegramBot() {
     })
   );
 
-  groupBot.hears(/.*@emberaibot.*/i, async (ctx) => {
-    const text = ctx.message?.text;
-
-    console.log("Mentioned in group");
-    console.log(`Text: ${text}`);
-
-    await emberReply(ctx);
+  const emberUserRegex = process.env.NODE_ENV === 'development' ? /.*@ember_dev_bot.*/i : /.*@emberaibot.*/i;
+  groupBot.hears(emberUserRegex, async (ctx) => {
+    await emberReply(ctx, ctx.message?.text ?? "");
   });
 
-  /*groupBot.on("::mention", async (ctx) => {
-    const text = ctx.message?.text;
+  groupBot.on("message:text", async (ctx) => {
+    const replyMessageUsername = ctx.message?.reply_to_message?.from?.username;
+    const replyMessageIsEmber = replyMessageUsername === (process.env.NODE_ENV === 'development' ? "Ember_dev_bot" : "EmberAIBot");
+    if (!replyMessageIsEmber) return;
 
-    console.log("Mentioned in group");
-    console.log(`Text: ${text}`);
+    const messageText = ctx.message?.text;
+    //const replyObject = ctx.message?.reply_to_message;
+    const replyText = ctx.message?.reply_to_message?.text;
 
-    const emberMention = "@emberaibot";
-    if (text?.toLowerCase().includes(emberMention)) return;
-    await emberReply(ctx);
-  });*/
+    /*console.log("Mentioned in group");
+    console.log(`Text: ${messageText}`);
+    console.log(`Reply Object:`);
+    console.log(replyObject);
+    console.log(`Reply Text: ${replyText}`);*/
+
+    await emberReply(ctx, messageText, replyText);
+  });
 
   privateBot.on("message:text", async (ctx) => {
-    await emberReply(ctx);
+    await emberReply(ctx, ctx.message.text);
   });
 
   bot.start(); // Promise only resolves when bot stops
 }
 
-async function emberReply(ctx: any) {
-  const text = ctx.message?.text;
-    const chatbotBody: ChatbotBody = {
-      prompt: text,
-    };
-    const chatResult = await chatGippity(chatbotBody);
-    ctx.reply(chatResult.content ?? "**Ember is sleeping 😴**");
+async function emberReply(ctx: any, userContent: string, assistantContent?: string) {
+  const messages: Message[] = [
+    { role: "user", content: userContent }
+  ];
+
+  if (assistantContent != null) {
+    messages.unshift({ role: "assistant", content: assistantContent });
+  }
+
+  const chatbotBody: ChatbotBody = {
+    messages
+  };
+  const chatResult = await chatGippity(chatbotBody);
+  ctx.reply(chatResult.content ?? "**Ember is sleeping 😴**");
 }
