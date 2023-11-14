@@ -8,6 +8,10 @@ filename: "FAQ.md"
 1. [Product Functionality](#product-functionality)
 2. [Return Policy](#return-policy)
 
+## Project
+**How long has Firepot/Ember AI been around?**
+Firepot Finance officially started operations in June 2022 as an experimental sub-DAO project of AirDAO. Beginning in early 2023, Firepot transformed from a sub-DAO into its own entity. Shortly thereafter the Ember vision was born. In early November, 2023 the project updated its name from Firepot Finance to Firepot AI, narrowing its focus onto Ember AI. On November 11th, 2023 the Ember beta MVP was launched.
+
 ## Token
 **Where can I buy the $HOTT token?**
 Coming soon! Join here: https://gempad.app/special/0x466270a2D79da347eb1BaAeC04B5cE3c65500Ac1?chainId=42161.
