@@ -36,9 +36,9 @@ This positions Ember as a dynamic assistant that adapts to meet your unique dema
 
 **Intelligent** – Navigate the complex world of DeFi with AI-driven insights and personalized guidance tailored to your investment style. Stay informed, stay ahead.
 
-**Seamless** – Ember’s unified crypto hub provides access to your portfolio everywhere you connect, completing advanced omnichain crypto trading across networks and protocols all through the convenience of Telegram. (coming soon)
+**Seamless** – (coming soon) Ember’s unified crypto hub provides access to your portfolio everywhere you connect, completing advanced omnichain crypto trading across networks and protocols all through the convenience of Telegram.
 
-**Safe** – The device you already own is the only hardware wallet you’ll ever need. Transform the device in your hand into a biometric hardware wallet using the same multi-factor authentication and encryption that protects your bank account. Consent to Ember’s suggestions by signing with a simple touch or glance. (coming soon)
+**Safe** – (coming soon) The device you already own is the only hardware wallet you’ll ever need. Transform the device in your hand into a biometric hardware wallet using the same multi-factor authentication and encryption that protects your bank account. Consent to Ember’s suggestions by signing with a simple touch or glance.
 
 
 # Accomplishments
@@ -61,20 +61,20 @@ This positions Ember as a dynamic assistant that adapts to meet your unique dema
 
 
 # Roadmap
-**Key Words**: ember features, ember functionality
+**Key Words**: features, functionality, capabilities
 
 ## Released
 - ✅ Ember beta MVP on Telegram – Crypto insights and community ambassador
+- ✅ Live market data and token search
 
 ## Upcoming
-1. Live market data
-2. Trading tools
-3. Opportunity sniping (Ethereum & Arbitrum)
-4. CEX listing on top exchange
-5. Phone as biometric hardware wallet w/ FIDO 2 passkeys
-6. Omnichain functionality & additional networks
-7. Ember integrated web and mobile app
-8. P2P fiat on/off ramp
+1. Trading tools
+2. Opportunity sniping (Ethereum & Arbitrum)
+3. CEX listing on top exchange
+4. Phone as biometric hardware wallet w/ FIDO 2 passkeys
+5. Omnichain functionality & additional networks
+6. Ember integrated web and mobile app
+7. P2P fiat on/off ramp
 
 
 # Tokenomics

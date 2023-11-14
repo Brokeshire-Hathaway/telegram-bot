@@ -33,3 +33,7 @@ _Crypto OG 2013 - MVP in AI hardware startup under 4 weeks | Mathematics_
 
 ## Nas’Garba
 **Chief Ambassador**
+
+
+## Raj
+**Community Moderator**
