@@ -1,12 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import {
-  ChatCompletionFunctions,
-  ChatCompletionRequestMessage,
-  ChatCompletionResponseMessage,
-  Configuration,
-  CreateChatCompletionRequest,
-  OpenAIApi,
-} from "openai";
+import OpenAI from 'openai';
 import {
   chatgptModel,
   chatgptTemperature,
@@ -14,17 +7,18 @@ import {
   nDocumentsToInclude,
 } from "./config";
 import { queryVectorDatabase } from "./database";
+import { getMarket, tools } from "./gpttools";
+import { ChatCompletionMessage, ChatCompletionMessageParam, ChatCompletionSystemMessageParam, ChatCompletionToolMessageParam } from "openai/resources";
 
-export type Role = "system" | "user" | "assistant";
-export type Content = string;
-export interface Message {
+//export type Role = "system" | "user" | "assistant";
+//export type Content = string;
+/*export interface Message {
   role: Role;
   content: Content;
-}
+}*/
 
 export type ChatbotBody = {
-  messages: Message[];
-  functions?: ChatCompletionFunctions[];
+  messages: ChatCompletionMessageParam[];
 };
 
 export default function routes(
@@ -53,20 +47,15 @@ export async function chatgptHandler(
   }
 }
 
-let openai: OpenAIApi;
-function getOpenAiInstance() {
+export let openai: OpenAI;
+export function setOpenAiInstance() {
   if (!openai) {
-    const configuration = new Configuration({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
-    openai = new OpenAIApi(configuration);
+    openai = new OpenAI();
   }
-  return openai;
 }
-
 export async function chatGippity(
   query: ChatbotBody
-): Promise<ChatCompletionResponseMessage> {
+): Promise<ChatCompletionMessage> {
   /*console.log(`================ query:`);
   console.log(query);
   console.log(`================ end query`);*/
@@ -95,29 +84,68 @@ ${systemMessageContent}
   //console.log(`================ systemMessageWithContext:
   //${systemMessageWithContext}`);
 
-  const openai = getOpenAiInstance();
-
-  const systemMessage: Message = { role: "system", content: systemMessageWithContext };
-  const messages = [systemMessage, ...query.messages];
-  const chatObject: CreateChatCompletionRequest = {
+  const systemMessage: ChatCompletionSystemMessageParam = { role: "system", content: systemMessageWithContext };
+  const messages: Array<ChatCompletionMessageParam> = [systemMessage, ...query.messages];
+  const params: OpenAI.Chat.ChatCompletionCreateParams = {
     messages,
     model: chatgptModel,
     temperature: chatgptTemperature,
+    tools
   };
 
   console.log(`================ chatObject:`);
-  console.log(chatObject);
+  console.log(params);
   console.log(`================ end chatObject`);
 
-  if (query.functions) {
-    chatObject.functions = query.functions;
-    chatObject.function_call = "auto";
+  /*if (query.functions) {
+    params.functions = query.functions;
+    params.function_call = "auto";
+  }*/
+
+
+  const response = await openai.chat.completions.create(params);
+  const responseMessage = response.choices[0].message;
+
+  // Step 2: check if the model wanted to call a function
+  const toolCalls = responseMessage.tool_calls;
+  if (toolCalls) {
+    // Step 3: call the function
+    // Note: the JSON response may not always be valid; be sure to handle errors
+    const availableFunctions: { [key: string]: (args: any) => any } = {
+      get_market: getMarket,
+    }; // only one function in this example, but you can have multiple
+    messages.push(responseMessage); // extend conversation with assistant's reply
+
+    const functionResPromises: ChatCompletionToolMessageParam[] = [];
+    for (const toolCall of toolCalls) {
+      const functionName = toolCall.function.name;
+      const functionToCall = availableFunctions[functionName];
+      const functionArgs = JSON.parse(toolCall.function.arguments);
+      functionResPromises.push(functionToCall(
+        functionArgs.token_search
+      ));
+    }
+    const functionResponses = await Promise.allSettled(functionResPromises);
+    functionResponses.forEach((functionResponse, index) => {
+      messages.push({
+        tool_call_id: toolCalls[index].id,
+        role: "tool",
+        content: JSON.stringify(functionResponse),
+      }); // extend conversation with function response
+    });
+
+    console.log(`================ messages:`);
+    console.log(messages);
+
+    const secondResponse = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo-1106",
+      messages: messages,
+    }); // get a new response from the model where it can see the function response
+    return secondResponse.choices[0].message;
   }
 
-  const chat_completion = await openai.createChatCompletion(chatObject);
-  const message = chat_completion.data.choices[0].message;
+  //const chatCompletion = await openai.createChatCompletion(params);
+  //const message = chatCompletion.data.choices[0].message;
 
-  if (!message) throw new Error("Message not available");
-
-  return message;
+  return responseMessage;
 }

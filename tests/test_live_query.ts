@@ -1,9 +1,9 @@
-import { ChatCompletionFunctions } from "openai";
+//import { ChatCompletionFunctions } from "openai";
 import { ChatbotBody } from "../src/chatgpt";
 
 async function queryFirepotChatbot(
   prompt: string,
-  functions?: ChatCompletionFunctions[],
+  functions?: [],
 ) {
   const body: ChatbotBody = {
     prompt: prompt,
@@ -25,7 +25,7 @@ async function test_live_query() {
   let res = await queryFirepotChatbot(prompt);
   console.log(res);
   prompt = "Let me open a wallet";
-  const functions: ChatCompletionFunctions[] = [
+  const functions: [] = [
     {
       name: "create_wallet",
       description:

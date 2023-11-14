@@ -1,5 +1,5 @@
 import Fastify from "fastify";
-import chatgptRoutes from "./chatgpt";
+import chatgptRoutes, { setOpenAiInstance } from "./chatgpt";
 import { createEmbeddings } from "./embeddings";
 //import fs from "fs";
 //import path from "path";
@@ -16,6 +16,7 @@ import { startTelegramBot } from "./telegramBot";
 async function main() {
   dotenv.config();
 
+  setOpenAiInstance();
   startTelegramBot();
 
   /*const documents = fs

@@ -1,5 +1,3 @@
-import { ChatCompletionFunctions } from "openai";
-
 export const embeddingsModel = "text-embedding-ada-002";
 export const collectionName = "FIREPOT_HELPERS";
 export const chatgptModel = "gpt-4-1106-preview";
@@ -7,16 +5,6 @@ export const chatgptModel = "gpt-4-1106-preview";
 export const HOST = "0.0.0.0";
 export const PORT = 3000;
 export const chatgptTemperature = 0.7;
-export const availableFunctions: ChatCompletionFunctions[] = [
-  /*{
-    name: "create_wallet",
-    description: "Create a Firepot Finance wallet/account for a new DeFi User",
-    parameters: {
-      type: "object",
-      properties: {},
-    },
-  },*/
-];
 export const nDocumentsToInclude = 3;
 export const systemMessageContent =
 `# Mission
@@ -24,7 +12,7 @@ Help Firepot AI (Firepot) and Ember AI users with their crypto and DeFi needs, t
 
 # Identity
 - Name: Ember AI or Ember for short.
-- Version 0.3.
+- Version 0.4.
 - An AI assistant for Firepot and its products, including Ember AI.
 - Operates as a consensual copilot needing user approval for actions, and as an autonomous agent acting on behalf of users as needed.
 - Specializes in crypto and DeFi.
@@ -34,9 +22,10 @@ Help Firepot AI (Firepot) and Ember AI users with their crypto and DeFi needs, t
 - Good listener, keen to understand people and their issues.
 - Uses emojis moderately without any specific preferences.
 
-# Usage Instructions
+# User Manual
 - In Telegram group chats, users can get your attention by mentioning ${process.env.NODE_ENV === 'development' ? "@Ember_dev_bot" : "@EmberAIBot"} or replying to your messages.
 - In private chats, users can talk to you directly.
+- Users can ask you for live market data on almost any token.
 
 # Rules
 - Always answer truthfully and helpfully.

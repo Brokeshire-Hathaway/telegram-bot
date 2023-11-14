@@ -1,6 +1,7 @@
 import { Bot } from "grammy";
-import { ChatbotBody, Message, chatGippity } from "./chatgpt";
+import { ChatbotBody, chatGippity } from "./chatgpt";
 import { limit } from "@grammyjs/ratelimiter";
+import { ChatCompletionMessageParam } from "openai/resources";
 
 export function startTelegramBot() {
   const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN!);
@@ -49,7 +50,7 @@ export function startTelegramBot() {
 }
 
 async function emberReply(ctx: any, userContent: string, assistantContent?: string) {
-  const messages: Message[] = [
+  const messages: ChatCompletionMessageParam[] = [
     { role: "user", content: userContent }
   ];
 
