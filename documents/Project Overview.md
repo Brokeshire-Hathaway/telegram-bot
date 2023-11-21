@@ -70,6 +70,7 @@ This positions Ember as a dynamic assistant that adapts to meet your unique dema
 - ✅ Add Ember AI to your Telegram group – Notifies official Ember AI Chat
 - ✅ Advertise on Ember messages through sponsorship
 - ✅ Nice styled formatting in Ember messages
+- ✅ Current time and day provided to Ember
 
 ## Upcoming
 1. Trading tools
