@@ -1,5 +1,5 @@
 //import { ChatCompletionFunctions } from "openai";
-import { ChatbotBody } from "../src/chatgpt";
+import { ChatbotBody } from "../chatgpt.js";
 
 async function queryFirepotChatbot(
   prompt: string,

@@ -1,6 +1,6 @@
 import Fastify from "fastify";
-import chatgptRoutes, { setOpenAiInstance } from "./chatgpt";
-import { createEmbeddings } from "./embeddings";
+import chatgptRoutes, { setOpenAiInstance } from "./chatgpt.js";
+import { createEmbeddings } from "./embeddings.js";
 //import fs from "fs";
 //import path from "path";
 import { DirectoryLoader } from "langchain/document_loaders/fs/directory";
@@ -10,8 +10,8 @@ import {
   TokenTextSplitter,
 } from "langchain/text_splitter";
 import dotenv from "dotenv";
-import { HOST, PORT, chunkSize, chunkOverlap } from "./config";
-import { startTelegramBot } from "./telegramBot";
+import { HOST, PORT, chunkSize, chunkOverlap } from "./config.js";
+import { startTelegramBot } from "./telegramBot.js";
 
 async function main() {
   dotenv.config();

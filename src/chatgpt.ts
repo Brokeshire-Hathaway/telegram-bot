@@ -5,10 +5,10 @@ import {
   chatgptTemperature,
   systemMessageContent,
   nDocumentsToInclude,
-} from "./config";
-import { queryVectorDatabase } from "./database";
-import { getMarket, tools } from "./gpttools";
-import { ChatCompletionMessage, ChatCompletionMessageParam, ChatCompletionSystemMessageParam, ChatCompletionToolMessageParam } from "openai/resources";
+} from "./config.js";
+import { queryVectorDatabase } from "./database.js";
+import { getMarket, tools } from "./gpttools.js";
+import { ChatCompletionMessage, ChatCompletionMessageParam, ChatCompletionSystemMessageParam, ChatCompletionToolMessageParam } from "openai/resources/index";
 
 //export type Role = "system" | "user" | "assistant";
 //export type Content = string;
@@ -76,10 +76,11 @@ ${doc}
 `
   }, "");
   const systemMessageWithContext =
-`
-${systemMessageContent}
+`${systemMessageContent}
 
-# Context${relevantDocsFormatted}`;
+# Context
+## Current Date & Time
+${new Date().toISOString()}${relevantDocsFormatted}`;
 
   //console.log(`================ systemMessageWithContext:
   //${systemMessageWithContext}`);
@@ -93,9 +94,9 @@ ${systemMessageContent}
     tools
   };
 
-  console.log(`================ chatObject:`);
+  /*console.log(`================ chatObject:`);
   console.log(params);
-  console.log(`================ end chatObject`);
+  console.log(`================ end chatObject`);*/
 
   /*if (query.functions) {
     params.functions = query.functions;
@@ -134,8 +135,8 @@ ${systemMessageContent}
       }); // extend conversation with function response
     });
 
-    console.log(`================ messages:`);
-    console.log(messages);
+    /*console.log(`================ messages:`);
+    console.log(messages);*/
 
     const secondResponse = await openai.chat.completions.create({
       model: "gpt-3.5-turbo-1106",
@@ -146,6 +147,10 @@ ${systemMessageContent}
 
   //const chatCompletion = await openai.createChatCompletion(params);
   //const message = chatCompletion.data.choices[0].message;
+
+  // Keep for server logs
+  console.log("==================== Messages:");
+  console.log(messages);
 
   return responseMessage;
 }

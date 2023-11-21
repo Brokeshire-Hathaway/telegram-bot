@@ -1,5 +1,5 @@
 import { ChromaClient, Collection, OpenAIEmbeddingFunction } from "chromadb";
-import { collectionName } from "./config";
+import { collectionName } from "./config.js";
 
 /*
  * Singleton client

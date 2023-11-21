@@ -43,7 +43,7 @@ This positions Ember as a dynamic assistant that adapts to meet your unique dema
 
 # Accomplishments
 
-- Raised $500,000 pre-seed from leading ecosystem fund (AirDAO) and private angel investors
+- Raised $500,000 pre-seed from leading L1 ecosystem fund (AirDAO) and private angel investors
 - Ember beta MVP launched
 - 30,000+ community
 - 20,000+ waitlist
@@ -65,7 +65,11 @@ This positions Ember as a dynamic assistant that adapts to meet your unique dema
 
 ## Released
 - ✅ Ember beta MVP on Telegram – Crypto insights and community ambassador
+- ✅ Reply to Ember's previous messages
 - ✅ Live market data and token search
+- ✅ Add Ember AI to your Telegram group – Notifies official Ember AI Chat
+- ✅ Advertise on Ember messages through sponsorship
+- ✅ Nice styled formatting in Ember messages
 
 ## Upcoming
 1. Trading tools
@@ -79,17 +83,17 @@ This positions Ember as a dynamic assistant that adapts to meet your unique dema
 
 # Tokenomics
 
-**Pre-sale price**: $0.008
+**Estimated Pre-sale price**: $0.008
 **Max supply**: 1,000,000,000
 
 ## Allocations
-Rewards – 30%
+Rewards – 33.5%
 Team & Advisors – 18%
 Private Raise – 18%
 Treasury – 10%
 Public Sale – 10%
 Exchange Liquidity – 7%
-Endowment Seed – 5%
+Endowment Seed – 1.5%
 Airdrop – 1%
 Public Bonds – 1%
 

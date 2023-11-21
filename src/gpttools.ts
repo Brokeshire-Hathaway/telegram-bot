@@ -1,5 +1,4 @@
-import fetch from 'node-fetch';
-import { ChatCompletionTool } from 'openai/resources';
+import { ChatCompletionTool } from 'openai/resources/index';
 
 interface CoinGeckoSearchCoin {
     id: string;

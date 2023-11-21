@@ -1,6 +1,6 @@
-import { insertEmbeddings } from "./database";
-import { embeddingsModel } from "./config";
-import { openai } from "./chatgpt";
+import { insertEmbeddings } from "./database.js";
+import { embeddingsModel } from "./config.js";
+import { openai } from "./chatgpt.js";
 
 async function generateEmbeddings(documents: string[]): Promise<number[][]> {
     // send request to generate embeddings
