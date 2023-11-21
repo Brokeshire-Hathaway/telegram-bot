@@ -58,7 +58,9 @@ export function startTelegramBot() {
       const chat: ChatFromGetChat & { username?: string } = await ctx.api.getChat(ctx.myChatMember.chat.id);
       const chatTitle = ctx.myChatMember.chat.title;
       const groupLink = chat.username ? `[${chatTitle}](https://t.me/${chat.username})` : `"${chatTitle}"`;
-      sendFormattedMessage(ctx, Number(process.env.TELEGRAM_MAIN_CHAT_ID!), newGroupAddMessage(groupLink));
+      const content = newGroupAddMessage(groupLink);
+      const replyMessage = promoText ? `${content}\n\n ${promoText}` : content;
+      sendFormattedMessage(ctx, Number(process.env.TELEGRAM_MAIN_CHAT_ID!), replyMessage);
     }
   });
 
