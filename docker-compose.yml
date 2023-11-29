@@ -11,8 +11,8 @@ services:
       - index_data:/index_data
     command: uvicorn chromadb.app:app --reload --workers 10 --host 0.0.0.0 --port 8000 --log-config log_config.yml
   firepot_chatgpt_app:
-    image: node:18-alpine
-    command: sh -c "yarn install && yarn run start"
+    image: node:18.18-alpine
+    command: sh -c "apk add --no-cache --virtual .gyp g++ make py3-pip && yarn global add node-gyp && yarn install && yarn run start"
     working_dir: /app
     volumes:
       - ./:/app
