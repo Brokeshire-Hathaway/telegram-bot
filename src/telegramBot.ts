@@ -5,6 +5,8 @@ import { newGroupAddMessage, promoMessage, sponsoredMessage } from "./config.js"
 import { ChatCompletionMessageParam } from "openai/resources/index";
 import MarkdownIt from "markdown-it";
 import { ChatFromGetChat } from "grammy/types";
+import { get } from "http";
+import { getAccountAddress } from "./smartAccount.js";
 
 const promoText = `_・${promoMessage} – ${sponsoredMessage}・_`
 
@@ -23,6 +25,15 @@ export function startTelegramBot() {
       },
     })
   );
+
+  groupBot.command("address", async (ctx) => {
+    console.log(`ctx.from?.id.toString()!: ${ctx.from?.id.toString()!}`);
+
+    const address = await getAccountAddress(ctx.from?.id.toString()!);
+    console.log(`address: ${address}`);
+
+    await ctx.reply(address);
+  });
 
   const emberUserRegex = process.env.NODE_ENV === 'development' ? /.*@ember_dev_bot.*/i : /.*@emberaibot.*/i;
   groupBot.hears(emberUserRegex, async (ctx) => {
@@ -62,6 +73,15 @@ export function startTelegramBot() {
       const replyMessage = promoText ? `${content}\n\n ${promoText}` : content;
       sendFormattedMessage(ctx, Number(process.env.TELEGRAM_MAIN_CHAT_ID!), replyMessage);
     }
+  });
+
+  privateBot.command("address", async (ctx) => {
+    console.log(`ctx.from?.id.toString()!: ${ctx.from?.id.toString()!}`);
+
+    const address = await getAccountAddress(ctx.from?.id.toString()!);
+    console.log(`address: ${address}`);
+
+    await ctx.reply(address);
   });
 
   privateBot.on("message:text", async (ctx) => {
