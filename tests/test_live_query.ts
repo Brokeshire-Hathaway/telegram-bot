@@ -1,4 +1,4 @@
-//import { ChatCompletionFunctions } from "openai";
+/*import { ChatCompletionFunctions } from "openai";
 import { ChatbotBody } from "../chatgpt.js";
 
 async function queryFirepotChatbot(
@@ -41,4 +41,4 @@ async function test_live_query() {
   console.log(res);
 }
 
-test_live_query();
+test_live_query();*/
