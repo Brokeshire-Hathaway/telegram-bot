@@ -1,5 +1,5 @@
 import Fastify from "fastify";
-import chatgptRoutes, { setOpenAiInstance } from "./chatgpt.js";
+import { setOpenAiInstance } from "./chatgpt.js";
 import { createEmbeddings } from "./embeddings.js";
 //import fs from "fs";
 //import path from "path";
@@ -12,12 +12,17 @@ import {
 import dotenv from "dotenv";
 import { HOST, PORT, chunkSize, chunkOverlap } from "./config.js";
 import { startTelegramBot } from "./telegramBot.js";
+import Moralis from "moralis";
 
 async function main() {
   dotenv.config();
 
   setOpenAiInstance();
   startTelegramBot();
+
+  await Moralis.start({
+    apiKey: process.env.MORALIS_API_KEY!,
+  });
 
   /*const documents = fs
     .readFileSync(path.join(__dirname, "../documents.txt"))
@@ -57,7 +62,7 @@ async function main() {
 
   await createEmbeddings(chunks);
 
-  const server = Fastify({ logger: true });
+  /*const server = Fastify({ logger: true });
   server.register(chatgptRoutes);
 
   // 0.0.0.0 because docker
@@ -67,7 +72,9 @@ async function main() {
       server.log.error(err);
       process.exit(1);
     }
-  });
+  });*/
+
+  console.log("\n...ready");
 }
 
 main();
