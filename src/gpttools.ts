@@ -82,46 +82,12 @@ export const tools: ChatCompletionTool[] = [
     {
         type: "function",
         function: {
-            name: "sendTokenPreview",
-            description: "Prepare a transaction to send a token to a recipient and return a preview of what will happen",
+            name: "sendToken",
+            description: "Send a cryptocurrency token to a recipient",
             parameters: {
                 type: "object",
-                properties: {
-                    accountUid: {
-                        type: "string",
-                        description: "Sender account UID",
-                    },
-                    recipient: {
-                        type: "string",
-                        description: "Ethereum address of the recipient",
-                    },
-                    amount: {
-                        type: "string",
-                        description: "Amount of the token to send",
-                    },
-                    tokenAddress: {
-                        type: "string",
-                        description: "Optional address of the token to send. If not specified, the native network token will be sent.",
-                    },
-                },
-                required: ["accountUid", "recipient", "amount"],
-            },
-        },
-    }, 
-    {
-        type: "function",
-        function: {
-            name: "executeTransaction",
-            description: "Execute a transaction from a transaction UUID obtained from sendTokenPreview",
-            parameters: {
-                type: "object",
-                properties: {
-                    transactionUuid: {
-                        type: "string",
-                        description: "UUID of the transaction to execute",
-                    },
-                },
-                required: ["transactionUuid"],
+                properties: {},
+                required: [],
             },
         },
     }, 
@@ -144,9 +110,10 @@ export async function getMarket(args: GetMarketArgs): Promise<CoinGeckoCoinMarke
 
 interface SendTokenPreviewArgs {
     accountUid: string;
-    recipient: `0x${string}`;
+    recipientAddress: `0x${string}`;
     amount: string;
-    token?: `0x${string}`;
+    standardization: "native" | "erc20";
+    tokenAddress?: `0x${string}`;
 }
 
 type TransactionPreview = [accountUid: string, userOp: Partial<UserOperation>];
@@ -155,16 +122,16 @@ const userOps: Record<UUID, TransactionPreview> = {};
 
 export async function sendTokenPreview(args: SendTokenPreviewArgs): Promise<SendTokenPreview> {
     const transactionUuid = randomUUID();
-    const userOp = await prepareSendToken(args.accountUid, args.recipient, PreciseNumber.from(args.amount), args.token);
+    const userOp = await prepareSendToken(args.accountUid, args.recipientAddress, PreciseNumber.from(args.amount), args.tokenAddress);
 
     userOps[transactionUuid] = [args.accountUid, userOp];
 
     const gasFee = calculateGasFee(userOp);
     const totalAmount = formatEther(gasFee.integer + PreciseNumber.from(args.amount).integer);
     return {
-        recipient: args.recipient,
+        recipient: args.recipientAddress,
         amount: args.amount,
-        tokenSymbol: args.token ?? "ETH",
+        tokenSymbol: args.tokenAddress ?? "ETH",
         gasFee: gasFee.toDecimalString(),
         totalAmount,
         transactionUuid

@@ -1,11 +1,11 @@
-import { Bot, Context, session } from "grammy";
-import { ChatGptModel, Conversation as ConvoHistory, chatGippity, getLatestMessageText } from "./chatgpt.js";
+import { Bot, Context, SessionFlavor, session } from "grammy";
+import { AiAssistantConfig, ChatGptModel, Conversation as ConvoHistory, aiAssistant, getLatestMessage, getLatestMessageText, getToolCalls, runTools } from "./chatgpt.js";
 import { limit } from "@grammyjs/ratelimiter";
-import { newGroupAddMessage, promoMessage, sponsoredMessage } from "./config.js";
+import { newGroupAddMessage, promoMessage, sponsoredMessage, systemMessageContent } from "./config.js";
 import { ChatCompletionMessageParam, ChatCompletionUserMessageParam } from "openai/resources/index";
 import MarkdownIt from "markdown-it";
 import { ChatFromGetChat, KeyboardButton, KeyboardButtonRequestUser } from "grammy/types";
-import { WalletTokenBalance, getAccountAddress, getAccountBalances, prepareSendToken, truncateAddress } from "./smartAccount.js";
+import { WalletTokenBalance, getAccountAddress, getAccountBalances } from "./smartAccount.js";
 import { randomInt } from "crypto";
 import {
   type Conversation,
@@ -14,9 +14,13 @@ import {
   createConversation,
 } from "@grammyjs/conversations";
 import PreciseNumber from "./common/tokenMath.js";
-import { send } from "process";
+import { SendTokenCache, sendTokenAgent } from "./features/sendToken/sendTokenAgent.js";
+import { getMarket, tools } from "./gpttools.js";
 
-type MyContext = Context & ConversationFlavor;
+interface SessionData {
+  sendTokenCache?: SendTokenCache;
+}
+type MyContext = Context & SessionFlavor<SessionData> & ConversationFlavor;
 type MyConversation = Conversation<MyContext>;
 
 const promoText = `_・${promoMessage} – ${sponsoredMessage}・_`
@@ -36,7 +40,7 @@ export function startTelegramBot() {
 
   privateBot.use(conversations());
 
-  privateBot.use(createConversation(sendCrypto));
+  privateBot.use(createConversation(sendToken));
 
   bot.use(
     limit({
@@ -59,7 +63,13 @@ export function startTelegramBot() {
 
   const emberUserRegex = process.env.NODE_ENV === 'development' ? /.*@ember_dev_bot.*/i : /.*@emberaibot.*/i;
   groupBot.hears(emberUserRegex, async (ctx) => {
-    await emberReply(ctx, ctx.message?.text ?? "", undefined, promoText);
+    await emberReply(ctx, ctx.message?.text ?? "");
+  });
+
+  groupBot.on("::bot_command", async (ctx) => {
+    const messageText = ctx.message?.text;
+    if (messageText == null) return;
+    await emberReply(ctx, messageText);
   });
 
   groupBot.on("message:text", async (ctx) => {
@@ -70,7 +80,7 @@ export function startTelegramBot() {
     const messageText = ctx.message?.text;
     const replyToText = ctx.message?.reply_to_message?.text;
     const replyToMessage: ChatCompletionMessageParam[] | undefined = replyToText ? [{ role: "assistant", content: replyToText }] : undefined;
-    await emberReply(ctx, messageText, replyToMessage, promoText);
+    await emberReply(ctx, messageText, { conversationHistory: replyToMessage });
   });
 
   groupBot.on("my_chat_member", async (ctx) => {
@@ -101,7 +111,9 @@ export function startTelegramBot() {
   privateBot.command("send", async (ctx) => {
     console.log("conversation");
     console.log(ctx.conversation);
-    await ctx.conversation.enter("sendCrypto");
+    await ctx.conversation.enter("sendToken");
+
+    console.log("Conversation ENDED");
   });
 
   privateBot.command("address", async (ctx) => {
@@ -118,89 +130,75 @@ export function startTelegramBot() {
   });
 
   privateBot.on("message:text", async (ctx) => {
-    await emberReply(ctx, ctx.message.text, undefined, promoText);
+    await emberReply(ctx, ctx.message.text);
   });
 
   bot.start(); // Promise only resolves when bot stops
 }
 
-async function sendCrypto(conversation: MyConversation, ctx: MyContext) {
-  const randomInt32 = randomInt(-2147483648, 2147483647); // 32-bit signed integer
-  const keyboardButtonRequestUser: KeyboardButtonRequestUser = {
-    request_id: randomInt32,
-    user_is_bot: false,
-  };
-  const keyboardButton: KeyboardButton = {
-    text: "Select recipient",
-    request_user: keyboardButtonRequestUser
-  };
-  const selectRecipientMessage = "Please select Telegram user that will receive crypto.";
-  await ctx.reply(selectRecipientMessage, { reply_markup: { keyboard: [[keyboardButton]], one_time_keyboard: true }})
-  const { msg: { user_shared: { user_id: userId } } } = await conversation.waitFor(":user_shared");
-
-  // TODO: get username from user_id if it's even possible
-
+async function sendToken(conversation: MyConversation, ctx: MyContext) {
   const accountUid = ctx.from?.id.toString()!;
-  const senderAddress = await getAccountAddress(accountUid);
-  const recipientAddress = await getAccountAddress(userId.toString());
-  const selectTokenMessage = `Please select token to send from your wallet ||${truncateAddress(senderAddress)}|| to [${recipientAddress}](tg://user?id=${userId})`;
-  await sendFormattedMessage(ctx, ctx.chat!.id, selectTokenMessage);
 
-  const accountBalances = await getAccountBalances(senderAddress);
-  const userBalancesMessage = `__Wallet Token Balances__\n\n${formatAccountBalancesUser(accountBalances)}`;
-  await sendFormattedMessage(ctx, ctx.chat!.id, userBalancesMessage);
+  const sendUserMessage = async (message: string) => {
+    console.log("sendUserMessage");
+    console.log(message);
+    console.log("ctx.chat?.id");
+    console.log(ctx.chat?.id);
+    await sendFormattedMessage(ctx, ctx.chat!.id, message);
+  };
 
-  const { msg: { text: token } } = await conversation.waitFor("message:text");
+  const receiveUserMessage = async () => {
+    const { msg: { text } } = await conversation.waitFor("message:text");
+    return text;
+  };
 
-  const selectAmountMessage = "How much would you like to send?";
-  await ctx.reply(selectAmountMessage);
+  const getRecipientTelegramId = async (selectRecipientMessage: string) => {
+    // TODO: get username from user_id if it's even possible
 
-  const { msg: { text: amount } } = await conversation.waitFor("message:text");
+    const randomInt32 = randomInt(-2147483648, 2147483647); // 32-bit signed integer
+    const keyboardButtonRequestUser: KeyboardButtonRequestUser = {
+      request_id: randomInt32,
+      user_is_bot: false,
+    };
+    const keyboardButton: KeyboardButton = {
+      text: "Select recipient",
+      request_user: keyboardButtonRequestUser
+    };
 
-  /*const transactionPreviewMessage =
-  `Please provide a summary of the transaction you are about to make using the format below.
+    await ctx.reply(selectRecipientMessage, { reply_markup: { keyboard: [[keyboardButton]], one_time_keyboard: true }})
   
-  "You are about to send {amount} {token symbol} to [{recipient address}](tg://user?id=${userId}).
-  
-  Would you like to proceed with this transaction?"`;*/
+    const { msg: { user_shared: { user_id: userId } } } = await conversation.waitFor(":user_shared");
+    return userId.toString();
+  };
 
-  const assistantBalancesMessage = `__Wallet Token Balances__\n\n${formatAccountBalancesAssistant(accountBalances)}`;
-  console.log("assistantBalancesMessage");
-  console.log(assistantBalancesMessage);
-  let messages: ChatCompletionMessageParam[] = [
-    { role: "user", content: "Send token" },
-    { role: "assistant", content: selectRecipientMessage },
-    { role: "user", content: recipientAddress },
-    { role: "system", content: `accountUid: ${accountUid}` },
-    { role: "assistant", content: selectTokenMessage },
-    { role: "assistant", content: assistantBalancesMessage }, // Supply different message to assistant than user to add more context
-    { role: "user", content: token },
-    { role: "assistant", content: selectAmountMessage },
-    { role: "user", content: amount },
-    { role: "system", content: "If the selected token has a standardization value of 'native', then the tokenAddress function parameter will not be provided." },
-  ];
+  const setCache = async <K extends keyof SendTokenCache, V extends SendTokenCache[K]>(key: K, value: V | Promise<V>) => {
+    const partial: Partial<SendTokenCache> = { [key]: await value };
+    conversation.session.sendTokenCache = { ...conversation.session.sendTokenCache, ...partial };
+    return value;
+  };
 
-  const transactionPreviewMessage =
-`Please provide a preview of the transaction I am about to make using the format below.
+  const getCache = () => {
+    return conversation.session.sendTokenCache;
+  };
 
-"You are about to send {amount} {token symbol} to [{recipient address}](tg://user?id=${userId})
+  //const { msg: { user_shared: { user_id: userId } } } = await conversation.waitFor(":user_shared");
+  //const result = await getRecipientTelegramId();
 
-**Subtotal・**{amount} {token symbol}
-**Gas fee・**{gas fee} {token symbol}
-**Total・**{total amount} {token symbol}`;
-  messages = await emberReply(ctx, transactionPreviewMessage, messages, undefined, false, "gpt-3.5-turbo-1106");
-  //messages.push({ role: "assistant", content: emberPreviewReply });
+  const result = await sendTokenAgent({ intent: ctx.msg?.text! }, accountUid, sendUserMessage, receiveUserMessage, getRecipientTelegramId, setCache, getCache);
+  //const result = await conversation.external(() => sendTokenAgent({ intent: ctx.msg?.text! }, accountUid, sendUserMessage, receiveUserMessage, getRecipientTelegramId, setCache, getCache));
+  //const result = await conversation.external(() => "Transaction successful!");
 
-  const proceedMessage = "Would you like to proceed with this transaction?";
-  await ctx.reply(proceedMessage);
-  messages.push({ role: "assistant", content: proceedMessage });
+  // TODO: store callback function in session
 
-  //messages.push({ role: "system", content: "To proceed with this transaction you must use executeTransaction with the transaction UUID parameter retrieved from sendTokenPrepare." });
+  console.log(`result`);
+  console.log(result);
 
-  const { msg: { text: confirmation } } = await conversation.waitFor("message:text");
+  //ctx.session.toolResponse(undefined, new Error("Test error"));
+  //ctx.session.toolResponse(result);
 
-  messages = await emberReply(ctx, confirmation, messages, undefined, false, "gpt-3.5-turbo-1106");
-  //messages.push({ role: "assistant", content: emberSendReply });
+  //return result;
+
+  await emberReply(ctx, result, { model: "gpt-3.5-turbo-1106" });
 }
 
 /*async function emberReply(ctx: any, userContent: string, assistantContent?: string, promoText?: string) {
@@ -222,22 +220,91 @@ async function sendCrypto(conversation: MyConversation, ctx: MyContext) {
   await sendFormattedMessage(ctx, ctx.chat.id, replyMessage);
 }*/
 
-async function emberReply(ctx: any, userContent: string, conversationHistory?: ConvoHistory, promoText?: string, vectorSearch?: boolean, model?: ChatGptModel) {
-  const userMessage: ChatCompletionUserMessageParam = { role: "user", content: userContent };
-  const chatResult = await chatGippity(userMessage, conversationHistory, vectorSearch, model);
-  const content = getLatestMessageText(chatResult) ?? "**Ember is sleeping 😴**";
+interface EmberReplyConfig {
+  conversationHistory?: ConvoHistory;
+  vectorSearch?: boolean;
+  model?: ChatGptModel
+}
+
+async function emberReply(ctx: MyContext, userContent: string, config?: EmberReplyConfig) {
+  let conversation: ConvoHistory = [...config?.conversationHistory ?? [], { role: "user", content: userContent }];
+  let aaConfig: AiAssistantConfig = {
+    systemMessageContent,
+    chatGptModel: config?.model ?? "gpt-4-1106-preview",
+    vectorSearch: config?.vectorSearch,
+    temperature: 0.7,
+    tools: tools,
+  };
+  conversation = await aiAssistant(conversation, aaConfig);
+
+  const latestMessage = getLatestMessage(conversation);
+  const toolCalls = await getToolCalls(latestMessage);
+
+  console.log("emberReply - toolCalls");
+  console.log(toolCalls);
+
+  if (toolCalls != null) {
+    const sendToken = async () => {
+      await ctx.conversation.enter("sendToken"); // Promise resolves before conversations ends
+      return "NO RESPONSE";
+    };
+    const availableFunctions = {
+      sendToken,
+      getMarket
+    }
+    const toolMessages = (await runTools(toolCalls, availableFunctions)).filter((toolMessage) => {
+      console.log("toolMessage.content");
+      console.log(toolMessage.content);
+      console.log(toolMessage.content != null && JSON.parse(toolMessage.content))
+
+      if (toolMessage.content != null && JSON.parse(toolMessage.content).value === "NO RESPONSE") {
+        console.log("Removing tool call from conversation");
+
+        conversation = conversation.map((message) => {
+          console.log("message");
+          console.log(message);
+          const updated = message.role === "assistant" ? { ...message, tool_calls: message.tool_calls?.filter((toolCall) => toolCall.id !== toolMessage.tool_call_id) } : message;
+          console.log("updated");
+          console.log(updated);
+
+          return updated;
+        }).filter((message) => !(message.role === "assistant" && message.tool_calls?.length === 0 && message.content == null));
+        return false;
+      }
+    });
+
+    if (toolMessages.length === 0) {
+      return;
+    }
+
+    console.log("emberReply - toolMessages");
+    console.log(JSON.stringify(toolMessages, undefined, 4));
+
+    conversation.push(...toolMessages);
+
+    aaConfig = {
+      systemMessageContent,
+      chatGptModel: "gpt-3.5-turbo-1106",
+      vectorSearch: false,
+      temperature: 0.7,
+      tools: tools,
+    };
+    conversation = await aiAssistant(conversation, aaConfig);
+  }
+
+
+
+  const content = getLatestMessageText(conversation) ?? "**Ember is sleeping 😴**";
   const replyMessage = promoText ? `${content}\n\n ${promoText}` : content;
 
-  await sendFormattedMessage(ctx, ctx.chat.id, replyMessage);
-
-  return chatResult;
+  await sendFormattedMessage(ctx, ctx.chat!.id, replyMessage);
 }
 
-function formatAccountBalancesUser(accountBalances: WalletTokenBalance[]) {
-  return accountBalances.map((tokenBalance) => `**${tokenBalance.name}・$${PreciseNumber.toDecimalDisplay(tokenBalance.usdBalance, 2)}**\n└ _${PreciseNumber.toDecimalDisplay(tokenBalance.balance, undefined, tokenBalance.decimals)} ${tokenBalance.symbol}_`).join("\n\n");
+export function formatAccountBalancesUser(accountBalances: WalletTokenBalance[]) {
+  return accountBalances.map((tokenBalance) => `**${tokenBalance.name}${tokenBalance.usdBalance ? "・$" + PreciseNumber.toDecimalDisplay(tokenBalance.usdBalance, 2) : ""}**\n└ _${PreciseNumber.toDecimalDisplay(tokenBalance.balance, undefined, tokenBalance.decimals)} ${tokenBalance.symbol}_`).join("\n\n");
 }
 
-function formatAccountBalancesAssistant(accountBalances: WalletTokenBalance[]) {
+export function formatAccountBalancesAssistant(accountBalances: WalletTokenBalance[]) {
   return JSON.stringify(accountBalances.map((tokenBalance) => (
     {
       name: tokenBalance.name,
@@ -245,7 +312,7 @@ function formatAccountBalancesAssistant(accountBalances: WalletTokenBalance[]) {
       standardization: tokenBalance.standardization,
       tokenAddress: tokenBalance.token_address,
       balance: PreciseNumber.toDecimalDisplay(tokenBalance.balance, undefined, tokenBalance.decimals),
-      usdBalance: PreciseNumber.toDecimalDisplay(tokenBalance.usdBalance, 2),
+      usdBalance: tokenBalance.usdBalance ? PreciseNumber.toDecimalDisplay(tokenBalance.usdBalance, 2) : null,
     }
   )));
 }

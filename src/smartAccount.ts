@@ -9,7 +9,7 @@ import { createWalletClient, encodeFunctionData, formatEther, getContract, http,
 import { privateKeyToAccount } from "viem/accounts";
 import { Signer } from "ethers";
 import Moralis from "moralis";
-import { EvmChain, GetWalletTokenBalancesJSONResponse } from "moralis/common-evm-utils";
+import { EvmChain, GetTokenPriceResponseAdapter, GetWalletTokenBalancesJSONResponse } from "moralis/common-evm-utils";
 import { UnwrapArray } from "./common/types.js";
 import PreciseNumber from "./common/tokenMath.js";
 import { BigNumber } from 'ethers';
@@ -27,7 +27,7 @@ type GetWalletTokenBalance = {
     thumbnail?: string | undefined;
     verified_collection?: boolean | undefined;
 };
-export type WalletTokenBalance = GetWalletTokenBalance & { usdBalance: string };
+export type WalletTokenBalance = GetWalletTokenBalance & { usdBalance: string | null };
 
 const biconomyTestnet = ChainId.GOERLI;
 
@@ -93,7 +93,9 @@ export async function getAccountBalances(address: `0x${string}`): Promise<Wallet
         address,
         chain: moralisTestnet,
     });
-    const tokenBalances: GetWalletTokenBalance[] = tokenBalancesResponse.toJSON().map((tokenBalance) => ({ ...tokenBalance, standardization: "erc20" }));
+    console.log(`tokenBalancesResponse`);
+    console.log(tokenBalancesResponse);
+    const tokenBalances: GetWalletTokenBalance[] = tokenBalancesResponse.toJSON().filter(tokenBalance => !tokenBalance.possible_spam).map(tokenBalance => ({ ...tokenBalance, standardization: "erc20" }));
     const usdTokenBalances = await getUsdTokenBalances(tokenBalances);
 
     return [...usdNativeBalance, ...usdTokenBalances];
@@ -139,10 +141,16 @@ export async function sendTransaction(accountUid: string, userOp: Partial<UserOp
 async function getUsdTokenBalances(balances: GetWalletTokenBalance[]): Promise<WalletTokenBalance[]> {
     return await Promise.all(balances.map(async (tokenBalance) => {
         const address = tokenBalance.token_address ?? wrappedNativeToken;
-        const tokenPriceResponse = await Moralis.EvmApi.token.getTokenPrice({
-            address,
-            chain: moralisMainnet,
-        });
+        let tokenPriceResponse: GetTokenPriceResponseAdapter;
+        try {
+            tokenPriceResponse = await Moralis.EvmApi.token.getTokenPrice({
+                address,
+                chain: moralisMainnet,
+            });
+        } catch (error) {
+            console.warn(`# Error\n${error}`);
+            return { ...tokenBalance, usdBalance: null };
+        }
         const tokenPrice = String(tokenPriceResponse.toJSON().usdPrice);
         console.log(`tokenPriceResponse`);
         console.log(tokenPriceResponse.toJSON());
