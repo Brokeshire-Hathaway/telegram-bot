@@ -159,11 +159,17 @@ export async function runTools(toolCalls: ChatCompletionMessageToolCall[], avail
     const functionArgs = JSON.parse(toolCall.function.arguments);
     return functionToCall(functionArgs);
   }));
+
+  console.log(`runTools - functionResponses`);
+  console.log(functionResponses);
+
   return functionResponses.map((functionResponse, index) => {
     const message: ChatCompletionToolMessageParam = {
       tool_call_id: toolCalls[index].id,
       role: "tool",
-      content: JSON.stringify(functionResponse),
+      content: JSON.stringify(functionResponse, (_, value) => (
+        value instanceof Error ? value.message : value
+      ))
     };
     return message;
   });

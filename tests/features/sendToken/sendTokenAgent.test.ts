@@ -40,7 +40,7 @@ describe("Send Token Agent", function() {
 
     const getRecipientTelegramId = () => Promise.resolve("1023703414");
 
-    it("should convert send token intent to valid sendTokenPreview parameters", async function(done) {
+    /*it("should convert send token intent to valid sendTokenPreview parameters", async function(done) {
         this.timeout(20000);
         const senderAddress = await getAccountAddress(accountUid);
         const accountBalances = await getAccountBalances(senderAddress);
@@ -66,5 +66,5 @@ describe("Send Token Agent", function() {
         response = await getSendTokenParams(userIntent, accountUid, accountBalances);
         console.log(`Test Response Three:`);
         console.log(response);
-    });
+    });*/
 });

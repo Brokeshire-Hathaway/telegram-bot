@@ -28,8 +28,18 @@ export default class PreciseNumber {
         return amount.includes(".") ? new PreciseNumber(parseUnits(amount, decimals), decimals) : new PreciseNumber(BigInt(amount), decimals);
     };
 
+    static bigAdd(a: PreciseNumber, b: PreciseNumber, outputPrecision = 18): PreciseNumber {
+        const addition = a.integer + b.integer;
+        const decimalString = formatUnits(addition, b.decimals);
+        const integer = parseUnits(decimalString, outputPrecision);
+        return new PreciseNumber(integer, outputPrecision);
+    };
+
     static bigMultiply(a: PreciseNumber, b: PreciseNumber, outputPrecision = 18): PreciseNumber {
         const product = a.integer * b.integer;
+        console.log(`product`);
+        console.log(product);
+
         const decimalString = formatUnits(product / 10n**BigInt(a.decimals), b.decimals);
         const integer = parseUnits(decimalString, outputPrecision);
         return new PreciseNumber(integer, outputPrecision);

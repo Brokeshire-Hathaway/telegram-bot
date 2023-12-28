@@ -52,15 +52,6 @@ interface CoinGeckoCoinMarket {
 
 type CoinGeckoMarketResponse = Array<CoinGeckoCoinMarket>;
 
-interface SendTokenPreview {
-    recipient: `0x${string}`;
-    amount: string;
-    tokenSymbol: string;
-    gasFee: string;
-    totalAmount: string;
-    transactionUuid: UUID;
-}
-
 export const tools: ChatCompletionTool[] = [
     {
         type: "function",
@@ -116,19 +107,25 @@ interface SendTokenPreviewArgs {
     tokenAddress?: `0x${string}`;
 }
 
-type TransactionPreview = [accountUid: string, userOp: Partial<UserOperation>];
+interface SendTokenPreview {
+    recipient: `0x${string}`;
+    amount: string;
+    tokenSymbol: string;
+    gasFee: string;
+    totalAmount: string;
+    transactionUuid: UUID;
+}
+
+type TransactionPreview = [accountUid: string, preview: SendTokenPreview, userOp: Partial<UserOperation>];
 
 const userOps: Record<UUID, TransactionPreview> = {};
 
 export async function sendTokenPreview(args: SendTokenPreviewArgs): Promise<SendTokenPreview> {
     const transactionUuid = randomUUID();
     const userOp = await prepareSendToken(args.accountUid, args.recipientAddress, PreciseNumber.from(args.amount), args.tokenAddress);
-
-    userOps[transactionUuid] = [args.accountUid, userOp];
-
     const gasFee = calculateGasFee(userOp);
     const totalAmount = formatEther(gasFee.integer + PreciseNumber.from(args.amount).integer);
-    return {
+    const sendTokenPreview: SendTokenPreview = {
         recipient: args.recipientAddress,
         amount: args.amount,
         tokenSymbol: args.tokenAddress ?? "ETH",
@@ -136,19 +133,64 @@ export async function sendTokenPreview(args: SendTokenPreviewArgs): Promise<Send
         totalAmount,
         transactionUuid
     };
+
+    userOps[transactionUuid] = [args.accountUid, sendTokenPreview, userOp];
+
+    return sendTokenPreview;
 }
 interface ExecuteTransactionArgs {
     transactionUuid: UUID;
 }
 
+interface UserReceipt {
+    status: "pending" | "success" | "failure";
+    recipient: `0x${string}`;
+    amount: string;
+    tokenSymbol: string;
+    gasFee: string;
+    totalAmount: string;
+    transactionHash: string;
+    transactionUuid: UUID;
+    reason?: string;
+}
+
+const userOpReceipts: Record<UUID, UserReceipt> = {};
+
 export async function executeTransaction(args: ExecuteTransactionArgs) {
     const txPreview = userOps[args.transactionUuid];
+
     if (!txPreview) {
         throw new Error(`Transaction UUID "${args.transactionUuid}" not found.`);
     }
-    const receipt = await sendTransaction(txPreview[0], txPreview[1]);
-    return receipt;
-}
+
+    const userOpReceipt = await sendTransaction(txPreview[0], txPreview[2]);
+    console.log(`executeTransaction - userOpReceipt`);
+    console.log(userOpReceipt);
+
+    console.log(`executeTransaction - userOpReceipt.actualGasUsed`);
+    console.log(userOpReceipt.actualGasUsed);
+    console.log(String(userOpReceipt.actualGasUsed));
+
+    const bigGasFee = PreciseNumber.from(String(userOpReceipt.actualGasCost))
+    const userReceipt: UserReceipt = {
+        status: userOpReceipt.success ? "success" : "failure",
+        recipient: txPreview[1].recipient,
+        amount: txPreview[1].amount,
+        tokenSymbol: txPreview[1].tokenSymbol,
+        gasFee: bigGasFee.toDecimalDisplay(8),
+        totalAmount: PreciseNumber.bigAdd(PreciseNumber.from(txPreview[1].amount), bigGasFee).toDecimalDisplay(8),
+        transactionHash: userOpReceipt.receipt.transactionHash,
+        transactionUuid: args.transactionUuid,
+        reason: userOpReceipt.reason,
+    };
+
+    userOpReceipts[args.transactionUuid] = userReceipt;
+
+    console.log(`executeTransaction - userReceipt`);
+    console.log(userReceipt);
+
+    return userReceipt;
+};
 
 async function getTokenIdFromCoingecko(tokenSearch: string): Promise<CoinGeckoSearchCoin> {
     const response = await fetch(`https://api.coingecko.com/api/v3/search?query=${tokenSearch}`);
@@ -160,7 +202,7 @@ async function getTokenIdFromCoingecko(tokenSearch: string): Promise<CoinGeckoSe
         throw new Error(`Token "${tokenSearch}" not found.`);
     }
     return searchRes.coins[0];
-}
+};
 
 async function getMarketFromCoingecko(tokenId: string): Promise<CoinGeckoCoinMarket> {
     const response = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${tokenId}&order=market_cap_desc&per_page=1&page=1&sparkline=false&price_change_percentage=24h%2C7d&locale=en`);

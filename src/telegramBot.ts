@@ -2,7 +2,7 @@ import { Bot, Context, SessionFlavor, session } from "grammy";
 import { AiAssistantConfig, ChatGptModel, Conversation as ConvoHistory, aiAssistant, getLatestMessage, getLatestMessageText, getToolCalls, runTools } from "./chatgpt.js";
 import { limit } from "@grammyjs/ratelimiter";
 import { newGroupAddMessage, promoMessage, sponsoredMessage, systemMessageContent } from "./config.js";
-import { ChatCompletionMessageParam, ChatCompletionUserMessageParam } from "openai/resources/index";
+import { ChatCompletionMessageParam, ChatCompletionTool, ChatCompletionUserMessageParam } from "openai/resources/index";
 import MarkdownIt from "markdown-it";
 import { ChatFromGetChat, KeyboardButton, KeyboardButtonRequestUser } from "grammy/types";
 import { WalletTokenBalance, getAccountAddress, getAccountBalances } from "./smartAccount.js";
@@ -198,7 +198,7 @@ async function sendToken(conversation: MyConversation, ctx: MyContext) {
 
   //return result;
 
-  await emberReply(ctx, result, { model: "gpt-3.5-turbo-1106" });
+  await emberReply(ctx, `Give me a summary of my transaction from the following results\n---\n# Results\n${result}`, { temperature: 0, tools: undefined });
 }
 
 /*async function emberReply(ctx: any, userContent: string, assistantContent?: string, promoText?: string) {
@@ -223,7 +223,9 @@ async function sendToken(conversation: MyConversation, ctx: MyContext) {
 interface EmberReplyConfig {
   conversationHistory?: ConvoHistory;
   vectorSearch?: boolean;
-  model?: ChatGptModel
+  model?: ChatGptModel;
+  temperature?: number;
+  tools?: ChatCompletionTool[];
 }
 
 async function emberReply(ctx: MyContext, userContent: string, config?: EmberReplyConfig) {
@@ -232,8 +234,8 @@ async function emberReply(ctx: MyContext, userContent: string, config?: EmberRep
     systemMessageContent,
     chatGptModel: config?.model ?? "gpt-4-1106-preview",
     vectorSearch: config?.vectorSearch,
-    temperature: 0.7,
-    tools: tools,
+    temperature: config?.temperature ?? 0.7,
+    tools: config?.tools ?? tools,
   };
   conversation = await aiAssistant(conversation, aaConfig);
 

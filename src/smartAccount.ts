@@ -1,7 +1,7 @@
 import { BiconomySmartAccountV2, DEFAULT_ENTRYPOINT_ADDRESS } from "@biconomy/account"
 import { ECDSAOwnershipValidationModule, DEFAULT_ECDSA_OWNERSHIP_MODULE, ERC20_ABI } from "@biconomy/modules";
 import { ChainId, Transaction, UserOperation } from "@biconomy/core-types"
-import { IBundler, Bundler } from '@biconomy/bundler'
+import { IBundler, Bundler, UserOpReceipt } from '@biconomy/bundler'
 import { IPaymaster, BiconomyPaymaster } from '@biconomy/paymaster'
 import { WalletClientSigner, LocalAccountSigner } from "@alchemy/aa-core";
 import derivePrivateKey from "./derivePrivateKey.js";
@@ -133,9 +133,18 @@ export async function sendTransaction(accountUid: string, userOp: Partial<UserOp
     const smartAccount = await getSmartAccount(accountUid);
     const userOpResponse = await smartAccount.sendUserOp(userOp);
     console.log("userOpHash", userOpResponse);
-    const { receipt } = await userOpResponse.wait(1);
-    console.log("txHash", receipt.transactionHash);
-    return receipt;
+
+    let userOpReceipt: UserOpReceipt;
+    try {
+        userOpReceipt = await userOpResponse.wait(1);
+    } catch (error) {
+        console.warn(`# Error\n${error}`);
+
+        userOpReceipt = await bundler.getUserOpReceipt(userOpResponse.userOpHash);
+    }
+
+    console.log("txHash", userOpReceipt.receipt.transactionHash);
+    return userOpReceipt;
 }
 
 async function getUsdTokenBalances(balances: GetWalletTokenBalance[]): Promise<WalletTokenBalance[]> {
