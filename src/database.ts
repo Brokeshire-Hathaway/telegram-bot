@@ -16,7 +16,7 @@ async function getDbClient(): Promise<ChromaClient> {
     client = new ChromaClient({
       // Thanks to docker compose putting this app and the chroma_server on
       // the same network, chroma_server resolves to the chroma_server IP
-      path: "http://chroma_server:8000",
+      path: `http://chroma_server:${process.env.CHROMA_PORT!}`,
     });
     while (true) {
       try {

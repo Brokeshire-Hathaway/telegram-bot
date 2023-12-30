@@ -6,7 +6,7 @@ services:
     environment:
       - NODE_ENV=production
     ports:
-      - "3002:3002"
+      - "3001:3001"
     restart: always
     logging:
       options:
@@ -16,7 +16,7 @@ services:
     extends:
       file: docker-compose.yml
       service: chroma_server
-    command: uvicorn chromadb.app:app --reload --workers 10 --host 0.0.0.0 --port 8002 --log-config log_config.yml
+    command: uvicorn chromadb.app:app --reload --workers 10 --host 0.0.0.0 --port 8001 --log-config log_config.yml
 volumes:
   index_data:
     driver: local

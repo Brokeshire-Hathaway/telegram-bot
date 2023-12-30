@@ -28,19 +28,16 @@ const promoText = `_・${promoMessage} – ${sponsoredMessage}・_`
 export function startTelegramBot() {
   const bot = new Bot<MyContext>(process.env.TELEGRAM_BOT_TOKEN!);
 
-  const privateBot = bot.chatType("private");
-  const groupBot = bot.chatType(["group", "supergroup"]);
-
-  privateBot.use(session({
+  bot.use(session({
     initial() {
       // return empty object for now
       return {};
     },
   }));
 
-  privateBot.use(conversations());
+  bot.use(conversations());
 
-  privateBot.use(createConversation(sendToken));
+  bot.use(createConversation(sendToken));
 
   bot.use(
     limit({
@@ -52,35 +49,53 @@ export function startTelegramBot() {
     })
   );
 
-  groupBot.command("address", async (ctx) => {
+  bot.command("address", async (ctx) => {
+    console.log(`ctx.from?.id.toString()!: ${ctx.from?.id.toString()!}`);
+    const address = await getAccountAddress(ctx.from?.id.toString()!);
+    await ctx.reply(address);
+  });
+
+  bot.command("balance", async (ctx) => {
+    const address = await getAccountAddress(ctx.from?.id.toString()!);
+    const balances = await getAccountBalances(address);
+    const markdownBalances = formatAccountBalancesUser(balances);
+    await sendFormattedMessage(ctx, ctx.chat!.id, markdownBalances);
+  });
+
+  const groupBot = bot.chatType(["group", "supergroup"]);
+
+  const groupBotTools = tools.filter((tool) => tool.function.name === "getMarket");
+
+  /*groupBot.command("address", async (ctx) => {
     console.log(`ctx.from?.id.toString()!: ${ctx.from?.id.toString()!}`);
 
     const address = await getAccountAddress(ctx.from?.id.toString()!);
     console.log(`address: ${address}`);
 
     await ctx.reply(address);
-  });
+  });*/
 
-  const emberUserRegex = process.env.NODE_ENV === 'development' ? /.*@ember_dev_bot.*/i : /.*@emberaibot.*/i;
+  //const emberUserRegex = process.env.NODE_ENV === 'development' ? /.*@ember_dev_bot.*/i : /.*@emberaibot.*/i;
+  const emberUserRegex = new RegExp(`.*@${process.env.TELEGRAM_BOT_USERNAME!}.*`, "i");
   groupBot.hears(emberUserRegex, async (ctx) => {
-    await emberReply(ctx, ctx.message?.text ?? "");
+    await emberReply(ctx, ctx.message?.text ?? "", { tools: groupBotTools });
   });
 
   groupBot.on("::bot_command", async (ctx) => {
     const messageText = ctx.message?.text;
     if (messageText == null) return;
-    await emberReply(ctx, messageText);
+    await emberReply(ctx, messageText, { tools: groupBotTools });
   });
 
   groupBot.on("message:text", async (ctx) => {
     const replyMessageUsername = ctx.message?.reply_to_message?.from?.username;
-    const replyMessageIsEmber = replyMessageUsername === (process.env.NODE_ENV === 'development' ? "Ember_dev_bot" : "EmberAIBot");
+    const replyMessageIsEmber = replyMessageUsername === process.env.TELEGRAM_BOT_USERNAME!;
     if (!replyMessageIsEmber) return;
 
     const messageText = ctx.message?.text;
     const replyToText = ctx.message?.reply_to_message?.text;
     const replyToMessage: ChatCompletionMessageParam[] | undefined = replyToText ? [{ role: "assistant", content: replyToText }] : undefined;
-    await emberReply(ctx, messageText, { conversationHistory: replyToMessage });
+    await emberReply(ctx, messageText, { conversationHistory: replyToMessage, tools: groupBotTools });
   });
 
   groupBot.on("my_chat_member", async (ctx) => {
@@ -90,7 +105,7 @@ export function startTelegramBot() {
     console.log(ctx.myChatMember);
 
     const newMemberUsername = ctx.myChatMember.new_chat_member.user.username;
-    const newMemberIsEmber = newMemberUsername === (process.env.NODE_ENV === 'development' ? "Ember_dev_bot" : "EmberAIBot");
+    const newMemberIsEmber = newMemberUsername === process.env.TELEGRAM_BOT_USERNAME!;
     const newMemberStatus = ctx.myChatMember.new_chat_member.status;
     const statusIsMember = newMemberStatus === "member";
 
@@ -108,7 +123,9 @@ export function startTelegramBot() {
     }
   });
 
-  privateBot.command("send", async (ctx) => {
+  const privateBot = bot.chatType("private");
+
+  /*privateBot.command("send", async (ctx) => {
     console.log("conversation");
     console.log(ctx.conversation);
     await ctx.conversation.enter("sendToken");
@@ -127,7 +144,7 @@ export function startTelegramBot() {
     const balances = await getAccountBalances(address);
     const markdownBalances = formatAccountBalancesUser(balances);
     await sendFormattedMessage(ctx, ctx.chat!.id, markdownBalances);
-  });
+  });*/
 
   privateBot.on("message:text", async (ctx) => {
     await emberReply(ctx, ctx.message.text);
