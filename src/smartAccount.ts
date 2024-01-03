@@ -1,7 +1,7 @@
 import { BiconomySmartAccountV2, DEFAULT_ENTRYPOINT_ADDRESS } from "@biconomy/account"
 import { ECDSAOwnershipValidationModule, DEFAULT_ECDSA_OWNERSHIP_MODULE, ERC20_ABI } from "@biconomy/modules";
 import { ChainId, Transaction, UserOperation } from "@biconomy/core-types"
-import { IBundler, Bundler, UserOpReceipt } from '@biconomy/bundler'
+import { IBundler, Bundler, UserOpReceipt, UserOpResponse } from '@biconomy/bundler'
 import { IPaymaster, BiconomyPaymaster } from '@biconomy/paymaster'
 import { WalletClientSigner, LocalAccountSigner } from "@alchemy/aa-core";
 import derivePrivateKey from "./derivePrivateKey.js";
@@ -29,11 +29,12 @@ type GetWalletTokenBalance = {
 };
 export type WalletTokenBalance = GetWalletTokenBalance & { usdBalance: string | null };
 
-const biconomyTestnet = ChainId.GOERLI;
+const biconomyTestnet = 11155111 as ChainId;
 
 // create instance of bundler
 const bundler: IBundler = new Bundler({
-    bundlerUrl: `https://bundler.biconomy.io/api/v2/${biconomyTestnet}/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44`,
+    //bundlerUrl: `https://bundler.biconomy.io/api/v2/${biconomyTestnet}/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44`, // Doesn't work with Sepolia
+    bundlerUrl: "https://bundler.biconomy.io/api/v2/11155111/BBagqibhs.HI7fopYh-iJkl-45ic-afU9-6877f7gaia78Cv",
     chainId: biconomyTestnet,
     entryPointAddress: DEFAULT_ENTRYPOINT_ADDRESS,
 })
@@ -53,6 +54,7 @@ export async function getSmartAccount(uid: string) {
         });
     const biconomyAccount = await BiconomySmartAccountV2.create({
         chainId: biconomyTestnet,
+        rpcUrl: "https://rpc.sepolia.org",
         bundler: bundler,
         //paymaster: paymaster,
         entryPointAddress: DEFAULT_ENTRYPOINT_ADDRESS,
@@ -69,8 +71,8 @@ export async function getAccountAddress(uid: string): Promise<`0x${string}`> {
 
 // https://docs.moralis.io/supported-chains
 const moralisMainnet = EvmChain.ETHEREUM;
-const moralisTestnet = EvmChain.GOERLI;
-const wrappedNativeToken = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
+const moralisTestnet = EvmChain.SEPOLIA;
+const wrappedNativeToken = "0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9";
 
 export async function getAccountBalances(address: `0x${string}`): Promise<WalletTokenBalance[]> {
     const nativeBalanceResponse = await Moralis.EvmApi.balance.getNativeBalance({
@@ -131,18 +133,33 @@ export async function prepareSendToken(accountUid: string, recipientAddress: `0x
 
 export async function sendTransaction(accountUid: string, userOp: Partial<UserOperation>) {
     const smartAccount = await getSmartAccount(accountUid);
-    const userOpResponse = await smartAccount.sendUserOp(userOp);
+
+    console.log(`smartAccount.bundler`);
+    console.log(smartAccount.bundler);
+
+    let userOpResponse: UserOpResponse;
+    try {
+        userOpResponse = await smartAccount.sendUserOp(userOp);
+    } catch (error) {
+        console.error(`=== Error: smartAccount.sendUserOp(userOp) ===`);
+        console.error(error);
+        throw error;
+    }
     console.log("userOpHash", userOpResponse);
 
     let userOpReceipt: UserOpReceipt;
     try {
         userOpReceipt = await userOpResponse.wait(1);
     } catch (error) {
-        console.warn(`# Error\n${error}`);
+        console.warn(`=== Error: userOpResponse.wait(1) ===`);
+        console.warn(error);
 
         userOpReceipt = await bundler.getUserOpReceipt(userOpResponse.userOpHash);
-    }
 
+        console.log(`userOpReceipt`);
+        console.log(userOpReceipt);
+    }
+    
     console.log("txHash", userOpReceipt.receipt.transactionHash);
     return userOpReceipt;
 }

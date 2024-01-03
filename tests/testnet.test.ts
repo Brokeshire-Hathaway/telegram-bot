@@ -42,7 +42,7 @@ chai.should();
     });
 });*/
 
-describe("Biconomy Testnet (Ethereum Goerli)", () => {
+describe("Biconomy Testnet (Ethereum Sepolia)", () => {
     before(async function () {
         dotenv.config();
     });
@@ -53,15 +53,15 @@ describe("Biconomy Testnet (Ethereum Goerli)", () => {
 
     /*it("should complete transaction using lower abstraction functions", async () => {
         const userOp = await prepareSendToken(telegramUserId, recipientAddress, amount);
-        const receipt = await executeSendToken(telegramUserId, userOp);
-        console.log("receipt");
-        console.log(receipt);
-    });
-
-    it("should complete transaction using GPT tools", async () => {
-        const preview = await sendTokenPreview({ accountUid: telegramUserId, recipient: recipientAddress, amount: amount.toDecimalString() });
-        const receipt = await sendToken({ transactionUuid: preview.transactionUuid });
+        const receipt = await sendTransaction(telegramUserId, userOp);
         console.log("receipt");
         console.log(receipt);
     });*/
+
+    it("should complete transaction using GPT tools", async () => {
+        const preview = await sendTokenPreview({ accountUid: telegramUserId, recipientAddress: recipientAddress, amount: amount.toDecimalString(), standardization: "native" });
+        const receipt = await executeTransaction({ transactionUuid: preview.transactionUuid });
+        console.log("receipt");
+        console.log(receipt);
+    });
 });
