@@ -9,13 +9,13 @@ import {
   RecursiveCharacterTextSplitter,
   TokenTextSplitter,
 } from "langchain/text_splitter";
-import dotenv from "dotenv";
+//import dotenv from "dotenv";
 import { HOST, PORT, chunkSize, chunkOverlap } from "./config.js";
 import { startTelegramBot } from "./telegramBot.js";
 import Moralis from "moralis";
 
 async function main() {
-  dotenv.config();
+  //dotenv.config();
 
   setOpenAiInstance();
   startTelegramBot();

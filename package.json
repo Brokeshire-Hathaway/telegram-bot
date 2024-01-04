@@ -39,7 +39,9 @@
     "typescript": "^5.1.6"
   },
   "scripts": {
-    "start": "ts-node src/index.ts",
+    "prod": "ts-node -r dotenv/config src/index.ts dotenv_config_path=scripts/prod_env/.env",
+    "stage": "ts-node -r dotenv/config src/index.ts dotenv_config_path=scripts/stage_env/.env",
+    "dev": "ts-node -r dotenv/config src/index.ts dotenv_config_path=scripts/dev_env/.env",
     "test": "mocha",
     "clean-test": "rm -Rf node_modules && yarn install && mocha"
   }
