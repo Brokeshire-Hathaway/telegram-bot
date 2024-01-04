@@ -40,6 +40,7 @@
   },
   "scripts": {
     "start": "ts-node src/index.ts",
-    "test": "mocha"
+    "test": "mocha",
+    "clean-test": "rm -Rf node_modules && yarn install && mocha"
   }
 }
