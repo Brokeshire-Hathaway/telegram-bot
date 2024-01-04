@@ -1,5 +1,5 @@
 import { BiconomySmartAccountV2, DEFAULT_ENTRYPOINT_ADDRESS } from "@biconomy/account"
-import { ECDSAOwnershipValidationModule, DEFAULT_ECDSA_OWNERSHIP_MODULE, ERC20_ABI } from "@biconomy/modules";
+import { ECDSAOwnershipValidationModule, DEFAULT_ECDSA_OWNERSHIP_MODULE } from "@biconomy/modules";
 import { ChainId, Transaction, UserOperation } from "@biconomy/core-types"
 import { IBundler, Bundler, UserOpReceipt, UserOpResponse, UserOpStatus } from '@biconomy/bundler'
 import { IPaymaster, BiconomyPaymaster, SponsorUserOperationDto, PaymasterMode, IHybridPaymaster } from '@biconomy/paymaster'
@@ -13,6 +13,7 @@ import { EvmChain, GetTokenPriceResponseAdapter, GetWalletTokenBalancesJSONRespo
 import { UnwrapArray } from "./common/types.js";
 import PreciseNumber from "./common/tokenMath.js";
 import { BigNumber } from 'ethers';
+import { erc20Abi } from 'abitype/abis'
 
 type TokenStandardization = "erc20" | "native";
 type GetWalletTokenBalance = {
@@ -108,7 +109,7 @@ export async function prepareSendToken(accountUid: string, recipientAddress: `0x
     let transaction: Transaction;
     if (tokenAddress) {
         const data = encodeFunctionData({
-            abi: ERC20_ABI,
+            abi: erc20Abi,
             functionName: 'transfer',
             args: [recipientAddress, amount.integer]
         });
