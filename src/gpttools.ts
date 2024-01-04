@@ -171,7 +171,7 @@ export async function executeTransaction(args: ExecuteTransactionArgs) {
     console.log(userOpReceipt.actualGasUsed);
     console.log(String(userOpReceipt.actualGasUsed));
 
-    const bigGasFee = PreciseNumber.from(String(userOpReceipt.actualGasCost))
+    const bigGasFee = PreciseNumber.from(userOpReceipt.paymaster === "0x" ? "0" : String(userOpReceipt.actualGasCost))
     const userReceipt: UserReceipt = {
         status: userOpReceipt.success ? "success" : "failure",
         recipient: txPreview[1].recipient,

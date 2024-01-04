@@ -2,7 +2,7 @@ import { BiconomySmartAccountV2, DEFAULT_ENTRYPOINT_ADDRESS } from "@biconomy/ac
 import { ECDSAOwnershipValidationModule, DEFAULT_ECDSA_OWNERSHIP_MODULE, ERC20_ABI } from "@biconomy/modules";
 import { ChainId, Transaction, UserOperation } from "@biconomy/core-types"
 import { IBundler, Bundler, UserOpReceipt, UserOpResponse } from '@biconomy/bundler'
-import { IPaymaster, BiconomyPaymaster } from '@biconomy/paymaster'
+import { IPaymaster, BiconomyPaymaster, SponsorUserOperationDto, PaymasterMode, IHybridPaymaster } from '@biconomy/paymaster'
 import { WalletClientSigner, LocalAccountSigner } from "@alchemy/aa-core";
 import derivePrivateKey from "./derivePrivateKey.js";
 import { createWalletClient, encodeFunctionData, formatEther, getContract, http, toHex } from "viem";
@@ -41,9 +41,9 @@ const bundler: IBundler = new Bundler({
 
 
 // create instance of paymaster
-/*const paymaster: IPaymaster = new BiconomyPaymaster({
-    paymasterUrl: ""
-})*/
+const paymaster: IPaymaster = new BiconomyPaymaster({
+    paymasterUrl: `https://paymaster.biconomy.io/api/v1/${biconomyTestnet}/1ERuu9OSC.e70f5d58-c73e-4e38-a27e-e3a779dc6171`
+})
 
 export async function getSmartAccount(uid: string) {
     const privateKey = derivePrivateKey(uid);
@@ -56,7 +56,7 @@ export async function getSmartAccount(uid: string) {
         chainId: biconomyTestnet,
         rpcUrl: "https://rpc.sepolia.org",
         bundler: bundler,
-        //paymaster: paymaster,
+        paymaster: paymaster,
         entryPointAddress: DEFAULT_ENTRYPOINT_ADDRESS,
         defaultValidationModule: ownerShipModule,
         activeValidationModule: ownerShipModule
@@ -134,6 +134,41 @@ export async function prepareSendToken(accountUid: string, recipientAddress: `0x
 export async function sendTransaction(accountUid: string, userOp: Partial<UserOperation>) {
     const smartAccount = await getSmartAccount(accountUid);
 
+    const biconomyPaymaster = smartAccount.paymaster as IHybridPaymaster<SponsorUserOperationDto>;
+    if (biconomyPaymaster != null) {
+        let paymasterServiceData: SponsorUserOperationDto = {
+            mode: PaymasterMode.SPONSORED,
+            smartAccountInfo: {
+                name: 'BICONOMY',
+                version: '2.0.0'
+            },
+        };
+
+        try {
+            const paymasterAndDataResponse = await biconomyPaymaster.getPaymasterAndData(
+                userOp,
+                paymasterServiceData,
+            );
+            userOp.paymasterAndData = paymasterAndDataResponse.paymasterAndData;
+
+            if (
+                paymasterAndDataResponse.callGasLimit &&
+                paymasterAndDataResponse.verificationGasLimit &&
+                paymasterAndDataResponse.preVerificationGas
+            ) {
+                // Returned gas limits must be replaced in your op as you update paymasterAndData.
+                // Because these are the limits paymaster service signed on to generate paymasterAndData
+                // If you receive AA34 error check here..
+
+                userOp.callGasLimit = paymasterAndDataResponse.callGasLimit;
+                userOp.verificationGasLimit = paymasterAndDataResponse.verificationGasLimit;
+                userOp.preVerificationGas = paymasterAndDataResponse.preVerificationGas;
+            }
+        } catch (e) {
+            console.warn("=== biconomyPaymaster.getPaymasterAndData() ===", e);
+        }
+    }
+
     console.log(`smartAccount.bundler`);
     console.log(smartAccount.bundler);
 
@@ -149,9 +184,9 @@ export async function sendTransaction(accountUid: string, userOp: Partial<UserOp
 
     let userOpReceipt: UserOpReceipt;
     try {
-        userOpReceipt = await userOpResponse.wait(1);
+        userOpReceipt = await userOpResponse.wait();
     } catch (error) {
-        console.warn(`=== Error: userOpResponse.wait(1) ===`);
+        console.warn(`=== Error: userOpResponse.wait() ===`);
         console.warn(error);
 
         userOpReceipt = await bundler.getUserOpReceipt(userOpResponse.userOpHash);
