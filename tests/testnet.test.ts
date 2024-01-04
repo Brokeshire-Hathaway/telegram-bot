@@ -21,7 +21,7 @@ chai.should();
         });
     });
     
-    it("should return balances for wallet", async () => {
+    it("should return balances for wallet", async function() {
         const tokenBalancesResponse = await Moralis.EvmApi.token.getWalletTokenBalances({
             address: walletAddressWithBalance,
             chain: chainTestnet,
@@ -31,7 +31,7 @@ chai.should();
         tokenBalances.should.have.length.greaterThan(0);
     });
 
-    it("should return no balances for wallet", async () => {
+    it("should return no balances for wallet", async function() {
         const tokenBalancesResponse = await Moralis.EvmApi.token.getWalletTokenBalances({
             address: walletAddressNoBalance,
             chain: chainTestnet,
@@ -42,7 +42,7 @@ chai.should();
     });
 });*/
 
-describe("Biconomy Testnet (Ethereum Sepolia)", () => {
+describe("Biconomy Testnet (Ethereum Sepolia)", function() {
     before(async function () {
         dotenv.config();
     });
@@ -51,14 +51,16 @@ describe("Biconomy Testnet (Ethereum Sepolia)", () => {
     const recipientAddress = "0x2E46AFE76cd64c43293c19253bcd1Afe2262dEfF";
     const amount = PreciseNumber.from("0.0001");
 
-    /*it("should complete transaction using lower abstraction functions", async () => {
+    /*it("should complete transaction using lower abstraction functions", async function() {
         const userOp = await prepareSendToken(telegramUserId, recipientAddress, amount);
         const receipt = await sendTransaction(telegramUserId, userOp);
         console.log("receipt");
         console.log(receipt);
     });*/
 
-    it("should complete transaction using GPT tools", async () => {
+    it("should complete transaction using GPT tools", async function() {
+        this.timeout(35000);
+
         const preview = await sendTokenPreview({ accountUid: telegramUserId, recipientAddress: recipientAddress, amount: amount.toDecimalString(), standardization: "native" });
         const receipt = await executeTransaction({ transactionUuid: preview.transactionUuid });
         console.log("receipt");

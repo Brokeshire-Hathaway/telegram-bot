@@ -1,7 +1,7 @@
 import { BiconomySmartAccountV2, DEFAULT_ENTRYPOINT_ADDRESS } from "@biconomy/account"
 import { ECDSAOwnershipValidationModule, DEFAULT_ECDSA_OWNERSHIP_MODULE, ERC20_ABI } from "@biconomy/modules";
 import { ChainId, Transaction, UserOperation } from "@biconomy/core-types"
-import { IBundler, Bundler, UserOpReceipt, UserOpResponse } from '@biconomy/bundler'
+import { IBundler, Bundler, UserOpReceipt, UserOpResponse, UserOpStatus } from '@biconomy/bundler'
 import { IPaymaster, BiconomyPaymaster, SponsorUserOperationDto, PaymasterMode, IHybridPaymaster } from '@biconomy/paymaster'
 import { WalletClientSigner, LocalAccountSigner } from "@alchemy/aa-core";
 import derivePrivateKey from "./derivePrivateKey.js";
@@ -182,17 +182,30 @@ export async function sendTransaction(accountUid: string, userOp: Partial<UserOp
     }
     console.log("userOpHash", userOpResponse);
 
+    let userOpStatus: UserOpStatus;
     let userOpReceipt: UserOpReceipt;
     try {
-        userOpReceipt = await userOpResponse.wait();
-    } catch (error) {
-        console.warn(`=== Error: userOpResponse.wait() ===`);
-        console.warn(error);
+        console.log(`userOpResponse.userOpHash`);
+        console.log(userOpResponse.userOpHash);
+        console.log("bundler.getUserOpReceipt");
+        console.log(bundler.getUserOpReceipt);
 
-        userOpReceipt = await bundler.getUserOpReceipt(userOpResponse.userOpHash);
+        userOpStatus = await userOpResponse.waitForTxHash();
+        console.log("userOpStatus.transactionHash", userOpStatus.transactionHash);
+        console.log("userOpStatus.userOperationReceipt", userOpStatus.userOperationReceipt);
+
+        userOpReceipt = userOpStatus.userOperationReceipt ?? await userOpResponse.wait();
 
         console.log(`userOpReceipt`);
         console.log(userOpReceipt);
+
+        if (!userOpReceipt.success) {
+            throw new Error(`Transaction failed: ${userOpReceipt.reason}`);
+        }
+    } catch (error) {
+        console.error(`=== Error ===`);
+        console.error(error);
+        throw error;
     }
     
     console.log("txHash", userOpReceipt.receipt.transactionHash);
