@@ -1,7 +1,7 @@
 import chai from 'chai';
 import chaiHttp from 'chai-http';
 import app from '../../../src/features/executeTransaction/executeTransactionService.js';
-//const chaiHttp = require('chai-http');
+import { UUID } from 'crypto';
 
 chai.use(chaiHttp);
 
@@ -12,12 +12,34 @@ describe("Execute Transaction Service", function() {
 
     });
 
-    it("should prepare transaction", async function() {
-        const response = await chai.request(app)
-            .put('/transactions')
-            // NOTE: User wallet address won't always be able to be derived from the user's Telegram ID when off-system signing is implemented
+    let transactionUuid: UUID | undefined;
 
-            // NOTE: The sender_did and recipient_did are composed of three pieces. The first piece is the network name separated by a colon, the second piece is the user's ID. Followed by a period, the third piece is the platform. For example, "arbitrum:@1023703414.telegram.me", the network is "arbitrum", the user's ID is "1023703414", and the platform is "telegram.me".
-            .send({ sender_did: "arbitrum:@1023703414.telegram.me", recipient_did: "arbitrum:@1023703414.telegram.me", amount: "0.5", is_native_token: false, receive_token_address: "0xf97f4df75117a78c1a5a0dbb814af92458539fb4"});
+    it("should prepare transaction", async function() {
+        const request = {
+            sender_address: {
+                network: "sepolia",
+                identifier: "1023703414",
+                platform: "telegram.me"
+            },
+            recipient_address: {
+                network: "sepolia",
+                identifier: "0x2E46AFE76cd64c43293c19253bcd1Afe2262dEfF",
+                platform: "native"
+            },
+            amount: "0.0001",
+            is_native_token: true,
+            receive_token_address: null, //"0xf97f4df75117a78c1a5a0dbb814af92458539fb4"
+        };
+        const response = await chai.request(app)
+            .put('/transactions/prepare')
+            // NOTE: User wallet address won't always be able to be derived from the user's Telegram ID when off-system signing is implemented
+            .send(request);
+        transactionUuid = response.body.transactionUuid;
+    });
+
+    it("should send transaction", async function() {
+        const response = await chai.request(app)
+            .put('/transactions/send')
+            .send({ transactionUuid: transactionUuid });
     });
 });
