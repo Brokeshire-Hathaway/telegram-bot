@@ -49,18 +49,18 @@ const paymaster: IPaymaster = new BiconomyPaymaster({
 export async function getSmartAccount(uid: string) {
     const privateKey = derivePrivateKey(uid);
     const signer = LocalAccountSigner.privateKeyToAccountSigner(toHex(privateKey));
-    const ownerShipModule = await ECDSAOwnershipValidationModule.create({
+    const ownershipModule = await ECDSAOwnershipValidationModule.create({
         signer: signer as unknown as Signer,
         moduleAddress: DEFAULT_ECDSA_OWNERSHIP_MODULE
         });
     const biconomyAccount = await BiconomySmartAccountV2.create({
         chainId: biconomyTestnet,
-        rpcUrl: "https://rpc.sepolia.org",
+        rpcUrl: "https://rpc2.sepolia.org", //"https://rpc.sepolia.org",
         bundler: bundler,
-        paymaster: paymaster,
+        //paymaster: paymaster,
         entryPointAddress: DEFAULT_ENTRYPOINT_ADDRESS,
-        defaultValidationModule: ownerShipModule,
-        activeValidationModule: ownerShipModule
+        defaultValidationModule: ownershipModule,
+        activeValidationModule: ownershipModule
     });
     return biconomyAccount;
 }
@@ -134,6 +134,9 @@ export async function prepareSendToken(accountUid: string, recipientAddress: `0x
 
 export async function sendTransaction(accountUid: string, userOp: Partial<UserOperation>) {
     const smartAccount = await getSmartAccount(accountUid);
+
+    // DEBUG
+    getAccountAddress(accountUid).then(address => console.log(`Address for UID (${accountUid}) is ${address}`));
 
     const biconomyPaymaster = smartAccount.paymaster as IHybridPaymaster<SponsorUserOperationDto>;
     if (biconomyPaymaster != null) {

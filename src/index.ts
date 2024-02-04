@@ -13,6 +13,7 @@ import {
 import { HOST, PORT, chunkSize, chunkOverlap } from "./config.js";
 import { startTelegramBot } from "./telegramBot.js";
 import Moralis from "moralis";
+import { startTransactionService } from "./features/executeTransaction/executeTransactionService.js";
 
 async function main() {
   //dotenv.config();
@@ -73,6 +74,8 @@ async function main() {
       process.exit(1);
     }
   });*/
+
+  startTransactionService();
 
   console.log("\n...ready");
 }
