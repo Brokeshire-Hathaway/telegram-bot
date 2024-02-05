@@ -16,6 +16,7 @@ import {
 import PreciseNumber from "./common/tokenMath.js";
 import { SendTokenCache, sendTokenAgent } from "./features/sendToken/sendTokenAgent.js";
 import { getMarket, tools } from "./gpttools.js";
+import { messageEmber } from "./features/messageEmber/messageEmber.js";
 
 interface SessionData {
   sendTokenCache?: SendTokenCache;
@@ -37,7 +38,7 @@ export function startTelegramBot() {
 
   bot.use(conversations());
 
-  bot.use(createConversation(sendToken));
+  //bot.use(createConversation(sendToken));
 
   bot.use(
     limit({
@@ -147,95 +148,37 @@ export function startTelegramBot() {
   });*/
 
   privateBot.on("message:text", async (ctx) => {
-    await emberReply(ctx, ctx.message.text);
+    //await emberReply(ctx, ctx.message.text);
+    const onActivity = (message: string) => {
+      sendFormattedMessage(ctx, ctx.chat.id, message);
+    }
+    const reply = await messageEmber(ctx.from.id.toString()!, ctx.chat.id.toString(), ctx.message.text, onActivity);
+    console.log("reply");
+    console.log(reply);
+    await sendFormattedMessage(ctx, ctx.chat.id, reply);
   });
 
   bot.start(); // Promise only resolves when bot stops
 }
 
-async function sendToken(conversation: MyConversation, ctx: MyContext) {
-  const accountUid = ctx.from?.id.toString()!;
+/*async function getRecipientTelegramId(ctx: MyContext, selectRecipientMessage: string) {
+  // TODO: get username from user_id if it's even possible
 
-  const sendUserMessage = async (message: string) => {
-    console.log("sendUserMessage");
-    console.log(message);
-    console.log("ctx.chat?.id");
-    console.log(ctx.chat?.id);
-    await sendFormattedMessage(ctx, ctx.chat!.id, message);
+  const randomInt32 = randomInt(-2147483648, 2147483647); // 32-bit signed integer
+  const keyboardButtonRequestUser: KeyboardButtonRequestUser = {
+    request_id: randomInt32,
+    user_is_bot: false,
+  };
+  const keyboardButton: KeyboardButton = {
+    text: "Select recipient",
+    request_user: keyboardButtonRequestUser
   };
 
-  const receiveUserMessage = async () => {
-    const { msg: { text } } = await conversation.waitFor("message:text");
-    return text;
-  };
+  await ctx.reply(selectRecipientMessage, { reply_markup: { keyboard: [[keyboardButton]], one_time_keyboard: true }})
 
-  const getRecipientTelegramId = async (selectRecipientMessage: string) => {
-    // TODO: get username from user_id if it's even possible
-
-    const randomInt32 = randomInt(-2147483648, 2147483647); // 32-bit signed integer
-    const keyboardButtonRequestUser: KeyboardButtonRequestUser = {
-      request_id: randomInt32,
-      user_is_bot: false,
-    };
-    const keyboardButton: KeyboardButton = {
-      text: "Select recipient",
-      request_user: keyboardButtonRequestUser
-    };
-
-    await ctx.reply(selectRecipientMessage, { reply_markup: { keyboard: [[keyboardButton]], one_time_keyboard: true }})
-  
-    const { msg: { user_shared: { user_id: userId } } } = await conversation.waitFor(":user_shared");
-    return userId.toString();
-  };
-
-  const setCache = async <K extends keyof SendTokenCache, V extends SendTokenCache[K]>(key: K, value: V | Promise<V>) => {
-    const partial: Partial<SendTokenCache> = { [key]: await value };
-    conversation.session.sendTokenCache = { ...conversation.session.sendTokenCache, ...partial };
-    return value;
-  };
-
-  const getCache = () => {
-    return conversation.session.sendTokenCache;
-  };
-
-  //const { msg: { user_shared: { user_id: userId } } } = await conversation.waitFor(":user_shared");
-  //const result = await getRecipientTelegramId();
-
-  const result = await sendTokenAgent({ intent: ctx.msg?.text! }, accountUid, sendUserMessage, receiveUserMessage, getRecipientTelegramId, setCache, getCache);
-  //const result = await conversation.external(() => sendTokenAgent({ intent: ctx.msg?.text! }, accountUid, sendUserMessage, receiveUserMessage, getRecipientTelegramId, setCache, getCache));
-  //const result = await conversation.external(() => "Transaction successful!");
-
-  // TODO: store callback function in session
-
-  console.log(`result`);
-  console.log(result);
-
-  //ctx.session.toolResponse(undefined, new Error("Test error"));
-  //ctx.session.toolResponse(result);
-
-  //return result;
-
-  await emberReply(ctx, `Give me a summary of my transaction from the following results\n---\n# Results\n${result}`, { temperature: 0, tools: undefined });
-}
-
-/*async function emberReply(ctx: any, userContent: string, assistantContent?: string, promoText?: string) {
-  const messages: ChatCompletionMessageParam[] = [
-    { role: "user", content: userContent }
-  ];
-
-  if (assistantContent != null) {
-    messages.unshift({ role: "assistant", content: assistantContent });
-  }
-
-  const chatbotBody: ChatbotBody = {
-    messages
-  };
-  const chatResult = await chatGippity(chatbotBody);
-  const content = chatResult.content ?? "**Ember is sleeping 😴**";
-  const replyMessage = promoText ? `${content}\n\n ${promoText}` : content;
-
-  await sendFormattedMessage(ctx, ctx.chat.id, replyMessage);
-}*/
+  const { msg: { user_shared: { user_id: userId } } } = await conversation.waitFor(":user_shared");
+  return userId.toString();
+};*/
 
 interface EmberReplyConfig {
   conversationHistory?: ConvoHistory;
@@ -310,8 +253,6 @@ async function emberReply(ctx: MyContext, userContent: string, config?: EmberRep
     };
     conversation = await aiAssistant(conversation, aaConfig);
   }
-
-
 
   const content = getLatestMessageText(conversation) ?? "**Ember is sleeping 😴**";
   const replyMessage = promoText ? `${content}\n\n ${promoText}` : content;
