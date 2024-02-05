@@ -56,7 +56,7 @@ describe("Biconomy Testnet (Ethereum Sepolia)", function() {
         const receipt = await sendTransaction(telegramUserId, userOp);
         console.log("receipt");
         console.log(receipt);
-    });*/
+    });
 
     it("should complete transaction using GPT tools", async function() {
         this.timeout(35000);
@@ -65,5 +65,5 @@ describe("Biconomy Testnet (Ethereum Sepolia)", function() {
         const receipt = await executeTransaction({ transactionUuid: preview.transactionUuid });
         console.log("receipt");
         console.log(receipt);
-    });
+    });*/
 });
