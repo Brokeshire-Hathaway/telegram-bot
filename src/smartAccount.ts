@@ -13,7 +13,7 @@ import { EvmChain, GetTokenPriceResponseAdapter, GetWalletTokenBalancesJSONRespo
 import { UnwrapArray } from "./common/types.js";
 import PreciseNumber from "./common/tokenMath.js";
 import { BigNumber } from 'ethers';
-import { erc20Abi } from 'abitype/abis'
+import { erc20Abi } from 'abitype/abis';
 
 type TokenStandardization = "erc20" | "native";
 type GetWalletTokenBalance = {
@@ -33,11 +33,17 @@ export type WalletTokenBalance = GetWalletTokenBalance & { usdBalance: string | 
 const biconomyTestnet = 11155111 as ChainId;
 
 // create instance of bundler
+const userOpReceiptMaxDurationIntervals: { 11155111?: number } = {
+    [11155111]: 60000, 
+  }
 const bundler: IBundler = new Bundler({
     //bundlerUrl: `https://bundler.biconomy.io/api/v2/${biconomyTestnet}/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44`, // Doesn't work with Sepolia
     bundlerUrl: "https://bundler.biconomy.io/api/v2/11155111/BBagqibhs.HI7fopYh-iJkl-45ic-afU9-6877f7gaia78Cv",
     chainId: biconomyTestnet,
     entryPointAddress: DEFAULT_ENTRYPOINT_ADDRESS,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore   
+    userOpReceiptMaxDurationIntervals: userOpReceiptMaxDurationIntervals,
 })
 
 
