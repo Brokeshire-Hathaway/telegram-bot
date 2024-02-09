@@ -7,12 +7,12 @@ interface PrepareTransactionBody {
     sender_address: UniversalAddress;
     recipient_address: UniversalAddress;
     amount: string;
-    is_native_token: boolean;
+    is_receive_native_token: boolean;
     receive_token_address: `0x${string}` | undefined;
 }
 
 interface SendTransactionBody {
-    transactionUuid: UUID;
+    transaction_uuid: UUID;
 }
 
 interface UniversalAddress {
@@ -30,16 +30,18 @@ app.use(bodyParser.json());
 
 // Endpoint to prepare a transaction
 app.post('/transactions/prepare', async (req, res) => {
+    console.log("REQUEST BODY")
+    console.log(req.body);
     if (!isValidPrepareTransactionBody(req.body)) {
         return res.status(400).json({ success: false, message: "Invalid request body" });
     }
     try {
         const preview = await sendTokenPreview({
-        accountUid: req.body.sender_address.identifier,
-        recipientAddress: req.body.recipient_address.identifier as `0x${string}`,
-        amount: req.body.amount,
-        standardization: req.body.is_native_token ? "native" : "erc20",
-        tokenAddress: req.body.receive_token_address as `0x${string}` | undefined
+            accountUid: req.body.sender_address.identifier,
+            recipientAddress: req.body.recipient_address.identifier as `0x${string}`,
+            amount: req.body.amount,
+            standardization: req.body.is_receive_native_token ? "native" : "erc20",
+            tokenAddress: req.body.receive_token_address as `0x${string}` | undefined
         });
         res.json(preview);
     } catch (error) {
@@ -71,29 +73,66 @@ export function startTransactionService() {
 function isValidUniversalAddress(address: any): address is UniversalAddress {
     console.warn(`address: ${JSON.stringify(address)}`);
     console.warn(address);
-    return typeof address === 'object' &&
-        typeof address.network === 'string' &&
-        typeof address.identifier === 'string' &&
-        typeof address.platform === 'string';
+    
+    if (typeof address !== 'object') {
+        throw new Error("Address is not an object")
+    }
+    if (typeof address.network !== 'string') {
+        throw new Error("Address network is not a string")
+    }
+    if (typeof address.identifier !== 'string') {
+        throw new Error("Address identifier is not a string")
+    }
+    if (typeof address.platform !== 'string') {
+        throw new Error("Address platform is not a string")
+    }
+
+    return true;
 }
 
 function isValidPrepareTransactionBody(body: any): body is PrepareTransactionBody {
     console.warn(`body: ${JSON.stringify(body)}`);
     console.warn(body);
-    return typeof body === 'object' &&
-        isValidUniversalAddress(body.sender_address) &&
-        isValidUniversalAddress(body.recipient_address) &&
-        typeof body.amount === 'string' && !isNaN(parseFloat(body.amount)) &&
-        typeof body.is_native_token === 'boolean' &&
-        (typeof body.receive_token_address === 'string' &&
-        /^0x[a-fA-F0-9]+$/.test(body.receive_token_address)) || typeof body.receive_token_address === 'undefined';
+
+    if (typeof body !== 'object') {
+        throw new Error("Body is not an object")
+    }
+    isValidUniversalAddress(body.sender_address);
+    isValidUniversalAddress(body.recipient_address);
+    if (typeof body.amount !== 'string') {
+        throw new Error("Amount is not a string")
+    }
+    if (isNaN(parseFloat(body.amount))) {
+        throw new Error("Amount is not a number")
+    }
+    if (typeof body.is_receive_native_token !== 'boolean') {
+        throw new Error("Is native token is not a boolean")
+    }
+
+    console.warn(`body.receive_token_address: ${body.receive_token_address}`);
+    console.warn(typeof body.receive_token_address);
+
+    if (body.receive_token_address != null) {
+        if (typeof body.receive_token_address !== 'string' || !/^0x[a-fA-F0-9]+$/.test(body.receive_token_address)) {
+            throw new Error("Receive token address is an invalid token address")
+        }
+    }
+
+    return true;
 }
 
 function isValidSendTransactionBody(body: any): body is SendTransactionBody {
     console.warn(`body: ${JSON.stringify(body)}`);
     console.warn(body);
-    return typeof body === 'object' &&
-        typeof body.transactionUuid === 'string';
+
+    if (typeof body !== 'object') {
+        throw new Error("Body is not an object")
+    }
+    if (typeof body.transaction_uuid !== 'string') {
+        throw new Error("Transaction UUID is not a string")
+    }
+
+    return true;
 }
 
 export default app; // Export the app for testing purposes
