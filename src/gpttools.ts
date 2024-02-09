@@ -110,10 +110,10 @@ interface SendTokenPreviewArgs {
 interface SendTokenPreview {
     recipient: `0x${string}`;
     amount: string;
-    tokenSymbol: string;
-    gasFee: string;
-    totalAmount: string;
-    transactionUuid: UUID;
+    token_symbol: string;
+    gas_fee: string;
+    total_amount: string;
+    transaction_uuid: UUID;
 }
 
 type TransactionPreview = [accountUid: string, preview: SendTokenPreview, userOp: Partial<UserOperation>];
@@ -128,10 +128,10 @@ export async function sendTokenPreview(args: SendTokenPreviewArgs): Promise<Send
     const sendTokenPreview: SendTokenPreview = {
         recipient: args.recipientAddress,
         amount: args.amount,
-        tokenSymbol: args.tokenAddress ?? "ETH",
-        gasFee: gasFee.toDecimalString(),
-        totalAmount,
-        transactionUuid
+        token_symbol: args.tokenAddress ?? "ETH",
+        gas_fee: gasFee.toDecimalString(),
+        total_amount: totalAmount,
+        transaction_uuid: transactionUuid
     };
 
     userOps[transactionUuid] = [args.accountUid, sendTokenPreview, userOp];
@@ -139,28 +139,28 @@ export async function sendTokenPreview(args: SendTokenPreviewArgs): Promise<Send
     return sendTokenPreview;
 }
 interface ExecuteTransactionArgs {
-    transactionUuid: UUID;
+    transaction_uuid: UUID;
 }
 
 interface UserReceipt {
     status: "pending" | "success" | "failure";
     recipient: `0x${string}`;
     amount: string;
-    tokenSymbol: string;
-    gasFee: string;
-    totalAmount: string;
-    transactionHash: string;
-    transactionUuid: UUID;
+    token_symbol: string;
+    gas_fee: string;
+    total_amount: string;
+    transaction_hash: string;
+    transaction_uuid: UUID;
     reason?: string;
 }
 
 const userOpReceipts: Record<UUID, UserReceipt> = {};
 
 export async function executeTransaction(args: ExecuteTransactionArgs) {
-    const txPreview = userOps[args.transactionUuid];
+    const txPreview = userOps[args.transaction_uuid];
 
     if (!txPreview) {
-        throw new Error(`Transaction UUID "${args.transactionUuid}" not found.`);
+        throw new Error(`Transaction UUID "${args.transaction_uuid}" not found.`);
     }
 
     const userOpReceipt = await sendTransaction(txPreview[0], txPreview[2]);
@@ -176,15 +176,15 @@ export async function executeTransaction(args: ExecuteTransactionArgs) {
         status: userOpReceipt.success ? "success" : "failure",
         recipient: txPreview[1].recipient,
         amount: txPreview[1].amount,
-        tokenSymbol: txPreview[1].tokenSymbol,
-        gasFee: bigGasFee.toDecimalDisplay(8),
-        totalAmount: PreciseNumber.bigAdd(PreciseNumber.from(txPreview[1].amount), bigGasFee).toDecimalDisplay(8),
-        transactionHash: userOpReceipt.receipt.transactionHash,
-        transactionUuid: args.transactionUuid,
+        token_symbol: txPreview[1].token_symbol,
+        gas_fee: bigGasFee.toDecimalDisplay(8),
+        total_amount: PreciseNumber.bigAdd(PreciseNumber.from(txPreview[1].amount), bigGasFee).toDecimalDisplay(8),
+        transaction_hash: userOpReceipt.receipt.transactionHash,
+        transaction_uuid: args.transaction_uuid,
         reason: userOpReceipt.reason,
     };
 
-    userOpReceipts[args.transactionUuid] = userReceipt;
+    userOpReceipts[args.transaction_uuid] = userReceipt;
 
     console.log(`executeTransaction - userReceipt`);
     console.log(userReceipt);
