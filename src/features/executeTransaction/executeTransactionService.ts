@@ -46,7 +46,7 @@ app.post('/transactions/prepare', async (req, res) => {
         res.json(preview);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ success: false, message: "Failed to prepare transaction" });
+        res.status(500).json({ success: false, message: `Error: ${error}` });
     }
 });
 
@@ -60,7 +60,7 @@ app.post('/transactions/send', async (req, res) => {
         res.json(sendResult);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ success: false, message: "Failed to send transaction" });
+        res.status(500).json({ success: false, message: `Error: ${error}` });
     }
 });
 
