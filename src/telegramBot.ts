@@ -4,7 +4,7 @@ import { limit } from "@grammyjs/ratelimiter";
 import { newGroupAddMessage, promoMessage, sponsoredMessage, systemMessageContent } from "./config.js";
 import { ChatCompletionMessageParam, ChatCompletionTool, ChatCompletionUserMessageParam } from "openai/resources/index";
 import MarkdownIt from "markdown-it";
-import { ChatFromGetChat, KeyboardButton, KeyboardButtonRequestUser } from "grammy/types";
+import { ChatFromGetChat, KeyboardButton, KeyboardButtonRequestUser, Message } from "grammy/types";
 import { WalletTokenBalance, getAccountAddress, getAccountBalances } from "./smartAccount.js";
 import { randomInt } from "crypto";
 import {
@@ -149,8 +149,19 @@ export function startTelegramBot() {
 
   privateBot.on("message:text", async (ctx) => {
     //await emberReply(ctx, ctx.message.text);
-    const onActivity = (message: string) => {
-      sendFormattedMessage(ctx, ctx.chat.id, message);
+    let messageId: number | undefined;
+    const onActivity = async (messageText: string) => {
+      if (messageId == null) {
+        const message = await sendFormattedMessage(ctx, ctx.chat.id, messageText, true);
+        messageId = message.message_id;
+      } else {
+        const formattedMessage = formatForTelegram(messageText, true);
+        try {
+          ctx.api.editMessageText(ctx.chat.id, messageId, formattedMessage, { parse_mode: "HTML", disable_web_page_preview: true });
+        } catch (error) {
+          console.warn(`Error editing message: ${error}`);
+        }
+      }
     }
     const reply = await messageEmber(ctx.from.id.toString()!, ctx.chat.id.toString(), ctx.message.text, onActivity);
     console.log("reply");
@@ -277,20 +288,31 @@ export function formatAccountBalancesAssistant(accountBalances: WalletTokenBalan
   )));
 }
 
-export async function formatForTelegram(markdown: string) {
+export function formatForTelegram(markdown: string, italicize = false) {
   const md = new MarkdownIt("zero")
-    .enable(["emphasis", "link", "linkify", "strikethrough", "fragments_join"]);
-  let html = md.renderInline(markdown);
+    .enable(["emphasis", "link", "linkify", "strikethrough", "blockquote", "fragments_join"]);
+  let html = md.render(markdown);
+
+  // Match a closing tag, followed by one or more newlines (and optionally other whitespace), then an opening tag
+  html = html.replace(/<\/([^>]+)>\s*\n+\s*(<([^>]+)>)/g, (match, closingTagName, openingTag, openingTagName) => {
+    // Construct and return the replacement string with the matched tag names and two newlines between the tags
+    return `</${closingTagName}>\n\n<${openingTagName}>`;
+  });
+
+  // Replace all occurrences of <p> and </p> because Markdown-It doesn't have an easy way to disable them
+  html = html.replace(/<p>/g, italicize ? '<i>' : '');
+  html = html.replace(/<\/p>/g, italicize ? '</i>': '');
+  // Telegram specific syntax formatting
   html = html.replace(/\|\|(.*?)\|\|/g, '<tg-spoiler>$1</tg-spoiler>');
   return html;
 }
 
-async function sendFormattedMessage(ctx: any, chatId: number, markdownMessage: string) {
+async function sendFormattedMessage(ctx: any, chatId: number, markdownMessage: string, italicize = false): Promise<Message> {
   try {
-    const formattedMessage = await formatForTelegram(markdownMessage);
-    await ctx.api.sendMessage(chatId, formattedMessage, { parse_mode: "HTML", disable_web_page_preview: true });
+    const formattedMessage = formatForTelegram(markdownMessage, italicize);
+    return await ctx.api.sendMessage(chatId, formattedMessage, { parse_mode: "HTML", disable_web_page_preview: true });
   } catch (error) {
     console.error(error);
-    await ctx.api.sendMessage(chatId, markdownMessage, { disable_web_page_preview: true });
+    return await ctx.api.sendMessage(chatId, markdownMessage, { disable_web_page_preview: true });
   }
 }
