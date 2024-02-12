@@ -10,7 +10,7 @@ interface ResponseData {
     message: string;
 }
 
-const HOST = 'http://host.docker.internal:8001';
+const HOST = 'http://172.17.0.1:8001';
 
 export async function messageEmber(senderUid: string, threadId: string, message: string, onActivity: (message: string) => void): Promise<string> {
     const PATH = `/v1/threads/${threadId}/messages`;
