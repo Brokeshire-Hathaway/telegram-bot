@@ -50,7 +50,7 @@ describe("Biconomy Testnet (Ethereum Sepolia)", function() {
     const telegramUserId = "1129320042";
     const recipientAddress = "0x2E46AFE76cd64c43293c19253bcd1Afe2262dEfF";
     const amount = PreciseNumber.from("0.0001");
-
+/*
     it("should complete transaction using lower abstraction functions", async function() {
             this.timeout(60000);   
         const userOp = await prepareSendToken(telegramUserId, recipientAddress, amount);
@@ -58,7 +58,7 @@ describe("Biconomy Testnet (Ethereum Sepolia)", function() {
         console.log("receipt");
         console.log(receipt);
     });
-/*
+
     it("should complete transaction using GPT tools", async function() {
         this.timeout(35000);
 

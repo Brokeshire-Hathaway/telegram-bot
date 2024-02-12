@@ -10,4 +10,16 @@ describe("Telegram Bot", () => {
         const formattedMessage = await formatForTelegram(replyMessage);
         formattedMessage.should.be.a("string", "Please select token to send from your wallet <tg-spoiler>send address</tg-spoiler> to <a href=\"tg://user?id=12345678\">recipient</a> <tg-spoiler>recipient address</tg-spoiler>")
     });
+
+    it("should convert blockquote syntax from TG markdown to TG html", async () => {
+        const replyMessage = `> ---
+> block quote stuff!
+
+~~---~~
+~~___~~
+~~text~~`;
+        const formattedMessage = await formatForTelegram(replyMessage);
+        console.log(formattedMessage);
+        /*formattedMessage.should.be.a("string", "Please select token to send from your wallet <tg-spoiler>send address</tg-spoiler> to <a href=\"tg://user?id=12345678\">recipient</a> <tg-spoiler>recipient address</tg-spoiler>")*/
+    });
 });
