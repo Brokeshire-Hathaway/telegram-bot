@@ -29,7 +29,7 @@ const port = 3000; // Default port for the application
 app.use(bodyParser.json());
 
 // Endpoint to prepare a transaction
-app.post('/transactions/prepare', async (req, res) => {
+app.post('/transactions/prepare', async (req: any, res: any) => {
     console.log("REQUEST BODY")
     console.log(req.body);
     if (!isValidPrepareTransactionBody(req.body)) {
@@ -51,7 +51,7 @@ app.post('/transactions/prepare', async (req, res) => {
 });
 
 // Endpoint to send a prepared transaction
-app.post('/transactions/send', async (req, res) => {
+app.post('/transactions/send', async (req: any, res: any) => {
     if (!isValidSendTransactionBody(req.body)) {
         return res.status(400).json({ success: false, message: "Invalid request body" });
     }
