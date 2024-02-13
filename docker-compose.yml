@@ -18,11 +18,10 @@ services:
     depends_on:
       - chroma_server
     networks:
-      - first_project_default
+      - shared_network
 volumes:
   index_data:
     driver: local
 networks:
-  first_project_default:
+  shared_network:
     external: true
-    name: ember-engine-stage_default
