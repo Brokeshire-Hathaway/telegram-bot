@@ -17,11 +17,7 @@ services:
       - ./:/app
     depends_on:
       - chroma_server
-    networks:
-      - shared_network
+
 volumes:
   index_data:
     driver: local
-networks:
-  shared_network:
-    external: true
