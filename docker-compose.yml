@@ -17,6 +17,12 @@ services:
       - ./:/app
     depends_on:
       - chroma_server
+    networks:
+      - first_project_default
 volumes:
   index_data:
     driver: local
+networks:
+  first_project_default:
+    external: true
+    name: ember-engine-stage_default
