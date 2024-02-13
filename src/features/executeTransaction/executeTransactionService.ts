@@ -65,8 +65,10 @@ app.post('/transactions/send', async (req: any, res: any) => {
 });
 
 export function startTransactionService() {
+    const HOST = '0.0.0.0';
     app.listen(port, () => {
-        console.log(`Transaction service running at http://localhost:${port}`);
+        console.log(`Transaction service running at http://${HOST}:${port}`);
+        return HOST;
     });
 }
 
