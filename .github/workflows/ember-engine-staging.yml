@@ -14,6 +14,8 @@ jobs:
 
       - name: Set up .env file
         run: |
+          echo $GITHUB_WORKSPACE
+          pwd
           echo "MORALIS_API_KEY=${{ secrets.MORALIS_API_KEY }}" >> .env
           echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
           echo "SECRET_SALT=${{ secrets.SECRET_SALT }}" >> .env
@@ -32,6 +34,7 @@ jobs:
 
       - name: Copy repository to server
         run: |
+          ls -la
           rsync -Pavz -e "ssh -i ~/.ssh/ember-github" . ${{ secrets.SSH_USERNAME }}@${{ vars.SSH_HOST }}:/opt/staging/ember-engine --exclude=".git"
 
       - name: Execute deployment script on remote server
