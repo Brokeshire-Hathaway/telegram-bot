@@ -17,6 +17,7 @@ services:
       - ./:/app
     depends_on:
       - chroma_server
+
 volumes:
   index_data:
     driver: local

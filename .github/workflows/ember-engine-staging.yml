@@ -1,0 +1,34 @@
+name: Server Build & Push (Staging)
+
+on:
+  push:
+    branches: [trunk]
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v4
+
+      - name: Set up SSH for rsync
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/ember-github
+          chmod 600 ~/.ssh/ember-github
+          ssh-keyscan -H ${{ vars.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Copy repository to server
+        run: |
+          echo $GITHUB_WORKSPACE
+          rsync -Pavz -e "ssh -i ~/.ssh/ember-github" $GITHUB_WORKSPACE ${{ vars.SSH_USER }}@${{ vars.SSH_HOST }}:/opt/staging/ember-engine --exclude=".git"
+
+      - name: Deploy Stack
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ vars.SSH_HOST }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /opt/staging/ember-engine
+            pwd
