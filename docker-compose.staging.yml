@@ -19,6 +19,7 @@ services:
     extends:
       file: docker-compose.yml
       service: chroma_server
+    restart: always
     command: uvicorn chromadb.app:app --reload --workers 10 --host 0.0.0.0 --port 8001 --log-config log_config.yml
     networks:
       - shared_network
