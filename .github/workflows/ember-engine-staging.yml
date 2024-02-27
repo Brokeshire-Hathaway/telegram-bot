@@ -1,4 +1,4 @@
-name: Server Build & Push (Staging)
+name: Server Deployment (Staging)
 
 on:
   push:
@@ -12,6 +12,17 @@ jobs:
       - name: Checkout the repo
         uses: actions/checkout@v4
 
+      - name: Set up .env file
+        run: |
+          echo "MORALIS_API_KEY=${{ secrets.MORALIS_API_KEY }}" >> .env
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
+          echo "SECRET_SALT=${{ secrets.SECRET_SALT }}" >> .env
+          echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" >> .env
+          echo "CHROMA_PORT=${{ vars.CHROMA_PORT }}" >> .env
+          echo "SSH_HOST=${{ vars.SSH_HOST }}" >> .env
+          echo "TELEGRAM_BOT_USERNAME=${{ vars.TELEGRAM_BOT_USERNAME }}" >> .env
+          echo "TELEGRAM_MAIN_CHAT_ID=${{ vars.TELEGRAM_MAIN_CHAT_ID }}" >> .env
+
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
@@ -21,13 +32,9 @@ jobs:
 
       - name: Copy repository to server
         run: |
-          echo $GITHUB_WORKSPACE
-          ls -al $GITHUB_WORKSPACE
-          echo ${{ secrets.SSH_USERNAME }}
-          echo ${{ vars.SSH_HOST }}
-          rsync -Pavz -e "ssh -vvv -i ~/.ssh/ember-github" $GITHUB_WORKSPACE/. ${{ secrets.SSH_USERNAME }}@${{ vars.SSH_HOST }}:/opt/staging/ember-engine --exclude=".git"
+          rsync -Pavz -e "ssh -i ~/.ssh/ember-github" . ${{ secrets.SSH_USERNAME }}@${{ vars.SSH_HOST }}:/opt/staging/ember-engine --exclude=".git"
 
-      - name: Deploy Stack
+      - name: Execute deployment script on remote server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ vars.SSH_HOST }}
@@ -35,4 +42,4 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /opt/staging/ember-engine
-            pwd
+            ./scripts/staging.bash
