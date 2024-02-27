@@ -12,7 +12,7 @@ jobs:
       - name: Checkout the repo
         uses: actions/checkout@v4
 
-      - name: Set up SSH for rsync
+      - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/ember-github
@@ -22,7 +22,10 @@ jobs:
       - name: Copy repository to server
         run: |
           echo $GITHUB_WORKSPACE
-          rsync -Pavz -e "ssh -i ~/.ssh/ember-github" $GITHUB_WORKSPACE ${{ vars.SSH_USER }}@${{ vars.SSH_HOST }}:/opt/staging/ember-engine --exclude=".git"
+          ls -al $GITHUB_WORKSPACE
+          echo ${{ vars.SSH_USER }}
+          echo ${{ vars.SSH_HOST }}
+          rsync -Pavz -e "ssh -vvv -i ~/.ssh/ember-github" $GITHUB_WORKSPACE/. ${{ vars.SSH_USER }}@${{ vars.SSH_HOST }}:/opt/staging/ember-engine --exclude=".git"
 
       - name: Deploy Stack
         uses: appleboy/ssh-action@v1.0.3
