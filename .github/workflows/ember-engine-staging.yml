@@ -23,9 +23,9 @@ jobs:
         run: |
           echo $GITHUB_WORKSPACE
           ls -al $GITHUB_WORKSPACE
-          echo ${{ vars.SSH_USER }}
+          echo ${{ vars.SSH_USERNAME }}
           echo ${{ vars.SSH_HOST }}
-          rsync -Pavz -e "ssh -vvv -i ~/.ssh/ember-github" $GITHUB_WORKSPACE/. ${{ vars.SSH_USER }}@${{ vars.SSH_HOST }}:/opt/staging/ember-engine --exclude=".git"
+          rsync -Pavz -e "ssh -vvv -i ~/.ssh/ember-github" $GITHUB_WORKSPACE/. ${{ vars.SSH_USERNAME }}@${{ vars.SSH_HOST }}:/opt/staging/ember-engine --exclude=".git"
 
       - name: Deploy Stack
         uses: appleboy/ssh-action@v1.0.3
