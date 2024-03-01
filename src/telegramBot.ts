@@ -163,10 +163,15 @@ export function startTelegramBot() {
         }
       }
     }
-    const reply = await messageEmber(ctx.from.id.toString()!, ctx.chat.id.toString(), ctx.message.text, onActivity);
-    console.log("reply");
-    console.log(reply);
-    await sendFormattedMessage(ctx, ctx.chat.id, reply);
+    try {
+      const reply = await messageEmber(ctx.from.id.toString()!, ctx.chat.id.toString(), ctx.message.text, onActivity);
+      console.log("reply");
+      console.log(reply);
+      await sendFormattedMessage(ctx, ctx.chat.id, reply);
+    } catch (error) {
+      console.error(error);
+      await sendFormattedMessage(ctx, ctx.chat.id, `Error: ${error}`);
+    }
   });
 
   bot.start(); // Promise only resolves when bot stops
