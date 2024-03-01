@@ -5,4 +5,5 @@ cd "$scriptdir"
 
 #rm -rf ../chroma
 ./get_chroma.bash
+docker compose -p ember-engine_stage -f ../docker-compose.staging.yml down
 docker compose -p ember-engine_stage -f ../docker-compose.staging.yml up -d

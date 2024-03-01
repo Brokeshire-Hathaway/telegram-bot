@@ -170,7 +170,7 @@ export function startTelegramBot() {
       await sendFormattedMessage(ctx, ctx.chat.id, reply);
     } catch (error) {
       console.error(error);
-      await sendFormattedMessage(ctx, ctx.chat.id, `Error: ${error}`);
+      await sendFormattedMessage(ctx, ctx.chat.id, `Error: ${error instanceof Error ? error.message : error}`);
     }
   });
 
