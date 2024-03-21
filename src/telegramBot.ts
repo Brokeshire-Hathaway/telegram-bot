@@ -299,14 +299,15 @@ export function formatForTelegram(markdown: string, italicize = false) {
   let html = md.render(markdown);
 
   // Match a closing tag, followed by one or more newlines (and optionally other whitespace), then an opening tag
-  html = html.replace(/<\/([^>]+)>\s*\n+\s*(<([^>]+)>)/g, (match, closingTagName, openingTag, openingTagName) => {
-    // Construct and return the replacement string with the matched tag names and two newlines between the tags
-    return `</${closingTagName}>\n\n<${openingTagName}>`;
+  html = html.replace(/(<\/([^>]+)>)\s*(\n+)\s*(<([^>]+)>)/g, (match, closingTag, closingTagName, newlines, openingTag, openingTagName) => {
+    // Construct and return the replacement string with the matched tag names and the original number of newlines between the tags
+    return `${closingTag}${newlines}${openingTag}`;
   });
+
 
   // Replace all occurrences of <p> and </p> because Markdown-It doesn't have an easy way to disable them
   html = html.replace(/<p>/g, italicize ? '<i>' : '');
-  html = html.replace(/<\/p>/g, italicize ? '</i>': '');
+  html = html.replace(/<\/p>/g, italicize ? '</i>\n': '\n');
   // Telegram specific syntax formatting
   html = html.replace(/\|\|(.*?)\|\|/g, '<tg-spoiler>$1</tg-spoiler>');
   return html;
