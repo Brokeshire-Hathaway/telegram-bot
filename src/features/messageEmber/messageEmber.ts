@@ -10,7 +10,7 @@ interface ResponseData {
     message: string;
 }
 
-const HOST = 'http://ember-agents-staging:8101';
+const HOST = 'http://ember-core:8101';
 
 export async function messageEmber(senderUid: string, threadId: string, message: string, onActivity: (message: string) => void): Promise<string> {
     const PATH = `/v1/threads/${threadId}/messages`;
