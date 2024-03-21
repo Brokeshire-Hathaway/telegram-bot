@@ -44,5 +44,5 @@ Help Firepot AI (Firepot) and Ember AI users with their crypto and DeFi needs, t
 export const chunkSize = 256;
 export const chunkOverlap = 32;
 export const promoMessage = "[Ember AI](https://t.me/emberchat)";
-export const sponsoredMessage = "Sponsored by [Firepot](https://twitter.com/FirepotFinance)";
+export const sponsoredMessage = "Sponsored by [Ember Cognition](https://twitter.com/EmberAGI)";
 export const newGroupAddMessage = (groupName: string) => (`Looks like I'm the AI in demand! Another group, ${groupName}, has decided to bring my friendly and helpful vibes into their chat. Let's make some magic happen! 🤖✨`);

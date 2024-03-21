@@ -13,11 +13,21 @@ services:
         max-size: "1m"
         max-file: "1"
     command: sh -c "apk add --no-cache --virtual .gyp g++ make py3-pip && yarn global add node-gyp && yarn install && yarn run dev"
+    networks:
+      - shared_network
   chroma_server:
     extends:
       file: docker-compose.yml
       service: chroma_server
+    restart: always
     command: uvicorn chromadb.app:app --reload --workers 10 --host 0.0.0.0 --port 8000 --log-config log_config.yml
+    networks:
+      - shared_network
+
 volumes:
   index_data:
     driver: local
+
+networks:
+  shared_network:
+    external: true
