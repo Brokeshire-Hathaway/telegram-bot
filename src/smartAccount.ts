@@ -3,14 +3,12 @@ import { ECDSAOwnershipValidationModule, DEFAULT_ECDSA_OWNERSHIP_MODULE } from "
 import { ChainId, Transaction, UserOperation } from "@biconomy/core-types"
 import { IBundler, Bundler, UserOpReceipt, UserOpResponse, UserOpStatus } from '@biconomy/bundler'
 import { IPaymaster, BiconomyPaymaster, SponsorUserOperationDto, PaymasterMode, IHybridPaymaster } from '@biconomy/paymaster'
-import { WalletClientSigner, LocalAccountSigner } from "@alchemy/aa-core";
+import { LocalAccountSigner } from "@alchemy/aa-core";
 import derivePrivateKey from "./derivePrivateKey.js";
-import { createWalletClient, encodeFunctionData, formatEther, getContract, http, toHex } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
+import { encodeFunctionData, toHex } from "viem";
 import { Signer } from "ethers";
 import Moralis from "moralis";
-import { EvmChain, GetTokenPriceResponseAdapter, GetWalletTokenBalancesJSONResponse } from "moralis/common-evm-utils";
-import { UnwrapArray } from "./common/types.js";
+import { EvmChain, GetTokenPriceResponseAdapter } from "moralis/common-evm-utils";
 import PreciseNumber from "./common/tokenMath.js";
 import { BigNumber } from 'ethers';
 import { erc20Abi } from 'abitype/abis';

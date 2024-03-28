@@ -1,16 +1,9 @@
-import Fastify from "fastify";
 import { setOpenAiInstance } from "./chatgpt.js";
 import { createEmbeddings } from "./embeddings.js";
-//import fs from "fs";
-//import path from "path";
 import { DirectoryLoader } from "langchain/document_loaders/fs/directory";
 import { TextLoader } from "langchain/document_loaders/fs/text";
-import {
-  RecursiveCharacterTextSplitter,
-  TokenTextSplitter,
-} from "langchain/text_splitter";
-//import dotenv from "dotenv";
-import { HOST, PORT, chunkSize, chunkOverlap } from "./config.js";
+import { TokenTextSplitter } from "langchain/text_splitter";
+import { chunkSize, chunkOverlap } from "./config.js";
 import { startTelegramBot } from "./telegramBot.js";
 import Moralis from "moralis";
 import { startTransactionService } from "./features/executeTransaction/executeTransactionService.js";

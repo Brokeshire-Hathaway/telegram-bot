@@ -2,19 +2,17 @@ import { Bot, Context, SessionFlavor, session } from "grammy";
 import { AiAssistantConfig, ChatGptModel, Conversation as ConvoHistory, aiAssistant, getLatestMessage, getLatestMessageText, getToolCalls, runTools } from "./chatgpt.js";
 import { limit } from "@grammyjs/ratelimiter";
 import { newGroupAddMessage, promoMessage, sponsoredMessage, systemMessageContent } from "./config.js";
-import { ChatCompletionMessageParam, ChatCompletionTool, ChatCompletionUserMessageParam } from "openai/resources/index";
+import { ChatCompletionMessageParam, ChatCompletionTool} from "openai/resources/index";
 import MarkdownIt from "markdown-it";
-import { ChatFromGetChat, KeyboardButton, KeyboardButtonRequestUser, Message } from "grammy/types";
+import { ChatFromGetChat, Message } from "grammy/types";
 import { WalletTokenBalance, getAccountAddress, getAccountBalances } from "./smartAccount.js";
-import { randomInt } from "crypto";
 import {
   type Conversation,
   type ConversationFlavor,
   conversations,
-  createConversation,
 } from "@grammyjs/conversations";
 import PreciseNumber from "./common/tokenMath.js";
-import { SendTokenCache, sendTokenAgent } from "./features/sendToken/sendTokenAgent.js";
+import { SendTokenCache } from "./features/sendToken/sendTokenAgent.js";
 import { getMarket, tools } from "./gpttools.js";
 import { messageEmber } from "./features/messageEmber/messageEmber.js";
 
@@ -22,7 +20,6 @@ interface SessionData {
   sendTokenCache?: SendTokenCache;
 }
 type MyContext = Context & SessionFlavor<SessionData> & ConversationFlavor;
-type MyConversation = Conversation<MyContext>;
 
 const promoText = `_・${promoMessage} – ${sponsoredMessage}・_`
 

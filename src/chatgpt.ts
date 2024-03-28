@@ -1,4 +1,3 @@
-import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import OpenAI from 'openai';
 import {
   chatgptTemperature,

@@ -1,9 +1,9 @@
 import { readFileSync } from 'fs'
 import url from 'url';
-import path, { format } from 'path';
-import { ChatCompletionCreateParams, ChatCompletionMessageParam, ChatCompletionMessageToolCall, ChatCompletionSystemMessageParam, ChatCompletionTool, ChatCompletionToolMessageParam, ChatCompletionUserMessageParam } from "openai/resources/index.mjs";
+import path from 'path';
+import { ChatCompletionCreateParams, ChatCompletionMessageParam, ChatCompletionMessageToolCall, ChatCompletionTool, ChatCompletionToolMessageParam } from "openai/resources/index.mjs";
 import { AiAssistantConfig, ChatGptModel, Conversation, aiAssistant, getLatestMessage, getLatestMessageText, getToolCalls, runTools } from '../../chatgpt.js';
-import { SendTokenTools, tools } from './sendTokenTools.js';
+import { tools } from './sendTokenTools.js';
 import { isAddress } from 'viem';
 import { WalletTokenBalance, getAccountAddress, getAccountBalances, truncateAddress } from '../../smartAccount.js';
 import { formatAccountBalancesAssistant, formatAccountBalancesUser } from '../../telegramBot.js';
