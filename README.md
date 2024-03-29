@@ -1,16 +1,33 @@
 # ember-engine
 
-## Requirements
-- [Docker](https://docs.docker.com/engine/install)
-- [Node](https://nodejs.org/en/download)
+## Setup
+To run the project, you need to have the package manager:
 - [yarn](https://classic.yarnpkg.com/lang/en/docs/install)
+- [docker](https://www.docker.com/)
 
-## Getting Started
-```sh
-cp .env.template .env
+After installing `yarn`, you need to run the database locally. The database used for
+this service is [Chroma](https://www.trychroma.com/). First, create a directory in the
+root of the repository named `chroma`. Then run the following command:
+
+```bash
+docker run -d --rm --name chromadb -p 8000:8000 -v ./chroma:/chroma/chroma -e IS_PERSISTENT=TRUE -e ANONYMIZED_TELEMETRY=TRUE chromadb/chroma:latest
 ```
-Get an [OpenAI key](https://platform.openai.com/account/api-keys).
+
+Following that, obtain the following API keys:
+
+- [Open AI](https://openai.com/): An open AI key. For the education step to work, you'll need a Tier 1 account, for which you will need a minimum 5 dollar charge in the account.
+- [Moralis](https://moralis.io/): A Moralis API key, you can create a free account to get it.
+
+Lastly, create a test bot by writing to [BotFather](https://t.me/BotFather) and get a token with the username you choose for the test bot.
+
+Then create the `.env` file in the root of the directory as such:
+
 ```sh
-echo "OPENAI_API_KEY={{your openai key}}" > .env
-./development.bash # starts chroma vector db and fastify server with docker compose
+CHROMA_HOST="localhost"
+CHROMA_PORT=8000
+OPENAI_API_KEY="YOUR_OPEN_AI_KEY_HERE"
+MORALIS_API_KEY="YOUR_MORALIS_API_KEY_HERE"
+TELEGRAM_BOT_USERNAME="THE_USERNAME_YOU_SELECTED"
+TELEGRAM_BOT_TOKEN="THE_TOKEN_BOT_FATHER_GAVE_YOU"
+SECRET_SALT="my_secret_salt"
 ```
