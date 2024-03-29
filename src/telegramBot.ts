@@ -7,7 +7,6 @@ import MarkdownIt from "markdown-it";
 import { ChatFromGetChat, Message } from "grammy/types";
 import { WalletTokenBalance, getAccountAddress, getAccountBalances } from "./smartAccount.js";
 import {
-  type Conversation,
   type ConversationFlavor,
   conversations,
 } from "@grammyjs/conversations";
