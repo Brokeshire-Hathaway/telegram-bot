@@ -8,6 +8,11 @@ let client: ChromaClient;
 let collection: Collection;
 
 /*
+ * Chroma host variable
+ */
+const CHROMA_HOST = process.env.CHROMA_HOST || "chroma_server";
+
+/*
  * Gets/gives singleton chroma client
  * Future devs: Do we want to create a connection pool if req/s gets too high?
  */
@@ -16,7 +21,7 @@ async function getDbClient(): Promise<ChromaClient> {
     client = new ChromaClient({
       // Thanks to docker compose putting this app and the chroma_server on
       // the same network, chroma_server resolves to the chroma_server IP
-      path: `http://chroma_server:${process.env.CHROMA_PORT!}`,
+      path: `http://${CHROMA_HOST}:${process.env.CHROMA_PORT!}`,
     });
     while (true) {
       try {
