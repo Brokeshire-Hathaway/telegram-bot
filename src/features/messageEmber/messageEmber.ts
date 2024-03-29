@@ -10,7 +10,7 @@ interface ResponseData {
     message: string;
 }
 
-const HOST = 'http://ember-core:8101';
+const HOST = process.env.EMBER_CORE_URL || 'http://ember-core:8101';
 
 export async function messageEmber(senderUid: string, threadId: string, message: string, onActivity: (message: string) => void): Promise<string> {
     const PATH = `/v1/threads/${threadId}/messages`;
@@ -68,7 +68,7 @@ export async function messageEmber(senderUid: string, threadId: string, message:
 
 function isValidResponse(data: any): data is ResponseData {
     return typeof data === 'object' &&
-        'status' in data && 
+        'status' in data &&
         (data.status === "done" || data.status === "processing" || data.status === "error") &&
         'message' in data &&
         typeof data.message === 'string';
