@@ -31,3 +31,21 @@ TELEGRAM_BOT_USERNAME="THE_USERNAME_YOU_SELECTED"
 TELEGRAM_BOT_TOKEN="THE_TOKEN_BOT_FATHER_GAVE_YOU"
 SECRET_SALT="my_secret_salt"
 ```
+
+Lastly, run:
+
+```sh
+yarn dev
+```
+
+If it was sucessfull, you should see in your console something like:
+
+```bash
+(node:12714) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+chunk count: 21
+
+...ready
+Transaction service running at http://0.0.0.0:3000
+```
