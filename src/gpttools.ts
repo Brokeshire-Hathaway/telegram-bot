@@ -1,4 +1,4 @@
-import { UUID, randomUUID } from 'crypto';
+import { randomUUID } from 'crypto';
 import { ChatCompletionTool } from 'openai/resources/index';
 import { calculateGasFee, sendTransaction, prepareSendToken } from './smartAccount.js';
 import PreciseNumber from './common/tokenMath.js';
@@ -81,7 +81,7 @@ export const tools: ChatCompletionTool[] = [
                 required: [],
             },
         },
-    }, 
+    },
 ];
 
 interface GetMarketArgs {
@@ -113,12 +113,12 @@ interface SendTokenPreview {
     token_symbol: string;
     gas_fee: string;
     total_amount: string;
-    transaction_uuid: UUID;
+    transaction_uuid: string;
 }
 
 type TransactionPreview = [accountUid: string, preview: SendTokenPreview, userOp: Partial<UserOperation>];
 
-const userOps: Record<UUID, TransactionPreview> = {};
+const userOps: Record<string, TransactionPreview> = {};
 
 export async function sendTokenPreview(args: SendTokenPreviewArgs): Promise<SendTokenPreview> {
     const transactionUuid = randomUUID();
@@ -139,7 +139,7 @@ export async function sendTokenPreview(args: SendTokenPreviewArgs): Promise<Send
     return sendTokenPreview;
 }
 interface ExecuteTransactionArgs {
-    transaction_uuid: UUID;
+    transaction_uuid: string;
 }
 
 interface UserReceipt {
@@ -150,11 +150,11 @@ interface UserReceipt {
     gas_fee: string;
     total_amount: string;
     transaction_hash: string;
-    transaction_uuid: UUID;
+    transaction_uuid: string;
     reason?: string;
 }
 
-const userOpReceipts: Record<UUID, UserReceipt> = {};
+const userOpReceipts: Record<string, UserReceipt> = {};
 
 export async function executeTransaction(args: ExecuteTransactionArgs) {
     const txPreview = userOps[args.transaction_uuid];
