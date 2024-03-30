@@ -2,7 +2,7 @@ import { BiconomySmartAccountV2, DEFAULT_ENTRYPOINT_ADDRESS } from "@biconomy/ac
 import { ECDSAOwnershipValidationModule, DEFAULT_ECDSA_OWNERSHIP_MODULE } from "@biconomy/modules";
 import { ChainId, Transaction, UserOperation } from "@biconomy/core-types"
 import { IBundler, Bundler, UserOpReceipt, UserOpResponse, UserOpStatus } from '@biconomy/bundler'
-import { IPaymaster, BiconomyPaymaster, SponsorUserOperationDto, PaymasterMode, IHybridPaymaster } from '@biconomy/paymaster'
+import { SponsorUserOperationDto, PaymasterMode, IHybridPaymaster } from '@biconomy/paymaster'
 import { LocalAccountSigner } from "@alchemy/aa-core";
 import derivePrivateKey from "./derivePrivateKey.js";
 import { encodeFunctionData, toHex } from "viem";
@@ -28,40 +28,36 @@ type GetWalletTokenBalance = {
 };
 export type WalletTokenBalance = GetWalletTokenBalance & { usdBalance: string | null };
 
-const biconomyTestnet = 11155111 as ChainId;
+const BICONOMY_TESTNET = 11155111 as ChainId;
 
 // create instance of bundler
 const userOpReceiptMaxDurationIntervals: { 11155111?: number } = {
-    [11155111]: 60000, 
+    [11155111]: 60000,
   }
 const bundler: IBundler = new Bundler({
-    //bundlerUrl: `https://bundler.biconomy.io/api/v2/${biconomyTestnet}/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44`, // Doesn't work with Sepolia
-    bundlerUrl: "https://bundler.biconomy.io/api/v2/11155111/BBagqibhs.HI7fopYh-iJkl-45ic-afU9-6877f7gaia78Cv",
-    chainId: biconomyTestnet,
+    bundlerUrl: `https://bundler.biconomy.io/api/v2/${BICONOMY_TESTNET}/BBagqibhs.HI7fopYh-iJkl-45ic-afU9-6877f7gaia78Cv`,
+    chainId: BICONOMY_TESTNET,
     entryPointAddress: DEFAULT_ENTRYPOINT_ADDRESS,
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore   
+    // @ts-ignore
     userOpReceiptMaxDurationIntervals: userOpReceiptMaxDurationIntervals,
 })
 
-
-// create instance of paymaster
-const paymaster: IPaymaster = new BiconomyPaymaster({
-    paymasterUrl: `https://paymaster.biconomy.io/api/v1/${biconomyTestnet}/1ERuu9OSC.e70f5d58-c73e-4e38-a27e-e3a779dc6171`
-})
+export async function getSigner(uid: string) {
+    const privateKey = derivePrivateKey(uid);
+    return LocalAccountSigner.privateKeyToAccountSigner(toHex(privateKey)) as unknown as Signer;
+}
 
 export async function getSmartAccount(uid: string) {
-    const privateKey = derivePrivateKey(uid);
-    const signer = LocalAccountSigner.privateKeyToAccountSigner(toHex(privateKey));
+    const signer = getSigner(uid);
     const ownershipModule = await ECDSAOwnershipValidationModule.create({
         signer: signer as unknown as Signer,
         moduleAddress: DEFAULT_ECDSA_OWNERSHIP_MODULE
         });
     const biconomyAccount = await BiconomySmartAccountV2.create({
-        chainId: biconomyTestnet,
-        rpcUrl: "https://rpc2.sepolia.org", //"https://rpc.sepolia.org",
+        chainId: BICONOMY_TESTNET,
+        rpcUrl: "https://rpc2.sepolia.org",
         bundler: bundler,
-        //paymaster: paymaster,
         entryPointAddress: DEFAULT_ENTRYPOINT_ADDRESS,
         defaultValidationModule: ownershipModule,
         activeValidationModule: ownershipModule
@@ -69,7 +65,7 @@ export async function getSmartAccount(uid: string) {
     return biconomyAccount;
 }
 
-export async function getAccountAddress(uid: string): Promise<`0x${string}`> {
+export async function getAccountAddress(uid: string) {
     const smartAccount = await getSmartAccount(uid);
     return await smartAccount.getAccountAddress() as `0x${string}`;
 };
@@ -95,7 +91,7 @@ export async function getAccountBalances(address: `0x${string}`): Promise<Wallet
         token_address: null,
     }
     const usdNativeBalance = await getUsdTokenBalances([formattedNativeBalance]);
-    
+
     const tokenBalancesResponse = await Moralis.EvmApi.token.getWalletTokenBalances({
         address,
         chain: moralisTestnet,
@@ -215,7 +211,7 @@ export async function sendTransaction(accountUid: string, userOp: Partial<UserOp
         console.error(error);
         throw error;
     }
-    
+
     console.log("txHash", userOpReceipt.receipt.transactionHash);
     return userOpReceipt;
 }
