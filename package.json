@@ -6,7 +6,7 @@
   "license": "MIT",
   "type": "module",
   "dependencies": {
-    "@0xsquid/sdk": "2.8.0-beta.0",
+    "@0xsquid/sdk": "^1.0.0",
     "@alchemy/aa-core": "^1.2.0",
     "@biconomy/account": "^3.1.1",
     "@biconomy/bundler": "^3.1.1",
