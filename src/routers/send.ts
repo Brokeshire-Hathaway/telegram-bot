@@ -1,12 +1,9 @@
 import express, { Request, Response } from 'express';
-import bodyParser from 'body-parser';
-import { executeTransaction, sendTokenPreview } from '../../gpttools.js';
+import { executeTransaction, sendTokenPreview } from '../gpttools.js';
 import z from 'zod';
 
-// Create the express application
-const app = express();
-const port = 3000;
-app.use(bodyParser.json());
+// Create the router
+const router = express.Router();
 
 // Endpoint to prepare a transaction
 const token_address = z.custom<`0x${string}`>((val) => {
@@ -24,8 +21,7 @@ const PrepareTransactionBody = z.object({
     is_receive_native_token: z.boolean(),
     receive_token_address: token_address.optional()
 })
-
-app.post('/transactions/prepare', async (req: Request, res: Response) => {
+router.post('/prepare', async (req: Request, res: Response) => {
     const result = await PrepareTransactionBody.safeParseAsync(req.body);
     if (!result.success) {
         return res.status(400).json({ success: false, message: "Invalid request body" });
@@ -50,8 +46,7 @@ app.post('/transactions/prepare', async (req: Request, res: Response) => {
 const SendTransactionBody = z.object({
     transaction_uuid: z.string().uuid()
 });
-
-app.post('/transactions/send', async (req: Request, res: Response) => {
+router.post('/send', async (req: Request, res: Response) => {
     const result = await SendTransactionBody.safeParseAsync(req.body);
     if (!result.success) {
         return res.status(400).json({ success: false, message: "Invalid request body" });
@@ -66,12 +61,4 @@ app.post('/transactions/send', async (req: Request, res: Response) => {
     }
 });
 
-export function startTransactionService() {
-    const HOST = '0.0.0.0';
-    app.listen(port, () => {
-        console.log(`Transaction service running at http://${HOST}:${port}`);
-        return HOST;
-    });
-}
-
-export default app; // Export the app for testing purposes
+export default router;

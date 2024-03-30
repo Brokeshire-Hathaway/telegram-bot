@@ -6,7 +6,7 @@ import { TokenTextSplitter } from "langchain/text_splitter";
 import { chunkSize, chunkOverlap } from "./config.js";
 import { startTelegramBot } from "./telegramBot.js";
 import Moralis from "moralis";
-import { startTransactionService } from "./features/executeTransaction/executeTransactionService.js";
+import { startTransactionService } from "./service.js";
 
 async function main() {
   //dotenv.config();
