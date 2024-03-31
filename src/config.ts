@@ -6,8 +6,7 @@ export const HOST = "0.0.0.0";
 export const PORT = 3000;
 export const chatgptTemperature = 0.7;
 export const nDocumentsToInclude = 3;
-export const systemMessageContent =
-`# Mission
+export const systemMessageContent = `# Mission
 Help Firepot AI (Firepot) and Ember AI users with their crypto and DeFi needs, taking actions for them when possible.
 
 # Identity
@@ -44,5 +43,7 @@ Help Firepot AI (Firepot) and Ember AI users with their crypto and DeFi needs, t
 export const chunkSize = 256;
 export const chunkOverlap = 32;
 export const promoMessage = "[Ember AI](https://t.me/emberchat)";
-export const sponsoredMessage = "Sponsored by [Ember Cognition](https://twitter.com/EmberAGI)";
-export const newGroupAddMessage = (groupName: string) => (`Looks like I'm the AI in demand! Another group, ${groupName}, has decided to bring my friendly and helpful vibes into their chat. Let's make some magic happen! 🤖✨`);
+export const sponsoredMessage =
+  "Sponsored by [Ember Cognition](https://twitter.com/EmberAGI)";
+export const newGroupAddMessage = (groupName: string) =>
+  `Looks like I'm the AI in demand! Another group, ${groupName}, has decided to bring my friendly and helpful vibes into their chat. Let's make some magic happen! 🤖✨`;

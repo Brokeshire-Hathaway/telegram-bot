@@ -1,12 +1,26 @@
-import OpenAI from 'openai';
+import OpenAI from "openai";
 import {
   chatgptTemperature,
   systemMessageContent as systemMessageMain,
   nDocumentsToInclude,
 } from "./config.js";
 import { queryVectorDatabase } from "./database.js";
-import { getMarket, executeTransaction, sendTokenPreview, tools } from "./gpttools.js";
-import { ChatCompletionAssistantMessageParam, ChatCompletionCreateParams, ChatCompletionMessage, ChatCompletionMessageParam, ChatCompletionMessageToolCall, ChatCompletionSystemMessageParam, ChatCompletionTool, ChatCompletionToolMessageParam, ChatCompletionUserMessageParam } from "openai/resources/index";
+import {
+  getMarket,
+  executeTransaction,
+  sendTokenPreview,
+  tools,
+} from "./gpttools.js";
+import {
+  ChatCompletionAssistantMessageParam,
+  ChatCompletionCreateParams,
+  ChatCompletionMessageParam,
+  ChatCompletionMessageToolCall,
+  ChatCompletionSystemMessageParam,
+  ChatCompletionTool,
+  ChatCompletionToolMessageParam,
+  ChatCompletionUserMessageParam,
+} from "openai/resources/index";
 
 //export type Role = "system" | "user" | "assistant";
 //export type Content = string;
@@ -69,7 +83,7 @@ export interface AiAssistantConfig {
 
 export async function aiAssistant(
   conversation: Conversation = [],
-  config: AiAssistantConfig
+  config: AiAssistantConfig,
 ): Promise<Conversation> {
   console.log(`aiAssistant - conversation`);
   console.log(conversation);
@@ -77,31 +91,36 @@ export async function aiAssistant(
   console.log(JSON.stringify(config, null, 4));
 
   const userMessage = getLatestUserMessage(conversation);
-  let context =
-`# Context
+  let context = `# Context
 ## Current Date & Time
-${new Date().toISOString()}`
-  const previousMessage = conversation.length > 0 ? `${getLatestMessageText(conversation)}\n\n` : "";
+${new Date().toISOString()}`;
+  const previousMessage =
+    conversation.length > 0 ? `${getLatestMessageText(conversation)}\n\n` : "";
   if (config.vectorSearch) {
     const relevantDocuments = await queryVectorDatabase(
       `${previousMessage}${userMessage}`,
-      nDocumentsToInclude
+      nDocumentsToInclude,
     );
-    const relevantDocsFormatted = relevantDocuments[0].reduce((acc, doc, index) => {
-      return `${acc}
+    const relevantDocsFormatted = relevantDocuments[0].reduce(
+      (acc, doc, index) => {
+        return `${acc}
 ## Search Result ${index + 1}
 \`\`\`
 ${doc}
 \`\`\`
-`
-    }, "");
+`;
+      },
+      "",
+    );
     context = `${context}${relevantDocsFormatted}`;
   }
 
-  config.systemMessageContent =
-`${config.systemMessageContent}
+  config.systemMessageContent = `${config.systemMessageContent}
 ${context}`;
-  const systemMessage: ChatCompletionSystemMessageParam = { role: "system", content: config.systemMessageContent };
+  const systemMessage: ChatCompletionSystemMessageParam = {
+    role: "system",
+    content: config.systemMessageContent,
+  };
   //console.log(`systemMessage`);
   //console.log(systemMessage);
   conversation = [systemMessage, ...conversation];
@@ -148,16 +167,21 @@ ${context}`;
   return conversation;
 }
 
-export async function runTools(toolCalls: ChatCompletionMessageToolCall[], availableFunctions: { [key: string]: (...args: any) => any }): Promise<ChatCompletionToolMessageParam[]> {
-  const functionResponses = await Promise.allSettled(toolCalls.map(toolCall => {
-    // Keep for server logs
-    console.log("==================== Tool Call:");
-    console.log(toolCall);
+export async function runTools(
+  toolCalls: ChatCompletionMessageToolCall[],
+  availableFunctions: { [key: string]: (...args: any) => any },
+): Promise<ChatCompletionToolMessageParam[]> {
+  const functionResponses = await Promise.allSettled(
+    toolCalls.map((toolCall) => {
+      // Keep for server logs
+      console.log("==================== Tool Call:");
+      console.log(toolCall);
 
-    const functionToCall = availableFunctions[toolCall.function.name];
-    const functionArgs = JSON.parse(toolCall.function.arguments);
-    return functionToCall(functionArgs);
-  }));
+      const functionToCall = availableFunctions[toolCall.function.name];
+      const functionArgs = JSON.parse(toolCall.function.arguments);
+      return functionToCall(functionArgs);
+    }),
+  );
 
   console.log(`runTools - functionResponses`);
   console.log(functionResponses);
@@ -166,9 +190,9 @@ export async function runTools(toolCalls: ChatCompletionMessageToolCall[], avail
     const message: ChatCompletionToolMessageParam = {
       tool_call_id: toolCalls[index].id,
       role: "tool",
-      content: JSON.stringify(functionResponse, (_, value) => (
-        value instanceof Error ? value.message : value
-      ))
+      content: JSON.stringify(functionResponse, (_, value) =>
+        value instanceof Error ? value.message : value,
+      ),
     };
     return message;
   });
@@ -178,40 +202,51 @@ export async function chatGippity(
   userMessage: ChatCompletionUserMessageParam,
   conversationHistory: Conversation = [],
   vectorSearch = true,
-  chatGptModel: ChatGptModel = "gpt-4-1106-preview"
+  chatGptModel: ChatGptModel = "gpt-4-1106-preview",
 ): Promise<Conversation> {
   let systemMessageContent: string;
-  let context =
-`# Context
+  let context = `# Context
 ## Current Date & Time
-${new Date().toISOString()}`
-  const previousMessage = conversationHistory.length > 0 ? `${getLatestMessageText(conversationHistory)}\n\n` : "";
+${new Date().toISOString()}`;
+  const previousMessage =
+    conversationHistory.length > 0
+      ? `${getLatestMessageText(conversationHistory)}\n\n`
+      : "";
   if (vectorSearch) {
     const relevantDocuments = await queryVectorDatabase(
       `${previousMessage}${userMessage}`,
-      nDocumentsToInclude
+      nDocumentsToInclude,
     );
-    const relevantDocsFormatted = relevantDocuments[0].reduce((acc, doc, index) => {
-      return `${acc}
+    const relevantDocsFormatted = relevantDocuments[0].reduce(
+      (acc, doc, index) => {
+        return `${acc}
 ## Search Result ${index + 1}
 \`\`\`
 ${doc}
 \`\`\`
-`
-    }, "");
+`;
+      },
+      "",
+    );
     context = `${context}${relevantDocsFormatted}`;
   }
 
-  systemMessageContent =
-`${systemMessageMain}
+  systemMessageContent = `${systemMessageMain}
 ${context}`;
-  const systemMessage: ChatCompletionSystemMessageParam = { role: "system", content: systemMessageContent };
-  const conversation: Conversation = [systemMessage, ...conversationHistory, userMessage];
+  const systemMessage: ChatCompletionSystemMessageParam = {
+    role: "system",
+    content: systemMessageContent,
+  };
+  const conversation: Conversation = [
+    systemMessage,
+    ...conversationHistory,
+    userMessage,
+  ];
   const params: OpenAI.Chat.ChatCompletionCreateParams = {
     messages: conversation,
     model: chatGptModel,
     temperature: chatgptTemperature,
-    tools
+    tools,
   };
 
   const response = await openai.chat.completions.create(params);
@@ -236,9 +271,7 @@ ${context}`;
       const functionName = toolCall.function.name;
       const functionToCall = availableFunctions[functionName];
       const functionArgs = JSON.parse(toolCall.function.arguments);
-      functionResPromises.push(functionToCall(
-        functionArgs
-      ));
+      functionResPromises.push(functionToCall(functionArgs));
     }
     const functionResponses = await Promise.allSettled(functionResPromises);
     functionResponses.forEach((functionResponse, index) => {
@@ -286,20 +319,31 @@ export function getLatestMessageText(conversation: Conversation): string {
   return assistantContent;
 }
 
-export function getLatestMessage(conversation: Conversation): ChatCompletionMessageParam {
+export function getLatestMessage(
+  conversation: Conversation,
+): ChatCompletionMessageParam {
   return conversation.slice(-1)[0];
 }
 
-function isUserMessage(message: ChatCompletionMessageParam): message is ChatCompletionUserMessageParam {
+function isUserMessage(
+  message: ChatCompletionMessageParam,
+): message is ChatCompletionUserMessageParam {
   return message.role === "user";
 }
 
-function getLatestUserMessage(conversation: Conversation): ChatCompletionUserMessageParam | undefined {
-  const userMessages = conversation.filter((message): message is ChatCompletionUserMessageParam => message.role === "user");
+function getLatestUserMessage(
+  conversation: Conversation,
+): ChatCompletionUserMessageParam | undefined {
+  const userMessages = conversation.filter(
+    (message): message is ChatCompletionUserMessageParam =>
+      message.role === "user",
+  );
   return userMessages.length > 0 ? userMessages.slice(-1)[0] : undefined;
 }
 
-function isAssistantMessage(message: ChatCompletionMessageParam): message is ChatCompletionAssistantMessageParam {
+function isAssistantMessage(
+  message: ChatCompletionMessageParam,
+): message is ChatCompletionAssistantMessageParam {
   return message.role === "assistant";
 }
 

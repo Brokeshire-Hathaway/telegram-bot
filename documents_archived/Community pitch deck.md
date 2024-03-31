@@ -19,15 +19,15 @@ AI is Coming
 Where complexities exist, Ember arises to provide support and automation for ease.
 
 Simplify
-Our biggest focus, Ember revolves around creating a seamless and streamlined process to navigate decentralized landscapes. Enough of the technical jargon! 
+Our biggest focus, Ember revolves around creating a seamless and streamlined process to navigate decentralized landscapes. Enough of the technical jargon!
 Web3 should be accessible and user-friendly for everyone.
 
 Support
-Ember doesn’t leave anything to chance, despite an unrivaled simplicity! 
+Ember doesn’t leave anything to chance, despite an unrivaled simplicity!
 We take it a step further to amplify user’s experience with personalized support which is available 24/7. With the help of Ember, You will never walk alone.
 
 Automate
-Why go through the hassle when you can automate? 
+Why go through the hassle when you can automate?
 Ember’s got you covered whether you want to schedule a transaction, or perhaps optimize smart contracts and personalize DeFi interactions. Ember does all the work for you while you sleep!
 
 Unbounded by Limits
@@ -58,16 +58,16 @@ Nothing beats simplicity
 The Firepot experience can be summarized in 3 steps
 
 1. Connect
-Install the Firepot app.
-Set it up with few taps in no time.
-connect to the future of DeFi in real time.
+   Install the Firepot app.
+   Set it up with few taps in no time.
+   connect to the future of DeFi in real time.
 
 2. Automate
-Participate in Yield Farms
-Automatic yield collection
-Buy, Sell and DCA while you sleep
+   Participate in Yield Farms
+   Automatic yield collection
+   Buy, Sell and DCA while you sleep
 
 3. Relax
-DeFi so easy, your mom can use it is no joke! Simply relax and enjoy a seamless DeFi experience.
+   DeFi so easy, your mom can use it is no joke! Simply relax and enjoy a seamless DeFi experience.
 
 We are creating the bridge for web2 to exist as web3. You won’t know the difference

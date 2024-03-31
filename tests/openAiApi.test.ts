@@ -1,18 +1,16 @@
 import dotenv from "dotenv";
-import chai from 'chai';
-import { AiAssistantConfig, Conversation, aiAssistant, setOpenAiInstance } from "../src/chatgpt.js";
-import { systemMessageContent } from "../src/features/sendToken/sendTokenAgent.js";
-import { tools } from "../src/features/sendToken/sendTokenTools.js";
+import chai from "chai";
+import { setOpenAiInstance } from "../src/chatgpt.js";
 
 chai.should();
 
-describe("Open AI API test", function() {
-    before(async function () {
-        dotenv.config();
-        setOpenAiInstance();
-    });
+describe("Open AI API test", function () {
+  before(async function () {
+    dotenv.config();
+    setOpenAiInstance();
+  });
 
-    /*it("should receive assistant response (gpt-4-1106-preview)", async function() {
+  /*it("should receive assistant response (gpt-4-1106-preview)", async function() {
         this.timeout(5000);
 
         let conversation: Conversation = [
