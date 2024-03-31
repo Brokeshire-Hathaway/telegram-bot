@@ -61,3 +61,7 @@ all the code style errors and get some corrections from eslint do:
 ```bash
 yarn lint:fix
 ```
+
+Additionally, the `.vscode` folder has been setup so the formatter is run on each file
+save. Please install the recommended extensions for it to work, that is install
+`esbenp.prettier-vscode`.
