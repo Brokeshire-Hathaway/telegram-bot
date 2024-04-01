@@ -107,12 +107,15 @@ router.post("/", async (req: Request, res: Response) => {
       getRpcUrl(memory.network),
     );
     const signer = new ethers.Wallet(privateKey, provider);
-    const transaction = await squid.executeRoute({
+    const transaction = (await squid.executeRoute({
       route: memory.route,
       signer,
-    });
+    })) as ethers.providers.TransactionResponse;
+    const receipt = await transaction.wait();
     TRANSACTION_MEMORY.delete(body.transaction_uuid);
-    return res.json(transaction);
+    return res.json({
+      hash: receipt.transactionHash,
+    });
   } catch (err) {
     console.log(err);
     return res
