@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
-import { executeTransaction, sendTokenPreview } from "../gpttools.js";
+import { executeTransaction, sendTokenPreview } from "../../gpttools.js";
 import z from "zod";
+import { Network } from "../../chain.js";
 
 // Create the router
 const router = express.Router();
@@ -9,8 +10,8 @@ const router = express.Router();
 const token_address = z.custom<`0x${string}`>((val) => {
   return typeof val === "string" ? /^0x[a-fA-F0-9]+$/.test(val) : false;
 });
-const UniversalAddress = z.object({
-  network: z.string(),
+export const UniversalAddress = z.object({
+  network: Network,
   identifier: z.string(),
   platform: z.string(),
 });
@@ -32,6 +33,7 @@ router.post("/prepare", async (req: Request, res: Response) => {
   try {
     const preview = await sendTokenPreview({
       accountUid: body.sender_address.identifier,
+      network: body.sender_address.network,
       recipientAddress: body.recipient_address.identifier as `0x${string}`,
       amount: body.amount,
       standardization: body.is_receive_native_token ? "native" : "erc20",

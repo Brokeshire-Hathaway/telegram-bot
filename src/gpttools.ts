@@ -4,10 +4,12 @@ import {
   calculateGasFee,
   sendTransaction,
   prepareSendToken,
-} from "./smartAccount.js";
+} from "./features/send/account.js";
 import PreciseNumber from "./common/tokenMath.js";
 import { UserOperation } from "@biconomy/core-types";
 import { formatEther } from "viem";
+import { type Network, createBundler, getRpcUrl } from "./chain.js";
+import { getSmartAccount } from "./account/index.js";
 
 interface CoinGeckoSearchCoin {
   id: string;
@@ -107,6 +109,7 @@ export async function getMarket(
 
 interface SendTokenPreviewArgs {
   accountUid: string;
+  network: Network;
   recipientAddress: `0x${string}`;
   amount: string;
   standardization: "native" | "erc20";
@@ -126,16 +129,20 @@ type TransactionPreview = [
   accountUid: string,
   preview: SendTokenPreview,
   userOp: Partial<UserOperation>,
+  network: Network,
 ];
 
-const userOps: Record<string, TransactionPreview> = {};
+const TRANSACTION_MEMORY: Record<string, TransactionPreview> = {};
 
 export async function sendTokenPreview(
   args: SendTokenPreviewArgs,
 ): Promise<SendTokenPreview> {
   const transactionUuid = randomUUID();
+  const bundler = createBundler(args.network);
+  const rpcUrl = getRpcUrl(args.network);
+  const smartAccount = await getSmartAccount(args.accountUid, bundler, rpcUrl);
   const userOp = await prepareSendToken(
-    args.accountUid,
+    smartAccount,
     args.recipientAddress,
     PreciseNumber.from(args.amount),
     args.tokenAddress,
@@ -153,7 +160,12 @@ export async function sendTokenPreview(
     transaction_uuid: transactionUuid,
   };
 
-  userOps[transactionUuid] = [args.accountUid, sendTokenPreview, userOp];
+  TRANSACTION_MEMORY[transactionUuid] = [
+    args.accountUid,
+    sendTokenPreview,
+    userOp,
+    args.network,
+  ];
 
   return sendTokenPreview;
 }
@@ -176,13 +188,16 @@ interface UserReceipt {
 const userOpReceipts: Record<string, UserReceipt> = {};
 
 export async function executeTransaction(args: ExecuteTransactionArgs) {
-  const txPreview = userOps[args.transaction_uuid];
+  const txPreview = TRANSACTION_MEMORY[args.transaction_uuid];
 
   if (!txPreview) {
     throw new Error(`Transaction UUID "${args.transaction_uuid}" not found.`);
   }
 
-  const userOpReceipt = await sendTransaction(txPreview[0], txPreview[2]);
+  const bundler = createBundler(txPreview[3]);
+  const rpcUrl = getRpcUrl(txPreview[3]);
+  const smartAccount = await getSmartAccount(txPreview[0], bundler, rpcUrl);
+  const userOpReceipt = await sendTransaction(smartAccount, txPreview[2]);
   console.log(`executeTransaction - userOpReceipt`);
   console.log(userOpReceipt);
 

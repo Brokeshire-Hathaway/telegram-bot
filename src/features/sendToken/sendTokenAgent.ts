@@ -22,10 +22,13 @@ import { tools } from "./sendTokenTools.js";
 import { isAddress } from "viem";
 import {
   WalletTokenBalance,
-  getAccountAddress,
   getAccountBalances,
+} from "../../account/balance.js";
+import {
+  getAccountAddress,
+  getSepoliaSmartAccount,
   truncateAddress,
-} from "../../smartAccount.js";
+} from "../../account/index.js";
 import {
   formatAccountBalancesAssistant,
   formatAccountBalancesUser,
@@ -82,9 +85,10 @@ export async function sendTokenAgent(
 
   // STAGE I: Convert intent into sendTokenPreview parameters
   //
+  const smartAccount = await getSepoliaSmartAccount(accountUid);
   const senderAddress =
     cache?.senderAddress ??
-    (await setCache("senderAddress", getAccountAddress(accountUid)));
+    (await setCache("senderAddress", getAccountAddress(smartAccount)));
   const accountBalances = await setCache(
     "accountBalances",
     getAccountBalances(senderAddress),
@@ -125,7 +129,8 @@ export async function sendTokenAgent(
     conversation.push({ role: "assistant", content: message });
     //tokenRequest.recipientAddress = await getAccountAddress(recipientTelegramId);
     console.log(`sendTokenAgent - getAccountAddress`);
-    const recipientAddress = await getAccountAddress(recipientTelegramId);
+    const smartAccount = await getSepoliaSmartAccount(accountUid);
+    const recipientAddress = await getAccountAddress(smartAccount);
     sendTokenParams.recipientAddress = recipientAddress;
     conversation.push({ role: "user", content: recipientAddress });
     recipientLink = `[${sendTokenParams.recipientAddress}](tg://user?id=${recipientTelegramId})`;

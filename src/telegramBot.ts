@@ -22,11 +22,12 @@ import {
 } from "openai/resources/index";
 import MarkdownIt from "markdown-it";
 import { ChatFromGetChat, Message } from "grammy/types";
+import { WalletTokenBalance, getAccountBalances } from "./account/balance.js";
 import {
-  WalletTokenBalance,
   getAccountAddress,
-  getAccountBalances,
-} from "./smartAccount.js";
+  getSepoliaSmartAccount,
+  getSmartAccount,
+} from "./account/index.js";
 import {
   type ConversationFlavor,
   conversations,
@@ -73,12 +74,14 @@ export function startTelegramBot() {
 
   bot.command("address", async (ctx) => {
     console.log(`ctx.from?.id.toString()!: ${ctx.from?.id.toString()!}`);
-    const address = await getAccountAddress(ctx.from?.id.toString()!);
+    const smartAccount = await getSepoliaSmartAccount(ctx.from?.id.toString()!);
+    const address = await getAccountAddress(smartAccount);
     await ctx.reply(address);
   });
 
   bot.command("balance", async (ctx) => {
-    const address = await getAccountAddress(ctx.from?.id.toString()!);
+    const smartAccount = await getSepoliaSmartAccount(ctx.from?.id.toString()!);
+    const address = await getAccountAddress(smartAccount);
     const balances = await getAccountBalances(address);
     const markdownBalances = formatAccountBalancesUser(balances);
     await sendFormattedMessage(ctx, ctx.chat!.id, markdownBalances);
