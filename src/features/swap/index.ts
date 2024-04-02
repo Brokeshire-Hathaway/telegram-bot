@@ -112,6 +112,7 @@ router.post("/", async (req: Request, res: Response) => {
       [
         {
           to: memory.route.transactionRequest.targetAddress,
+          value: memory.route.transactionRequest.value,
           data: memory.route.transactionRequest.data,
         },
       ],
