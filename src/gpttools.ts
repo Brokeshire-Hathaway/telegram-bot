@@ -8,7 +8,7 @@ import {
 import PreciseNumber from "./common/tokenMath.js";
 import { UserOperation } from "@biconomy/core-types";
 import { formatEther } from "viem";
-import { type Network, createBundler, getRpcUrl } from "./chain.js";
+import { type Network } from "./chain.js";
 import { getSmartAccount } from "./account/index.js";
 
 interface CoinGeckoSearchCoin {
@@ -138,9 +138,7 @@ export async function sendTokenPreview(
   args: SendTokenPreviewArgs,
 ): Promise<SendTokenPreview> {
   const transactionUuid = randomUUID();
-  const bundler = createBundler(args.network);
-  const rpcUrl = getRpcUrl(args.network);
-  const smartAccount = await getSmartAccount(args.accountUid, bundler, rpcUrl);
+  const smartAccount = await getSmartAccount(args.accountUid, args.network);
   const userOp = await prepareSendToken(
     smartAccount,
     args.recipientAddress,
@@ -194,9 +192,7 @@ export async function executeTransaction(args: ExecuteTransactionArgs) {
     throw new Error(`Transaction UUID "${args.transaction_uuid}" not found.`);
   }
 
-  const bundler = createBundler(txPreview[3]);
-  const rpcUrl = getRpcUrl(txPreview[3]);
-  const smartAccount = await getSmartAccount(txPreview[0], bundler, rpcUrl);
+  const smartAccount = await getSmartAccount(txPreview[0], txPreview[3]);
   const userOpReceipt = await sendTransaction(smartAccount, txPreview[2]);
   console.log(`executeTransaction - userOpReceipt`);
   console.log(userOpReceipt);

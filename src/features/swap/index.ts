@@ -3,10 +3,8 @@ import z from "zod";
 import { Squid, RouteData } from "@0xsquid/sdk";
 import { randomUUID } from "crypto";
 import { UniversalAddress } from "../send/index.js";
-import { type Network, createBundler, getRpcUrl } from "../../chain.js";
+import { type Network } from "../../chain.js";
 import { getSmartAccount, getAccountAddress } from "../../account/index.js";
-import derivePrivateKey from "../../account/derivePrivateKey.js";
-import { ethers } from "ethers";
 
 // Squid object
 const squid = new Squid({
@@ -42,12 +40,9 @@ router.post("/preview", async (req: Request, res: Response) => {
     return res.status(400).json(result);
   }
   const body = result.data;
-  const bundler = createBundler(body.sender.network);
-  const rpcUrl = getRpcUrl(body.sender.network);
   const account = await getSmartAccount(
     body.sender.identifier,
-    bundler,
-    rpcUrl,
+    body.sender.network,
   );
   try {
     const { route } = await squid.getRoute({
@@ -100,21 +95,43 @@ router.post("/", async (req: Request, res: Response) => {
       .json({ success: false, message: "Transaction does not exist" });
   }
   try {
-    const privateKey = ethers.utils.hexlify(
-      derivePrivateKey(memory.identifier),
+    if (!memory.route.transactionRequest) {
+      TRANSACTION_MEMORY.delete(body.transaction_uuid);
+      return res
+        .status(500)
+        .json({ success: false, message: "No contract to execute" });
+    }
+
+    const smartAccount = await getSmartAccount(
+      memory.identifier,
+      memory.network,
     );
-    const provider = new ethers.providers.JsonRpcProvider(
-      getRpcUrl(memory.network),
+
+    // Create user operation with gas limits
+    const userOp = await smartAccount.buildUserOp(
+      [
+        {
+          to: memory.route.transactionRequest.targetAddress,
+          data: memory.route.transactionRequest.data,
+        },
+      ],
+      {
+        skipBundlerGasEstimation: true,
+        overrides: {
+          maxFeePerGas: memory.route.transactionRequest.maxFeePerGas,
+          maxPriorityFeePerGas:
+            memory.route.transactionRequest.maxPriorityFeePerGas,
+          callGasLimit: memory.route.transactionRequest.gasLimit,
+          verificationGasLimit: memory.route.transactionRequest.gasLimit,
+        },
+      },
     );
-    const signer = new ethers.Wallet(privateKey, provider);
-    const transaction = (await squid.executeRoute({
-      route: memory.route,
-      signer,
-    })) as ethers.providers.TransactionResponse;
-    const receipt = await transaction.wait();
+
+    const responseUserOp = await smartAccount.sendUserOp(userOp);
+    const transactionHash = await responseUserOp.waitForTxHash();
     TRANSACTION_MEMORY.delete(body.transaction_uuid);
     return res.json({
-      hash: receipt.transactionHash,
+      hash: transactionHash.transactionHash,
     });
   } catch (err) {
     console.log(err);
