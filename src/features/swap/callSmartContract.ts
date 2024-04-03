@@ -2,7 +2,6 @@ import { TransactionRequest } from "@0xsquid/sdk";
 import { BiconomySmartAccountV2 } from "@biconomy/account";
 import { Transaction } from "@biconomy/core-types";
 import { erc20Abi } from "abitype/abis";
-import { ethers } from "ethers";
 import { getAccountAddress } from "../../account/index.js";
 import {
   createPublicClient,
@@ -11,8 +10,7 @@ import {
   http,
 } from "viem";
 import { Network, getViemChain } from "../../chain.js";
-
-const NATIVE_TOKEN = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
+import { isTokeNative } from "../../token.js";
 
 async function preSwapContracts(
   fromToken: string,
@@ -21,7 +19,7 @@ async function preSwapContracts(
   route: TransactionRequest,
   fromAmount: string,
 ): Promise<Transaction[]> {
-  if (fromToken === NATIVE_TOKEN) return [];
+  if (isTokeNative(fromToken)) return [];
 
   // Check current allowance
   const accountAddress = await getAccountAddress(smartAccount);
@@ -38,17 +36,16 @@ async function preSwapContracts(
     accountAddress,
     route.targetAddress as `0x${string}`,
   ]);
-  const sourceAmount = ethers.BigNumber.from(fromAmount);
-  if (!sourceAmount.gt(allowance)) {
+  const sourceAmount = BigInt(fromAmount);
+  if (sourceAmount <= allowance) {
     return [];
   }
 
   // If allowance is not enough, ask for max allowance
-  const amountToApprove = ethers.BigNumber.from(fromAmount);
   const dataApprove = encodeFunctionData({
     abi: erc20Abi,
     functionName: "approve",
-    args: [route.targetAddress as `0x${string}`, amountToApprove.toBigInt()],
+    args: [route.targetAddress as `0x${string}`, BigInt(fromAmount)],
   });
   return [
     {
