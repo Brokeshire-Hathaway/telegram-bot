@@ -1,4 +1,5 @@
 import { ChainId } from "@biconomy/core-types";
+import { Chain, polygonMumbai, sepolia } from "viem/chains";
 import z from "zod";
 
 export const Network = z.union([
@@ -26,5 +27,14 @@ export function getRpcUrl(network: Network): string {
       return "https://rpc2.sepolia.org";
     case "polygon-mumbai":
       return "https://polygon-mumbai-bor-rpc.publicnode.com";
+  }
+}
+
+export function getViemChain(network: Network): Chain {
+  switch (network) {
+    case "sepolia":
+      return sepolia;
+    case "polygon-mumbai":
+      return polygonMumbai;
   }
 }

@@ -1,10 +1,11 @@
 import express, { Request, Response } from "express";
 import z from "zod";
-import { Squid, RouteData } from "@0xsquid/sdk";
+import { Squid, TransactionRequest } from "@0xsquid/sdk";
 import { randomUUID } from "crypto";
 import { UniversalAddress } from "../send/index.js";
-import { type Network } from "../../chain.js";
+import { Network, getChainId } from "../../chain.js";
 import { getSmartAccount, getAccountAddress } from "../../account/index.js";
+import callSmartContract from "./callSmartContract.js";
 
 // Squid object
 const squid = new Squid({
@@ -18,19 +19,24 @@ export async function initSquid() {
 const router = express.Router();
 const TRANSACTION_MEMORY = new Map<
   string,
-  { route: RouteData; identifier: string; network: Network }
+  {
+    route: TransactionRequest;
+    identifier: string;
+    network: Network;
+    fromAmount: string;
+    fromToken: string;
+  }
 >();
 
 // Preview the transaction
 const ChainSource = z.object({
-  chain: z.string(),
+  network: Network,
   token: z.string(),
-  address: z.string(),
 });
 const SwapPreview = z.object({
   amount: z.string(),
+  token: z.string(),
   sender: UniversalAddress,
-  from: ChainSource.omit({ address: true }),
   to: ChainSource,
   slippage: z.number().optional().default(1.0),
 });
@@ -44,22 +50,33 @@ router.post("/preview", async (req: Request, res: Response) => {
     body.sender.identifier,
     body.sender.network,
   );
+  const receiverAccount = await getSmartAccount(
+    body.sender.identifier,
+    body.to.network,
+  );
   try {
     const { route } = await squid.getRoute({
       fromAmount: body.amount,
-      fromChain: body.from.chain,
-      fromToken: body.from.token,
+      fromChain: getChainId(body.sender.network),
+      fromToken: body.token,
       fromAddress: await getAccountAddress(account),
-      toChain: body.to.chain,
+      toChain: getChainId(body.to.network),
       toToken: body.to.token,
-      toAddress: body.to.address,
+      toAddress: await getAccountAddress(receiverAccount),
       slippage: body.slippage,
     });
+    if (!route.transactionRequest) {
+      return res
+        .status(500)
+        .json({ success: false, message: "No contract to execute" });
+    }
     const uuid = randomUUID();
     TRANSACTION_MEMORY.set(uuid, {
-      route,
+      route: route.transactionRequest,
       identifier: body.sender.identifier,
       network: body.sender.network,
+      fromAmount: body.amount,
+      fromToken: body.token,
     });
     return res.json({
       success: true,
@@ -95,44 +112,20 @@ router.post("/", async (req: Request, res: Response) => {
       .json({ success: false, message: "Transaction does not exist" });
   }
   try {
-    if (!memory.route.transactionRequest) {
-      TRANSACTION_MEMORY.delete(body.transaction_uuid);
-      return res
-        .status(500)
-        .json({ success: false, message: "No contract to execute" });
-    }
-
     const smartAccount = await getSmartAccount(
       memory.identifier,
       memory.network,
     );
-
-    // Create user operation with gas limits
-    const userOp = await smartAccount.buildUserOp(
-      [
-        {
-          to: memory.route.transactionRequest.targetAddress,
-          value: memory.route.transactionRequest.value,
-          data: memory.route.transactionRequest.data,
-        },
-      ],
-      {
-        skipBundlerGasEstimation: true,
-        overrides: {
-          maxFeePerGas: memory.route.transactionRequest.maxFeePerGas,
-          maxPriorityFeePerGas:
-            memory.route.transactionRequest.maxPriorityFeePerGas,
-          callGasLimit: memory.route.transactionRequest.gasLimit,
-          verificationGasLimit: memory.route.transactionRequest.gasLimit,
-        },
-      },
+    const transactionHash = await callSmartContract(
+      smartAccount,
+      memory.route,
+      memory.fromToken,
+      memory.network,
+      memory.fromAmount,
     );
-
-    const responseUserOp = await smartAccount.sendUserOp(userOp);
-    const transactionHash = await responseUserOp.waitForTxHash();
     TRANSACTION_MEMORY.delete(body.transaction_uuid);
     return res.json({
-      hash: transactionHash.transactionHash,
+      hash: transactionHash,
     });
   } catch (err) {
     console.log(err);
