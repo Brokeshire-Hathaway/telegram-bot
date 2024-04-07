@@ -32,7 +32,8 @@ jobs:
 
       - name: Copy repository to server
         run: |
-          rsync -Pavz -e "ssh -i ~/.ssh/ember-github" . ${{ secrets.SSH_USERNAME }}@${{ vars.SSH_HOST }}:/opt/staging/ember-engine --exclude=".git"
+          rsync -Pavz -e "ssh -i ~/.ssh/ember-github" . ${{ secrets.SSH_USERNAME }}@${{ vars.SSH_HOST }}:/opt/staging/ember-engine --exclude=".git" --exclude="src"
+          rsync -Pavz -e "ssh -i ~/.ssh/ember-github" src ${{ secrets.SSH_USERNAME }}@${{ vars.SSH_HOST }}:/opt/staging/ember-engine/src --delete
 
       - name: Execute deployment script on remote server
         uses: appleboy/ssh-action@v1.0.3
