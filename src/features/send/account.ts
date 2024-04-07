@@ -16,7 +16,7 @@ export async function prepareSendToken(
   smartAccount: BiconomySmartAccountV2,
   recipientAddress: `0x${string}`,
   amount: PreciseNumber,
-  tokenAddress?: `0x${string}`,
+  tokenAddress?: `0x${string}` | null,
 ) {
   let transaction: Transaction;
   if (tokenAddress) {

@@ -113,7 +113,7 @@ interface SendTokenPreviewArgs {
   recipientAddress: `0x${string}`;
   amount: string;
   standardization: "native" | "erc20";
-  tokenAddress?: `0x${string}`;
+  tokenAddress?: `0x${string}` | null;
 }
 
 interface SendTokenPreview {

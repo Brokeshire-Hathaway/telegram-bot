@@ -20,11 +20,12 @@ const PrepareTransactionBody = z.object({
   recipient_address: UniversalAddress,
   amount: z.string(),
   is_receive_native_token: z.boolean(),
-  receive_token_address: token_address.optional(),
+  receive_token_address: token_address.optional().nullable(),
 });
 router.post("/prepare", async (req: Request, res: Response) => {
   const result = await PrepareTransactionBody.safeParseAsync(req.body);
   if (!result.success) {
+    console.log(result.error);
     return res
       .status(400)
       .json({ success: false, message: "Invalid request body" });
