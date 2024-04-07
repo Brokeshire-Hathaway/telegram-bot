@@ -57,7 +57,7 @@ export async function queryVectorDatabase(
   nResults: number,
 ): Promise<(string | null)[][]> {
   const collection = await getDbCollection();
- // TODO: is queryVectorDatabase failing?
+  // TODO: is queryVectorDatabase failing?
   const results = await collection.query({
     nResults,
     queryTexts: queryString,
@@ -70,7 +70,7 @@ export async function insertEmbeddings(
   embeddings: number[][],
 ) {
   const collection = await getDbCollection();
-  let ids: string[] = new Array(documents.length).fill("");
+  const ids: string[] = new Array(documents.length).fill("");
   for (let i = 0; i < documents.length; ++i) {
     ids[i] = i.toString();
   }

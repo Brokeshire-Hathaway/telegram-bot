@@ -1,7 +1,9 @@
 # ember-engine
 
 ## Setup
+
 To run the project, you need to have the package manager:
+
 - [yarn](https://classic.yarnpkg.com/lang/en/docs/install)
 - [docker](https://www.docker.com/)
 
@@ -49,3 +51,17 @@ chunk count: 21
 ...ready
 Transaction service running at http://0.0.0.0:3000
 ```
+
+## Linting
+
+The codebase should be formatted using `prettier` and should follow the recommendations
+that `eslint` gives with the according configuration setup in the repository. To fix
+all the code style errors and get some corrections from eslint do:
+
+```bash
+yarn lint:fix
+```
+
+Additionally, the `.vscode` folder has been setup so the formatter is run on each file
+save. Please install the recommended extensions for it to work, that is install
+`esbenp.prettier-vscode`.

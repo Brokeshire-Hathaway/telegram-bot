@@ -6,31 +6,28 @@ tagline: "DeFi for Degens. Crypto for Your Mom."
 slogan: "Your Personal Crypto Hub on Telegram and Beyond."
 value proposition: "Intelligent – Seamless – Safe"
 links:
-    website: https://www.firepot.finance/
-    telegram chat: https://t.me/emberchat
-    telegram annoucements: https://t.me/firepotfinance
-    twitter: https://twitter.com/FirepotFinance
-    x: https://twitter.com/FirepotFinance
-    github: https://github.com/Firepot-Finance
-    docs: http://docs.firepot.finance/
-    zealy: https://zealy.io/c/firepotfinance/questboard
+  website: https://www.firepot.finance/
+  telegram chat: https://t.me/emberchat
+  telegram annoucements: https://t.me/firepotfinance
+  twitter: https://twitter.com/FirepotFinance
+  x: https://twitter.com/FirepotFinance
+  github: https://github.com/Firepot-Finance
+  docs: http://docs.firepot.finance/
+  zealy: https://zealy.io/c/firepotfinance/questboard
 ---
 
-
 # Ember AI
-## DeFi for Degens. Crypto for Your Mom.
 
+## DeFi for Degens. Crypto for Your Mom.
 
 **Meet Ember: Your Personal Crypto Hub on Telegram and Beyond.**
 _Intelligent – Seamless – Safe_
-
 
 # What is Ember?
 
 Manage all your assets, trades, yield positions, and wallets in one intuitive place with an expert advisor by your side every step of the way. The Ember AI is powered by a cutting-edge cognitive computing architecture, integrating an LLM reasoning engine and multi-agent system for autonomous decision-making.
 
 This positions Ember as a dynamic assistant that adapts to meet your unique demands of crypto trading and DeFi management without the underlying complexity. Ember also brings hardware wallet security everywhere – allowing you to safely transact through Telegram, Discord, web, mobile, or even text and email.
-
 
 # Features
 
@@ -39,7 +36,6 @@ This positions Ember as a dynamic assistant that adapts to meet your unique dema
 **Seamless** – (coming soon) Ember’s unified crypto hub provides access to your portfolio everywhere you connect, completing advanced omnichain crypto trading across networks and protocols all through the convenience of Telegram.
 
 **Safe** – (coming soon) The device you already own is the only hardware wallet you’ll ever need. Transform the device in your hand into a biometric hardware wallet using the same multi-factor authentication and encryption that protects your bank account. Consent to Ember’s suggestions by signing with a simple touch or glance.
-
 
 # Accomplishments
 
@@ -51,19 +47,19 @@ This positions Ember as a dynamic assistant that adapts to meet your unique dema
 - Winner of Sei x OnePiece Labs AI competition
 - Routinely secured top 5% placement in esteemed accelerator programs like Techstars and Outlier Ventures
 
-
 # Team
 
-- Founders KYC’d – Tom Daniel (CEO) & Sebastian Varela (COO)  
+- Founders KYC’d – Tom Daniel (CEO) & Sebastian Varela (COO)
 - Crypto OGs (2013) – Dogecoin mining (2014) – Crypto-native builder since 2015
 - Founder of AI hardware company. The team invented U.S. Patent No. 10,154,379 (2018)
 - We are an AI company building crypto products with our sights on the digital evolution of democracy and AGI
 
-
 # Roadmap
+
 **Key Words**: features, functionality, capabilities
 
 ## Released
+
 - ✅ Ember beta MVP on Telegram – Crypto insights and community ambassador
 - ✅ Reply to Ember's previous messages
 - ✅ Live market data and token search
@@ -73,6 +69,7 @@ This positions Ember as a dynamic assistant that adapts to meet your unique dema
 - ✅ Current time and day provided to Ember
 
 ## Upcoming
+
 1. Trading tools
 2. Opportunity sniping (Ethereum & Arbitrum)
 3. CEX listing on top exchange
@@ -81,13 +78,13 @@ This positions Ember as a dynamic assistant that adapts to meet your unique dema
 6. Ember integrated web and mobile app
 7. P2P fiat on/off ramp
 
-
 # Tokenomics
 
 **Estimated Pre-sale price**: $0.008
 **Max supply**: 1,000,000,000
 
 ## Allocations
+
 Rewards – 33.5%
 Team & Advisors – 18%
 Private Raise – 18%
@@ -101,13 +98,14 @@ Public Bonds – 1%
 ## Contracts
 
 ### $HOTT
+
 - **Contract Address**: 0x871cC5d7D06Da24eE9dc618ca7e1b3e8406B4A75
 - **Explorer Link**: https://arbiscan.io/address/0x871cC5d7D06Da24eE9dc618ca7e1b3e8406B4A75
 
 ### $rHOTT
+
 - **Contract Address**: 0x0D96eAd8eC5F2840aB6A62f44768c36582608E09
 - **Explorer Link**: https://arbiscan.io/address/0x0D96eAd8eC5F2840aB6A62f44768c36582608E09
-
 
 ## Plugins and Token Locking
 

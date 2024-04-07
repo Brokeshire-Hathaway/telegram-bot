@@ -9,12 +9,9 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "exclude": [
-    "node_modules",
-    "chroma"
-  ],
+  "exclude": ["node_modules", "chroma"],
   "include": ["./**/*.ts"],
   "ts-node": {
-    "esm": true,
-  },
+    "esm": true
+  }
 }
