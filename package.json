@@ -27,7 +27,6 @@
     "langchain": "^0.0.161",
     "markdown-it": "^13.0.2",
     "moralis": "^2.23.2",
-    "node": "^18.18.0",
     "openai": "^4.17.5",
     "ts-node": "^10.9.1",
     "viem": "^1.19.9"
@@ -53,7 +52,7 @@
   },
   "scripts": {
     "prod": "ts-node -r dotenv/config src/index.ts",
-    "stage": "tsc && node -r dotenv/config build/src/index.js",
+    "build": "tsc --build tsconfig.build.json",
     "dev": "node --loader ts-node/esm -r dotenv/config src/index.ts",
     "test": "mocha",
     "clean-test": "rm -Rf node_modules && yarn install && mocha",

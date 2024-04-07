@@ -1,0 +1,7 @@
+tests
+chroma
+docker-compose.*
+scripts
+eslint.*
+nginx.conf
+README.md
