@@ -11,8 +11,9 @@ import { Token, getTokenDecimals, tokenToAddress } from "../../token.js";
 import { parseUnits } from "viem";
 
 // Squid object
+const squidBaseUrl = process.env.SQUID_ROUTER_URL || "https://testnet.api.squidrouter.com";
 const squid = new Squid({
-  baseUrl: "https://testnet.api.squidrouter.com",
+  baseUrl: squidBaseUrl,
 });
 export async function initSquid() {
   await squid.init();
