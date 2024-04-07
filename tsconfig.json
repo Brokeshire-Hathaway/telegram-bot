@@ -3,6 +3,8 @@
     "target": "es2020",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "noEmitOnError": false,
+    "noImplicitAny": false,
     "outDir": "./build",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
