@@ -1,44 +1,69 @@
-import { TransactionRequest } from "@0xsquid/sdk";
+import { ChainData, TokenData, TransactionRequest } from "@0xsquid/sdk";
 import { BiconomySmartAccountV2 } from "@biconomy/account";
 import { Transaction } from "@biconomy/core-types";
 import { erc20Abi } from "abitype/abis";
 import { getAccountAddress } from "../../account/index.js";
 import {
   createPublicClient,
+  defineChain,
   encodeFunctionData,
   getContract,
   http,
 } from "viem";
-import { Network, getViemChain } from "../../chain.js";
-import { isTokeNative } from "../../token.js";
 
+const NATIVE_TOKEN = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 async function preSwapContracts(
-  fromToken: string,
-  network: Network,
+  fromToken: TokenData,
+  network: ChainData,
   smartAccount: BiconomySmartAccountV2,
   route: TransactionRequest,
   fromAmount: string,
 ): Promise<Transaction[]> {
-  if (isTokeNative(fromToken)) return [];
+  if (fromToken.address === NATIVE_TOKEN) return [];
 
   // Check current allowance
-  const accountAddress = await getAccountAddress(smartAccount);
-  const publicClient = createPublicClient({
-    chain: getViemChain(network),
-    transport: http(),
-  });
-  const contract = getContract({
-    address: fromToken as `0x${string}`,
-    abi: erc20Abi,
-    publicClient: publicClient,
-  });
-  const allowance = await contract.read.allowance([
-    accountAddress,
-    route.targetAddress as `0x${string}`,
-  ]);
-  const sourceAmount = BigInt(fromAmount);
-  if (sourceAmount <= allowance) {
-    return [];
+  if (typeof network.chainId === "number") {
+    const accountAddress = await getAccountAddress(smartAccount);
+    const publicClient = createPublicClient({
+      chain: defineChain({
+        id: network.chainId,
+        name: network.networkName,
+        network: network.networkName,
+        nativeCurrency: {
+          decimals: network.nativeCurrency.decimals,
+          name: network.nativeCurrency.name,
+          symbol: network.nativeCurrency.symbol,
+        },
+        rpcUrls: {
+          default: {
+            http: [network.rpc],
+          },
+          public: {
+            http: [network.rpc],
+          },
+        },
+        blockExplorers: {
+          default: {
+            name: "Explorer",
+            url: network.blockExplorerUrls[0],
+          },
+        },
+      }),
+      transport: http(),
+    });
+    const contract = getContract({
+      address: fromToken.address as `0x${string}`,
+      abi: erc20Abi,
+      publicClient: publicClient,
+    });
+    const allowance = await contract.read.allowance([
+      accountAddress,
+      route.targetAddress as `0x${string}`,
+    ]);
+    const sourceAmount = BigInt(fromAmount);
+    if (sourceAmount <= allowance) {
+      return [];
+    }
   }
 
   // If allowance is not enough, ask for max allowance
@@ -49,7 +74,7 @@ async function preSwapContracts(
   });
   return [
     {
-      to: fromToken,
+      to: fromToken.address,
       data: dataApprove,
     },
   ];
@@ -72,8 +97,8 @@ function buildTransaction(route: TransactionRequest): Transaction {
 export default async function (
   smartAccount: BiconomySmartAccountV2,
   route: TransactionRequest,
-  fromToken: string,
-  network: Network,
+  fromToken: TokenData,
+  network: ChainData,
   fromAmount: string,
 ) {
   const otherTransactions = await preSwapContracts(

@@ -1,4 +1,4 @@
-import { FeeCost, GasCost, TokenData } from "@0xsquid/sdk";
+import { ChainData, FeeCost, GasCost, TokenData } from "@0xsquid/sdk";
 import { formatUnits } from "viem";
 
 export function formatTime(timeInSeconds: number) {
@@ -13,12 +13,12 @@ export function formatTime(timeInSeconds: number) {
 
 function addCost(
   costs: Map<string, [bigint, number]>,
-  txCosts: { token: { name: string; decimals: number }; amount: string }[],
+  txCosts: { token: { symbol: string; decimals: number }; amount: string }[],
 ) {
   for (const cost of txCosts) {
-    let tokenCostInfo = costs.get(cost.token.name);
+    let tokenCostInfo = costs.get(cost.token.symbol);
     if (!tokenCostInfo) tokenCostInfo = [BigInt(0), cost.token.decimals];
-    costs.set(cost.token.name, [
+    costs.set(cost.token.symbol, [
       tokenCostInfo[0] + BigInt(cost.amount),
       tokenCostInfo[1],
     ]);
@@ -35,5 +35,12 @@ export function totalFeeCosts(feeCosts: FeeCost[], gasCosts: GasCost[]) {
 }
 
 export function formatAmount(value: string, tokenData: TokenData) {
-  return `${formatUnits(BigInt(value), tokenData.decimals)} ${tokenData.name}`;
+  return formatUnits(BigInt(value), tokenData.decimals);
+}
+
+export function formatTokenUrl(token: TokenData, network: ChainData) {
+  if (network.blockExplorerUrls.length === 0) {
+    return undefined;
+  }
+  return `${network.blockExplorerUrls[0]}address/${token.address}`;
 }

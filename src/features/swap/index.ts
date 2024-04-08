@@ -1,22 +1,36 @@
 import express, { Request, Response } from "express";
 import z from "zod";
-import { Squid, TransactionRequest } from "@0xsquid/sdk";
+import { ChainData, Squid, TokenData, TransactionRequest } from "@0xsquid/sdk";
 import { randomUUID } from "crypto";
 import { UniversalAddress } from "../send/index.js";
-import { Network, getChainId } from "../../chain.js";
-import { getSmartAccount, getAccountAddress } from "../../account/index.js";
+import { getAccountAddress, getSmartAccount } from "../../account/index.js";
 import callSmartContract from "./callSmartContract.js";
-import { formatAmount, formatTime, totalFeeCosts } from "./formatters.js";
-import { Token, getTokenDecimals, tokenToAddress } from "../../token.js";
+import {
+  formatAmount,
+  formatTime,
+  formatTokenUrl,
+  totalFeeCosts,
+} from "./formatters.js";
 import { parseUnits } from "viem";
+import { getNetworkInformation, getTokenInformation } from "./squidDB.js";
+import { ChainId } from "@biconomy/core-types";
+import Fuse from "fuse.js";
 
 // Squid object
-const squidBaseUrl = process.env.SQUID_ROUTER_URL || "https://testnet.api.squidrouter.com";
+const isTestNet = process.env.IS_TESTNET || true;
+const squidBaseUrl = isTestNet
+  ? "https://testnet.api.squidrouter.com"
+  : "https://api.squidrouter.com";
 const squid = new Squid({
   baseUrl: squidBaseUrl,
 });
+export let FUSE: Fuse<ChainData> | undefined;
 export async function initSquid() {
   await squid.init();
+  FUSE = new Fuse(squid.chains, {
+    ignoreLocation: true,
+    keys: ["networkName"],
+  });
 }
 
 // Create the router
@@ -26,21 +40,21 @@ const TRANSACTION_MEMORY = new Map<
   {
     route: TransactionRequest;
     identifier: string;
-    network: Network;
+    network: ChainData;
     fromAmount: string;
-    fromToken: string;
+    fromToken: TokenData;
   }
 >();
 
 // Preview the transaction
 const ChainSource = z.object({
-  network: Network,
-  token: Token,
+  network: z.string(),
+  token: z.string(),
 });
 const SwapPreview = z.object({
   amount: z.string(),
-  token: Token,
-  sender: UniversalAddress,
+  token: z.string(),
+  sender: UniversalAddress.extend({ network: z.string() }),
   to: ChainSource,
   slippage: z.number().optional().default(1.0),
 });
@@ -52,40 +66,41 @@ router.post("/preview", async (req: Request, res: Response) => {
   const body = result.data;
 
   // Transform data to pass to squid router
+  const fromNetwork = getNetworkInformation(body.sender.network, squid);
   const account = await getSmartAccount(
     body.sender.identifier,
-    body.sender.network,
+    fromNetwork.chainId as ChainId,
+    fromNetwork.rpc,
   );
+  const toNetwork = getNetworkInformation(body.to.network, squid);
   const receiverAccount = await getSmartAccount(
     body.sender.identifier,
-    body.to.network,
+    toNetwork.chainId as ChainId,
+    toNetwork.rpc,
   );
 
-  const fromToken = tokenToAddress(body.token, body.sender.network);
+  const fromToken = getTokenInformation(fromNetwork.chainId, body.token, squid);
   if (!fromToken)
     return res
       .status(500)
       .json({ success: false, message: "Token not supported" });
-  const toToken = tokenToAddress(body.to.token, body.to.network);
+  const toToken = getTokenInformation(toNetwork.chainId, body.to.token, squid);
   if (!toToken)
     return res
       .status(500)
       .json({ success: false, message: "Token not supported" });
 
-  const fromAmount = parseUnits(
-    body.amount,
-    await getTokenDecimals(fromToken, body.sender.network),
-  ).toString();
+  const fromAmount = parseUnits(body.amount, fromToken.decimals).toString();
 
   // Get route and store in memory
   try {
     const { route } = await squid.getRoute({
       fromAmount,
-      fromChain: getChainId(body.sender.network),
-      fromToken,
+      fromChain: fromNetwork.chainId,
+      fromToken: fromToken.address,
       fromAddress: await getAccountAddress(account),
-      toChain: getChainId(body.to.network),
-      toToken: toToken,
+      toChain: toNetwork.chainId,
+      toToken: toToken.address,
       toAddress: await getAccountAddress(receiverAccount),
       slippage: body.slippage,
     });
@@ -98,15 +113,21 @@ router.post("/preview", async (req: Request, res: Response) => {
     TRANSACTION_MEMORY.set(uuid, {
       route: route.transactionRequest,
       identifier: body.sender.identifier,
-      network: body.sender.network,
+      network: fromNetwork,
       fromAmount,
       fromToken,
     });
     return res.json({
       success: true,
       uuid,
-      from_amount: formatAmount(fromAmount, route.params.fromToken),
-      to_amount: formatAmount(route.estimate.toAmount, route.params.toToken),
+      from_amount: formatAmount(fromAmount, fromToken),
+      from_token_url: formatTokenUrl(fromToken, fromNetwork),
+      from_token_symbol: fromToken.symbol,
+      from_chain: fromNetwork.networkName,
+      to_amount: formatAmount(route.estimate.toAmount, toToken),
+      to_token_url: formatTokenUrl(toToken, toNetwork),
+      to_token_symbol: toToken.symbol,
+      to_chain: toNetwork.networkName,
       duration: formatTime(route.estimate.estimatedRouteDuration),
       total_costs: totalFeeCosts(
         route.estimate.feeCosts,
@@ -125,7 +146,9 @@ router.post("/preview", async (req: Request, res: Response) => {
 const Swap = z.object({
   transaction_uuid: z.string(),
 });
-const AXELAR_TESTNET_EXPLORER = "https://testnet.axelarscan.io";
+const AXELAR_TESTNET_EXPLORER = isTestNet
+  ? "https://testnet.axelarscan.io"
+  : "https://axelarscan.io";
 router.post("/", async (req: Request, res: Response) => {
   const result = await Swap.safeParseAsync(req.body);
   if (!result.success) {
@@ -141,7 +164,8 @@ router.post("/", async (req: Request, res: Response) => {
   try {
     const smartAccount = await getSmartAccount(
       memory.identifier,
-      memory.network,
+      memory.network.chainId as ChainId,
+      memory.network.rpc,
     );
     const transactionHash = await callSmartContract(
       smartAccount,

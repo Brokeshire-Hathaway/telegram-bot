@@ -12,6 +12,7 @@ import derivePrivateKey from "./derivePrivateKey.js";
 import { toHex } from "viem";
 import { Signer } from "ethers";
 import { Network, getChainId, getRpcUrl } from "../chain.js";
+import { ChainId } from "@biconomy/core-types";
 
 // create instance of bundler
 export async function getSigner(uid: string) {
@@ -19,8 +20,11 @@ export async function getSigner(uid: string) {
   return LocalAccountSigner.privateKeyToAccountSigner(toHex(privateKey));
 }
 
-export async function getSmartAccount(uid: string, network: Network) {
-  const chainId = getChainId(network);
+export async function getSmartAccount(
+  uid: string,
+  chainId: ChainId,
+  rpcUrl: string,
+) {
   const userOpReceiptMaxDurationIntervals = {
     chainId: 60000,
   };
@@ -39,7 +43,7 @@ export async function getSmartAccount(uid: string, network: Network) {
   });
   const biconomyAccount = await BiconomySmartAccountV2.create({
     chainId: chainId,
-    rpcUrl: getRpcUrl(network),
+    rpcUrl: rpcUrl,
     bundler: bundler,
     entryPointAddress: DEFAULT_ENTRYPOINT_ADDRESS,
     defaultValidationModule: ownershipModule,
@@ -48,8 +52,15 @@ export async function getSmartAccount(uid: string, network: Network) {
   return biconomyAccount;
 }
 
+export async function getSmartAccountFromNetwork(
+  uid: string,
+  network: Network,
+) {
+  return await getSmartAccount(uid, getChainId(network), getRpcUrl(network));
+}
+
 export async function getSepoliaSmartAccount(id: string) {
-  return await getSmartAccount(id, "sepolia");
+  return await getSmartAccountFromNetwork(id, "sepolia");
 }
 
 export async function getAccountAddress(smartAccount: BiconomySmartAccountV2) {

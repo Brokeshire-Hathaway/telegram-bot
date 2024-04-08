@@ -9,7 +9,7 @@ import PreciseNumber from "./common/tokenMath.js";
 import { UserOperation } from "@biconomy/core-types";
 import { formatEther } from "viem";
 import { type Network } from "./chain.js";
-import { getSmartAccount } from "./account/index.js";
+import { getSmartAccountFromNetwork } from "./account/index.js";
 
 interface CoinGeckoSearchCoin {
   id: string;
@@ -138,7 +138,10 @@ export async function sendTokenPreview(
   args: SendTokenPreviewArgs,
 ): Promise<SendTokenPreview> {
   const transactionUuid = randomUUID();
-  const smartAccount = await getSmartAccount(args.accountUid, args.network);
+  const smartAccount = await getSmartAccountFromNetwork(
+    args.accountUid,
+    args.network,
+  );
   const userOp = await prepareSendToken(
     smartAccount,
     args.recipientAddress,
@@ -192,7 +195,10 @@ export async function executeTransaction(args: ExecuteTransactionArgs) {
     throw new Error(`Transaction UUID "${args.transaction_uuid}" not found.`);
   }
 
-  const smartAccount = await getSmartAccount(txPreview[0], txPreview[3]);
+  const smartAccount = await getSmartAccountFromNetwork(
+    txPreview[0],
+    txPreview[3],
+  );
   const userOpReceipt = await sendTransaction(smartAccount, txPreview[2]);
   console.log(`executeTransaction - userOpReceipt`);
   console.log(userOpReceipt);

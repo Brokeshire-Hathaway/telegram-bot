@@ -26,7 +26,7 @@ import { WalletTokenBalance, getAccountBalances } from "./account/balance.js";
 import {
   getAccountAddress,
   getSepoliaSmartAccount,
-  getSmartAccount,
+  getSmartAccountFromNetwork,
 } from "./account/index.js";
 import {
   type ConversationFlavor,
