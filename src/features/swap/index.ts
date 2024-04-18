@@ -3,7 +3,7 @@ import z from "zod";
 import { ChainData, Squid, TokenData, TransactionRequest } from "@0xsquid/sdk";
 import { randomUUID } from "crypto";
 import { UniversalAddress } from "../send/index.js";
-import { getAccountAddress, getSmartAccount } from "../../account/index.js";
+import { getSmartAccount } from "../../account/index.js";
 import callSmartContract from "./callSmartContract.js";
 import {
   formatAmount,
@@ -11,8 +11,12 @@ import {
   formatTokenUrl,
   totalFeeCosts,
 } from "./formatters.js";
-import { parseUnits } from "viem";
-import { getNetworkInformation, getTokenInformation } from "./squidDB.js";
+import {
+  RouteType,
+  getNetworkInformation,
+  getRoute,
+  getTokenInformation,
+} from "./squidDB.js";
 import { ChainId } from "@biconomy/core-types";
 import Fuse from "fuse.js";
 
@@ -52,6 +56,7 @@ const ChainSource = z.object({
   token: z.string(),
 });
 const SwapPreview = z.object({
+  type: RouteType.optional().default("swap"),
   amount: z.string(),
   token: z.string(),
   sender: UniversalAddress.extend({ network: z.string() }),
@@ -61,24 +66,17 @@ const SwapPreview = z.object({
 router.post("/preview", async (req: Request, res: Response) => {
   const result = await SwapPreview.safeParseAsync(req.body);
   if (!result.success) {
-    return res.status(400).json(result);
+    return res.status(400).json({
+      success: false,
+      message: "Invalid request body",
+      error: result.error,
+    });
   }
   const body = result.data;
 
   // Transform data to pass to squid router
   const fromNetwork = getNetworkInformation(body.sender.network, squid);
-  const account = await getSmartAccount(
-    body.sender.identifier,
-    fromNetwork.chainId as ChainId,
-    fromNetwork.rpc,
-  );
   const toNetwork = getNetworkInformation(body.to.network, squid);
-  const receiverAccount = await getSmartAccount(
-    body.sender.identifier,
-    toNetwork.chainId as ChainId,
-    toNetwork.rpc,
-  );
-
   const fromToken = getTokenInformation(fromNetwork.chainId, body.token, squid);
   if (!fromToken)
     return res
@@ -90,20 +88,19 @@ router.post("/preview", async (req: Request, res: Response) => {
       .status(500)
       .json({ success: false, message: "Token not supported" });
 
-  const fromAmount = parseUnits(body.amount, fromToken.decimals).toString();
-
   // Get route and store in memory
   try {
-    const { route } = await squid.getRoute({
-      fromAmount,
-      fromChain: fromNetwork.chainId,
-      fromToken: fromToken.address,
-      fromAddress: await getAccountAddress(account),
-      toChain: toNetwork.chainId,
-      toToken: toToken.address,
-      toAddress: await getAccountAddress(receiverAccount),
-      slippage: body.slippage,
-    });
+    const route = await getRoute(
+      body.type,
+      body.amount,
+      fromNetwork,
+      fromToken,
+      toNetwork,
+      toToken,
+      body.slippage,
+      squid,
+      body.sender.identifier,
+    );
     if (!route.transactionRequest) {
       return res
         .status(500)
@@ -114,13 +111,13 @@ router.post("/preview", async (req: Request, res: Response) => {
       route: route.transactionRequest,
       identifier: body.sender.identifier,
       network: fromNetwork,
-      fromAmount,
+      fromAmount: route.estimate.fromAmount,
       fromToken,
     });
     return res.json({
       success: true,
       uuid,
-      from_amount: formatAmount(fromAmount, fromToken),
+      from_amount: formatAmount(route.estimate.fromAmount, fromToken),
       from_token_url: formatTokenUrl(fromToken, fromNetwork),
       from_token_symbol: fromToken.symbol,
       from_chain: fromNetwork.networkName,
@@ -135,7 +132,6 @@ router.post("/preview", async (req: Request, res: Response) => {
       ),
     });
   } catch (err) {
-    console.log(err);
     return res
       .status(500)
       .json({ success: false, message: "Failed to found route" });
@@ -179,7 +175,6 @@ router.post("/", async (req: Request, res: Response) => {
       block: `${AXELAR_TESTNET_EXPLORER}/gmp/${transactionHash}`,
     });
   } catch (err) {
-    console.log(err);
     return res
       .status(500)
       .json({ success: false, message: "Failed executing transaction" });
