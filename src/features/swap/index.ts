@@ -77,12 +77,20 @@ router.post("/preview", async (req: Request, res: Response) => {
   // Transform data to pass to squid router
   const fromNetwork = getNetworkInformation(body.sender.network, squid);
   const toNetwork = getNetworkInformation(body.to.network, squid);
-  const fromToken = getTokenInformation(fromNetwork.chainId, body.token, squid);
+  const fromToken = await getTokenInformation(
+    fromNetwork.chainId,
+    body.token,
+    squid,
+  );
   if (!fromToken)
     return res
       .status(500)
       .json({ success: false, message: "Token not supported" });
-  const toToken = getTokenInformation(toNetwork.chainId, body.to.token, squid);
+  const toToken = await getTokenInformation(
+    toNetwork.chainId,
+    body.to.token,
+    squid,
+  );
   if (!toToken)
     return res
       .status(500)

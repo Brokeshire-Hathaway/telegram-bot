@@ -17,13 +17,19 @@ export function getNetworkInformation(networkName: string, squid: Squid) {
   return fuse.search(networkName)[0].item;
 }
 
-export function getTokenInformation(
+export async function getTokenInformation(
   chainId: string | number,
-  coinGeckoId: string,
+  tokenSearch: string,
   squid: Squid,
 ) {
+  const response = await fetch(
+    `https://api.coingecko.com/api/v3/search?query=${tokenSearch}`,
+  );
+  if (!response.ok) return undefined;
+  const coinsResponse: { coins: { id: string }[] } = await response.json();
+  if (coinsResponse.coins.length === 0) return undefined;
   return squid.tokens.find(
-    (v) => v.chainId === chainId && v.coingeckoId === coinGeckoId,
+    (v) => v.chainId === chainId && v.coingeckoId === coinsResponse.coins[0].id,
   );
 }
 
