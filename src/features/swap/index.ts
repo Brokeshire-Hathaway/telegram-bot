@@ -21,7 +21,7 @@ import { ChainId } from "@biconomy/core-types";
 import Fuse from "fuse.js";
 
 // Squid object
-const isTestNet = process.env.IS_TESTNET || true;
+const isTestNet = (process.env.IS_TESTNET || "true") === "true";
 const squidBaseUrl = isTestNet
   ? "https://testnet.api.squidrouter.com"
   : "https://api.squidrouter.com";
