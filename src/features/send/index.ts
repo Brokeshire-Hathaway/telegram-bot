@@ -63,8 +63,11 @@ router.post("/send", async (req: Request, res: Response) => {
     const sendResult = await executeTransaction(body);
     res.json(sendResult);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: `Error: ${error}` });
+    let msg = "Send failed";
+    if (typeof error === "object" && !!error && "message" in error) {
+      msg = error.message as string;
+    }
+    res.status(500).json({ success: false, message: msg });
   }
 });
 

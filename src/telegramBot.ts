@@ -221,8 +221,6 @@ export function startTelegramBot() {
         ctx.message.text,
         onActivity,
       );
-      console.log("reply");
-      console.log(reply);
       await sendFormattedMessage(ctx, ctx.chat.id, reply);
     } catch (error) {
       console.error(error);

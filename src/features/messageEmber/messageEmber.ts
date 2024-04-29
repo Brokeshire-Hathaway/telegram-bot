@@ -57,7 +57,6 @@ export async function messageEmber(
       case "done":
         return response.message;
       case "activity":
-        console.log(`Activity update: ${data}`);
         onActivity(response.message);
         continue;
       case "error":
