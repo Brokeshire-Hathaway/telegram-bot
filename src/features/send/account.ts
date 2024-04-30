@@ -1,5 +1,4 @@
 import { Transaction, UserOperation } from "@biconomy/core-types";
-import { UserOpReceipt, UserOpResponse, UserOpStatus } from "@biconomy/bundler";
 import {
   SponsorUserOperationDto,
   PaymasterMode,
@@ -83,20 +82,12 @@ export async function sendTransaction(
     }
   }
 
-  let userOpResponse: UserOpResponse;
-  userOpResponse = await smartAccount.sendUserOp(userOp);
-  let userOpStatus: UserOpStatus;
-  let userOpReceipt: UserOpReceipt;
-  try {
-    userOpStatus = await userOpResponse.waitForTxHash();
-    userOpReceipt =
-      userOpStatus.userOperationReceipt ?? (await userOpResponse.wait());
-
-    if (!userOpReceipt.success) {
-      throw new Error(`Transaction failed: ${userOpReceipt.reason}`);
-    }
-  } catch (error) {
-    throw error;
+  const userOpResponse = await smartAccount.sendUserOp(userOp);
+  const userOpStatus = await userOpResponse.waitForTxHash();
+  const userOpReceipt =
+    userOpStatus.userOperationReceipt ?? (await userOpResponse.wait());
+  if (!userOpReceipt.success) {
+    throw new Error(`Transaction failed: ${userOpReceipt.reason}`);
   }
   return userOpReceipt;
 }

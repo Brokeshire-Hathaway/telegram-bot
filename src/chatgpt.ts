@@ -169,7 +169,9 @@ ${context}`;
 
 export async function runTools(
   toolCalls: ChatCompletionMessageToolCall[],
-  availableFunctions: { [key: string]: (...args: any) => any },
+  availableFunctions: {
+    [key: string]: (...args: unknown[]) => ChatCompletionToolMessageParam[];
+  },
 ): Promise<ChatCompletionToolMessageParam[]> {
   const functionResponses = await Promise.allSettled(
     toolCalls.map((toolCall) => {
@@ -204,7 +206,6 @@ export async function chatGippity(
   vectorSearch = true,
   chatGptModel: ChatGptModel = "gpt-4-1106-preview",
 ): Promise<Conversation> {
-  let systemMessageContent: string;
   let context = `# Context
 ## Current Date & Time
 ${new Date().toISOString()}`;
@@ -231,7 +232,7 @@ ${doc}
     context = `${context}${relevantDocsFormatted}`;
   }
 
-  systemMessageContent = `${systemMessageMain}
+  const systemMessageContent = `${systemMessageMain}
 ${context}`;
   const systemMessage: ChatCompletionSystemMessageParam = {
     role: "system",
@@ -261,7 +262,8 @@ ${context}`;
     console.log("==================== Tool Call:");
     console.log(toolCalls);
 
-    const availableFunctions: { [key: string]: (...args: any) => any } = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const availableFunctions: { [key: string]: (args: any) => any } = {
       getMarket,
       sendTokenPreview,
       executeTransaction,
@@ -323,12 +325,6 @@ export function getLatestMessage(
   conversation: Conversation,
 ): ChatCompletionMessageParam {
   return conversation.slice(-1)[0];
-}
-
-function isUserMessage(
-  message: ChatCompletionMessageParam,
-): message is ChatCompletionUserMessageParam {
-  return message.role === "user";
 }
 
 function getLatestUserMessage(

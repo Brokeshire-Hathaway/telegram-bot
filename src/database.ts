@@ -19,8 +19,6 @@ const CHROMA_HOST = process.env.CHROMA_HOST || "chroma_server";
 async function getDbClient(): Promise<ChromaClient> {
   if (!client) {
     client = new ChromaClient({
-      // Thanks to docker compose putting this app and the chroma_server on
-      // the same network, chroma_server resolves to the chroma_server IP
       path: `http://${CHROMA_HOST}:${process.env.CHROMA_PORT!}`,
     });
     while (true) {
