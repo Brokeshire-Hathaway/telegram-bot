@@ -23,23 +23,16 @@ import {
 import MarkdownIt from "markdown-it";
 import { ChatFromGetChat, Message } from "grammy/types";
 import { WalletTokenBalance, getAccountBalances } from "./account/balance.js";
-import {
-  getAccountAddress,
-  getSepoliaSmartAccount,
-  getSmartAccountFromNetwork,
-} from "./account/index.js";
+import { getAccountAddress, getSepoliaSmartAccount } from "./account/index.js";
 import {
   type ConversationFlavor,
   conversations,
 } from "@grammyjs/conversations";
 import PreciseNumber from "./common/tokenMath.js";
-import { SendTokenCache } from "./features/sendToken/sendTokenAgent.js";
 import { getMarket, tools } from "./gpttools.js";
 import { messageEmber } from "./features/messageEmber/messageEmber.js";
 
-interface SessionData {
-  sendTokenCache?: SendTokenCache;
-}
+interface SessionData {}
 type MyContext = Context & SessionFlavor<SessionData> & ConversationFlavor;
 
 const promoText = `_・${promoMessage} – ${sponsoredMessage}・_`;
