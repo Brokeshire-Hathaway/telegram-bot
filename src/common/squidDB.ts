@@ -1,7 +1,10 @@
 import { ChainData, RouteData, Squid, TokenData } from "@0xsquid/sdk";
 import Fuse from "fuse.js";
 import z from "zod";
-import { getAccountAddress, getSmartAccount } from "../account/index.js";
+import {
+  getAccountAddress,
+  getSmartAccount,
+} from "../features/wallet/index.js";
 import { ChainId } from "@biconomy/core-types";
 import { createPublicClient, defineChain, http, parseUnits } from "viem";
 

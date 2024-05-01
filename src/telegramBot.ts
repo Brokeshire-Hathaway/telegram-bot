@@ -23,7 +23,10 @@ import {
 import MarkdownIt from "markdown-it";
 import { ChatFromGetChat, Message } from "grammy/types";
 import { WalletTokenBalance, getAccountBalances } from "./account/balance.js";
-import { getAccountAddress, getSepoliaSmartAccount } from "./account/index.js";
+import {
+  getAccountAddress,
+  getSepoliaSmartAccount,
+} from "./features/wallet/index.js";
 import {
   type ConversationFlavor,
   conversations,

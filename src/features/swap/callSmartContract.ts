@@ -2,7 +2,7 @@ import { ChainData, TokenData, TransactionRequest } from "@0xsquid/sdk";
 import { BiconomySmartAccountV2 } from "@biconomy/account";
 import { Transaction } from "@biconomy/core-types";
 import { erc20Abi } from "abitype/abis";
-import { getAccountAddress } from "../../account/index.js";
+import { getAccountAddress } from "../wallet/index.js";
 import { encodeFunctionData, getContract } from "viem";
 import { NATIVE_TOKEN, getViemChain } from "../../common/squidDB.js";
 

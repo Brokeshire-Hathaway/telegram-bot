@@ -3,7 +3,7 @@ import z from "zod";
 import { ChainData, TokenData, TransactionRequest } from "@0xsquid/sdk";
 import { randomUUID } from "crypto";
 import { UniversalAddress } from "../send/index.js";
-import { getSmartAccount } from "../../account/index.js";
+import { getSmartAccount } from "../wallet/index.js";
 import callSmartContract from "./callSmartContract.js";
 import {
   formatAmount,

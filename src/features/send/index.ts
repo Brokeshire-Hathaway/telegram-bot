@@ -13,7 +13,7 @@ import {
   getSmartContract,
   getTokenInfoOfAddress,
 } from "./smartContract.js";
-import { getSmartAccount } from "../../account/index.js";
+import { getSmartAccount } from "../wallet/index.js";
 import { randomUUID } from "crypto";
 import { formatAmount, formatTokenUrl } from "../../common/formatters.js";
 import { parseUnits } from "viem";
