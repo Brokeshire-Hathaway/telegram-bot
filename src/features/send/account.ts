@@ -1,5 +1,4 @@
 import { Transaction, UserOperation } from "@biconomy/core-types";
-import { UserOpReceipt, UserOpResponse, UserOpStatus } from "@biconomy/bundler";
 import {
   SponsorUserOperationDto,
   PaymasterMode,
@@ -10,7 +9,6 @@ import { BigNumber } from "ethers";
 import { erc20Abi } from "abitype/abis";
 import { BiconomySmartAccountV2 } from "@biconomy/account";
 import PreciseNumber from "../../common/tokenMath.js";
-import { getAccountAddress } from "../../account/index.js";
 
 export async function prepareSendToken(
   smartAccount: BiconomySmartAccountV2,
@@ -36,11 +34,7 @@ export async function prepareSendToken(
       value: amount.integer,
     };
   }
-  console.log(`transaction`);
-  console.log(transaction);
   const userOp = await smartAccount.buildUserOp([transaction]);
-  console.log(`userOp`);
-  console.log(userOp);
   return userOp;
 }
 
@@ -49,9 +43,6 @@ export async function sendTransaction(
   userOp: Partial<UserOperation>,
 ) {
   // DEBUG
-  getAccountAddress(smartAccount).then((address) =>
-    console.log(`Address is ${address}`),
-  );
 
   const biconomyPaymaster =
     smartAccount.paymaster as IHybridPaymaster<SponsorUserOperationDto>;
@@ -91,48 +82,13 @@ export async function sendTransaction(
     }
   }
 
-  console.log(`smartAccount.bundler`);
-  console.log(smartAccount.bundler);
-
-  let userOpResponse: UserOpResponse;
-  try {
-    userOpResponse = await smartAccount.sendUserOp(userOp);
-  } catch (error) {
-    console.error(`=== Error: smartAccount.sendUserOp(userOp) ===`);
-    console.error(error);
-    throw error;
+  const userOpResponse = await smartAccount.sendUserOp(userOp);
+  const userOpStatus = await userOpResponse.waitForTxHash();
+  const userOpReceipt =
+    userOpStatus.userOperationReceipt ?? (await userOpResponse.wait());
+  if (!userOpReceipt.success) {
+    throw new Error(`Transaction failed: ${userOpReceipt.reason}`);
   }
-  console.log("userOpHash", userOpResponse);
-
-  let userOpStatus: UserOpStatus;
-  let userOpReceipt: UserOpReceipt;
-  try {
-    console.log(`userOpResponse.userOpHash`);
-    console.log(userOpResponse.userOpHash);
-
-    userOpStatus = await userOpResponse.waitForTxHash();
-    console.log("userOpStatus.transactionHash", userOpStatus.transactionHash);
-    console.log(
-      "userOpStatus.userOperationReceipt",
-      userOpStatus.userOperationReceipt,
-    );
-
-    userOpReceipt =
-      userOpStatus.userOperationReceipt ?? (await userOpResponse.wait());
-
-    console.log(`userOpReceipt`);
-    console.log(userOpReceipt);
-
-    if (!userOpReceipt.success) {
-      throw new Error(`Transaction failed: ${userOpReceipt.reason}`);
-    }
-  } catch (error) {
-    console.error(`=== Error ===`);
-    console.error(error);
-    throw error;
-  }
-
-  console.log("txHash", userOpReceipt.receipt.transactionHash);
   return userOpReceipt;
 }
 

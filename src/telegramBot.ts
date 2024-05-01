@@ -23,23 +23,16 @@ import {
 import MarkdownIt from "markdown-it";
 import { ChatFromGetChat, Message } from "grammy/types";
 import { WalletTokenBalance, getAccountBalances } from "./account/balance.js";
-import {
-  getAccountAddress,
-  getSepoliaSmartAccount,
-  getSmartAccountFromNetwork,
-} from "./account/index.js";
+import { getAccountAddress, getSepoliaSmartAccount } from "./account/index.js";
 import {
   type ConversationFlavor,
   conversations,
 } from "@grammyjs/conversations";
 import PreciseNumber from "./common/tokenMath.js";
-import { SendTokenCache } from "./features/sendToken/sendTokenAgent.js";
 import { getMarket, tools } from "./gpttools.js";
 import { messageEmber } from "./features/messageEmber/messageEmber.js";
 
-interface SessionData {
-  sendTokenCache?: SendTokenCache;
-}
+interface SessionData {}
 type MyContext = Context & SessionFlavor<SessionData> & ConversationFlavor;
 
 const promoText = `_・${promoMessage} – ${sponsoredMessage}・_`;
@@ -64,7 +57,7 @@ export function startTelegramBot() {
     limit({
       timeFrame: 3000,
       limit: 1,
-      onLimitExceeded: async (ctx: any) => {
+      onLimitExceeded: async (ctx) => {
         await ctx.reply(
           "You're going to fry my circuits. 🥴 Please slow down.",
         );
@@ -73,14 +66,15 @@ export function startTelegramBot() {
   );
 
   bot.command("address", async (ctx) => {
-    console.log(`ctx.from?.id.toString()!: ${ctx.from?.id.toString()!}`);
-    const smartAccount = await getSepoliaSmartAccount(ctx.from?.id.toString()!);
+    if (!ctx.from) return;
+    const smartAccount = await getSepoliaSmartAccount(ctx.from.id.toString());
     const address = await getAccountAddress(smartAccount);
     await ctx.reply(address);
   });
 
   bot.command("balance", async (ctx) => {
-    const smartAccount = await getSepoliaSmartAccount(ctx.from?.id.toString()!);
+    if (!ctx.from) return;
+    const smartAccount = await getSepoliaSmartAccount(ctx.from.id.toString());
     const address = await getAccountAddress(smartAccount);
     const balances = await getAccountBalances(address);
     const markdownBalances = formatAccountBalancesUser(balances);
@@ -221,8 +215,6 @@ export function startTelegramBot() {
         ctx.message.text,
         onActivity,
       );
-      console.log("reply");
-      console.log(reply);
       await sendFormattedMessage(ctx, ctx.chat.id, reply);
     } catch (error) {
       console.error(error);
@@ -289,12 +281,8 @@ async function emberReply(
   console.log(toolCalls);
 
   if (toolCalls != null) {
-    const sendToken = async () => {
-      await ctx.conversation.enter("sendToken"); // Promise resolves before conversations ends
-      return "NO RESPONSE";
-    };
-    const availableFunctions = {
-      sendToken,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const availableFunctions: { [key: string]: (args: any) => any } = {
       getMarket,
     };
     const toolMessages = (await runTools(toolCalls, availableFunctions)).filter(
@@ -414,14 +402,7 @@ export function formatForTelegram(markdown: string, italicize = false) {
   // Match a closing tag, followed by one or more newlines (and optionally other whitespace), then an opening tag
   html = html.replace(
     /(<\/([^>]+)>)\s*(\n+)\s*(<([^>]+)>)/g,
-    (
-      match,
-      closingTag,
-      closingTagName,
-      newlines,
-      openingTag,
-      openingTagName,
-    ) => {
+    (match, closingTag, closingTagName, newlines, openingTag) => {
       // Construct and return the replacement string with the matched tag names and the original number of newlines between the tags
       return `${closingTag}${newlines}${openingTag}`;
     },
@@ -436,7 +417,7 @@ export function formatForTelegram(markdown: string, italicize = false) {
 }
 
 async function sendFormattedMessage(
-  ctx: any,
+  ctx: MyContext,
   chatId: number,
   markdownMessage: string,
   italicize = false,
