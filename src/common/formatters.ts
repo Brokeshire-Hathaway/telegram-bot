@@ -1,4 +1,4 @@
-import { ChainData, FeeCost, GasCost, TokenData } from "@0xsquid/sdk";
+import { ChainData, FeeCost, GasCost } from "@0xsquid/sdk";
 import { formatUnits } from "viem";
 
 export function formatTime(timeInSeconds: number) {
@@ -34,11 +34,11 @@ export function totalFeeCosts(feeCosts: FeeCost[], gasCosts: GasCost[]) {
   return costsFormatted;
 }
 
-export function formatAmount(value: string, tokenData: TokenData) {
+export function formatAmount(value: string, tokenData: { decimals: number }) {
   return formatUnits(BigInt(value), tokenData.decimals);
 }
 
-export function formatTokenUrl(token: TokenData, network: ChainData) {
+export function formatTokenUrl(token: { address: string }, network: ChainData) {
   if (network.blockExplorerUrls.length === 0) {
     return undefined;
   }

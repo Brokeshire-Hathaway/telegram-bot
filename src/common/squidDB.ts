@@ -3,7 +3,7 @@ import Fuse from "fuse.js";
 import z from "zod";
 import { getAccountAddress, getSmartAccount } from "../account/index.js";
 import { ChainId } from "@biconomy/core-types";
-import { parseUnits } from "viem";
+import { createPublicClient, defineChain, http, parseUnits } from "viem";
 
 const isTestNet = (process.env.IS_TESTNET || "true") === "true";
 
@@ -123,4 +123,34 @@ export async function getRoute(
     slippage: slippage,
   });
   return route;
+}
+
+export function getViemChain(network: ChainData) {
+  return createPublicClient({
+    chain: defineChain({
+      id: network.chainId as number,
+      name: network.networkName,
+      network: network.networkName,
+      nativeCurrency: {
+        decimals: network.nativeCurrency.decimals,
+        name: network.nativeCurrency.name,
+        symbol: network.nativeCurrency.symbol,
+      },
+      rpcUrls: {
+        default: {
+          http: [network.rpc],
+        },
+        public: {
+          http: [network.rpc],
+        },
+      },
+      blockExplorers: {
+        default: {
+          name: "Explorer",
+          url: network.blockExplorerUrls[0],
+        },
+      },
+    }),
+    transport: http(),
+  });
 }

@@ -3,14 +3,8 @@ import { BiconomySmartAccountV2 } from "@biconomy/account";
 import { Transaction } from "@biconomy/core-types";
 import { erc20Abi } from "abitype/abis";
 import { getAccountAddress } from "../../account/index.js";
-import {
-  createPublicClient,
-  defineChain,
-  encodeFunctionData,
-  getContract,
-  http,
-} from "viem";
-import { NATIVE_TOKEN } from "../../common/squidDB.js";
+import { encodeFunctionData, getContract } from "viem";
+import { NATIVE_TOKEN, getViemChain } from "../../common/squidDB.js";
 
 async function preSwapContracts(
   fromToken: TokenData,
@@ -24,33 +18,7 @@ async function preSwapContracts(
   // Check current allowance
   if (typeof network.chainId === "number") {
     const accountAddress = await getAccountAddress(smartAccount);
-    const publicClient = createPublicClient({
-      chain: defineChain({
-        id: network.chainId,
-        name: network.networkName,
-        network: network.networkName,
-        nativeCurrency: {
-          decimals: network.nativeCurrency.decimals,
-          name: network.nativeCurrency.name,
-          symbol: network.nativeCurrency.symbol,
-        },
-        rpcUrls: {
-          default: {
-            http: [network.rpc],
-          },
-          public: {
-            http: [network.rpc],
-          },
-        },
-        blockExplorers: {
-          default: {
-            name: "Explorer",
-            url: network.blockExplorerUrls[0],
-          },
-        },
-      }),
-      transport: http(),
-    });
+    const publicClient = getViemChain(network);
     const contract = getContract({
       address: fromToken.address as `0x${string}`,
       abi: erc20Abi,

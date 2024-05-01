@@ -1,14 +1,18 @@
 import express, { Request, Response } from "express";
 import z from "zod";
 import { ChainId, UserOperation } from "@biconomy/core-types";
-import { ChainData, TokenData } from "@0xsquid/sdk";
+import { ChainData } from "@0xsquid/sdk";
 import {
   getNetworkInformation,
   getTokenInformation,
   address,
   NATIVE_TOKEN,
 } from "../../common/squidDB.js";
-import { getGasFee, getSmartContract } from "./smartContract.js";
+import {
+  getGasFee,
+  getSmartContract,
+  getTokenInfoOfAddress,
+} from "./smartContract.js";
 import { getSmartAccount } from "../../account/index.js";
 import { randomUUID } from "crypto";
 import { formatAmount, formatTokenUrl } from "../../common/formatters.js";
@@ -26,7 +30,11 @@ const TRANSACTION_MEMORY = new Map<
     userOp: Partial<UserOperation>;
     network: ChainData;
     amount: string;
-    token: TokenData;
+    token: {
+      address: string;
+      decimals: number;
+      symbol: string;
+    };
   }
 >();
 
@@ -53,7 +61,16 @@ router.post("/prepare", async (req: Request, res: Response) => {
   const body = result.data;
   const network = getNetworkInformation(body.sender_address.network);
   if (body.token === "0x") body.token = NATIVE_TOKEN;
-  const token = await getTokenInformation(network.chainId, body.token);
+  let token: { decimals: number; symbol: string; address: string } | undefined =
+    await getTokenInformation(network.chainId, body.token);
+  if (!token) {
+    const isAddress = await address.safeParseAsync(body.token);
+    if (!isAddress.success)
+      return res
+        .status(500)
+        .json({ success: false, message: "Token not supported" });
+    token = await getTokenInfoOfAddress(isAddress.data, network);
+  }
   if (!token)
     return res
       .status(500)
@@ -92,7 +109,10 @@ router.post("/prepare", async (req: Request, res: Response) => {
       transaction_uuid: uuid,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: `Error: ${error}` });
+    console.error(error);
+    res
+      .status(500)
+      .json({ success: false, message: `Error creating user transaction` });
   }
 });
 
