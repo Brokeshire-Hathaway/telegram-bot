@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import z from "zod";
-import { ChainData, Squid, TokenData, TransactionRequest } from "@0xsquid/sdk";
+import { ChainData, TokenData, TransactionRequest } from "@0xsquid/sdk";
 import { randomUUID } from "crypto";
 import { UniversalAddress } from "../send/index.js";
 import { getSmartAccount } from "../../account/index.js";

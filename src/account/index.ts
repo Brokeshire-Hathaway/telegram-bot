@@ -11,7 +11,6 @@ import { LocalAccountSigner } from "@alchemy/aa-core";
 import derivePrivateKey from "./derivePrivateKey.js";
 import { toHex } from "viem";
 import { Signer } from "ethers";
-import { Network, getChainId, getRpcUrl } from "../chain.js";
 import { ChainId } from "@biconomy/core-types";
 
 // create instance of bundler
@@ -52,15 +51,12 @@ export async function getSmartAccount(
   return biconomyAccount;
 }
 
-export async function getSmartAccountFromNetwork(
-  uid: string,
-  network: Network,
-) {
-  return await getSmartAccount(uid, getChainId(network), getRpcUrl(network));
-}
-
 export async function getSepoliaSmartAccount(id: string) {
-  return await getSmartAccountFromNetwork(id, "sepolia");
+  return await getSmartAccount(
+    id,
+    11155111 as ChainId,
+    "https://rpc.ankr.com/eth_sepolia",
+  );
 }
 
 export async function getAccountAddress(smartAccount: BiconomySmartAccountV2) {
