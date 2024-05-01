@@ -10,34 +10,18 @@ import {
   formatTime,
   formatTokenUrl,
   totalFeeCosts,
-} from "./formatters.js";
+} from "../../common/formatters.js";
 import {
   RouteType,
   getNetworkInformation,
   getRoute,
   getTokenInformation,
-} from "./squidDB.js";
+} from "../../common/squidDB.js";
 import { ChainId } from "@biconomy/core-types";
-import Fuse from "fuse.js";
-
-// Squid object
-const isTestNet = (process.env.IS_TESTNET || "true") === "true";
-const squidBaseUrl = isTestNet
-  ? "https://testnet.api.squidrouter.com"
-  : "https://api.squidrouter.com";
-const squid = new Squid({
-  baseUrl: squidBaseUrl,
-});
-export let FUSE: Fuse<ChainData> | undefined;
-export async function initSquid() {
-  await squid.init();
-  FUSE = new Fuse(squid.chains, {
-    ignoreLocation: true,
-    keys: ["networkName"],
-  });
-}
+import { squid } from "../../common/squidDB.js";
 
 // Create the router
+const isTestNet = (process.env.IS_TESTNET || "true") === "true";
 const router = express.Router();
 const TRANSACTION_MEMORY = new Map<
   string,
@@ -59,7 +43,7 @@ const SwapPreview = z.object({
   type: RouteType.optional().default("swap"),
   amount: z.string(),
   token: z.string(),
-  sender: UniversalAddress.extend({ network: z.string() }),
+  sender: UniversalAddress,
   to: ChainSource,
   slippage: z.number().optional().default(1.0),
 });
@@ -75,22 +59,14 @@ router.post("/preview", async (req: Request, res: Response) => {
   const body = result.data;
 
   // Transform data to pass to squid router
-  const fromNetwork = getNetworkInformation(body.sender.network, squid);
-  const toNetwork = getNetworkInformation(body.to.network, squid);
-  const fromToken = await getTokenInformation(
-    fromNetwork.chainId,
-    body.token,
-    squid,
-  );
+  const fromNetwork = getNetworkInformation(body.sender.network);
+  const toNetwork = getNetworkInformation(body.to.network);
+  const fromToken = await getTokenInformation(fromNetwork.chainId, body.token);
   if (!fromToken)
     return res
       .status(500)
       .json({ success: false, message: "Token not supported" });
-  const toToken = await getTokenInformation(
-    toNetwork.chainId,
-    body.to.token,
-    squid,
-  );
+  const toToken = await getTokenInformation(toNetwork.chainId, body.to.token);
   if (!toToken)
     return res
       .status(500)

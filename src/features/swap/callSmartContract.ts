@@ -10,8 +10,8 @@ import {
   getContract,
   http,
 } from "viem";
+import { NATIVE_TOKEN } from "../../common/squidDB.js";
 
-const NATIVE_TOKEN = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 async function preSwapContracts(
   fromToken: TokenData,
   network: ChainData,

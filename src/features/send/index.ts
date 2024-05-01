@@ -1,26 +1,46 @@
 import express, { Request, Response } from "express";
 import { executeTransaction, sendTokenPreview } from "../../gpttools.js";
 import z from "zod";
-import { Network } from "../../chain.js";
+import { ChainId, UserOperation } from "@biconomy/core-types";
+import { ChainData, TokenData } from "@0xsquid/sdk";
+import {
+  getNetworkInformation,
+  getTokenInformation,
+  address,
+  NATIVE_TOKEN,
+} from "../../common/squidDB.js";
+import { getGasFee, getSmartContract } from "./smartContract.js";
+import { getSmartAccount } from "../../account/index.js";
+import { randomUUID } from "crypto";
+import { formatAmount, formatTokenUrl } from "../../common/formatters.js";
 
 // Create the router
 const router = express.Router();
 
+// In memory transaction storage
+const TRANSACTION_MEMORY = new Map<
+  string,
+  {
+    accountUid: string;
+    recipient: `0x${string}`;
+    userOp: Partial<UserOperation>;
+    network: ChainData;
+    amount: string;
+    token: TokenData;
+  }
+>();
+
 // Endpoint to prepare a transaction
-const token_address = z.custom<`0x${string}`>((val) => {
-  return typeof val === "string" ? /^0x[a-fA-F0-9]+$/.test(val) : false;
-});
 export const UniversalAddress = z.object({
-  network: Network,
+  network: z.string(),
   identifier: z.string(),
   platform: z.string(),
 });
 const PrepareTransactionBody = z.object({
   sender_address: UniversalAddress,
-  recipient_address: UniversalAddress,
+  recipient_address: address,
   amount: z.string(),
-  is_receive_native_token: z.boolean(),
-  receive_token_address: token_address.optional().nullable(),
+  token: z.string(),
 });
 router.post("/prepare", async (req: Request, res: Response) => {
   const result = await PrepareTransactionBody.safeParseAsync(req.body);
@@ -31,18 +51,49 @@ router.post("/prepare", async (req: Request, res: Response) => {
       .json({ success: false, message: "Invalid request body" });
   }
   const body = result.data;
+  const network = getNetworkInformation(body.sender_address.network);
+  if (body.token === "0x") body.token = NATIVE_TOKEN;
+  const token = await getTokenInformation(network.chainId, body.token);
+  if (!token)
+    return res
+      .status(500)
+      .json({ success: false, message: "Token not supported" });
+
+  const contract = getSmartContract(
+    token.address,
+    body.recipient_address,
+    body.amount,
+  );
   try {
-    const preview = await sendTokenPreview({
+    const account = await getSmartAccount(
+      body.sender_address.identifier,
+      network.chainId as ChainId,
+      network.rpc,
+    );
+    const userOp = await account.buildUserOp([contract]);
+    const gasFee = getGasFee(userOp);
+    const uuid = randomUUID();
+    TRANSACTION_MEMORY.set(uuid, {
       accountUid: body.sender_address.identifier,
-      network: body.sender_address.network,
-      recipientAddress: body.recipient_address.identifier as `0x${string}`,
+      recipient: body.recipient_address,
+      userOp,
+      network,
+      token,
       amount: body.amount,
-      standardization: body.is_receive_native_token ? "native" : "erc20",
-      tokenAddress: body.receive_token_address,
     });
-    res.json(preview);
+    return {
+      recipient: body.recipient_address,
+      amount: formatAmount(body.amount, token),
+      token_symbol: token.symbol,
+      token_url: formatTokenUrl(token, network),
+      gas_fee: formatAmount(gasFee.toString(), token),
+      total_amount: formatAmount(
+        (gasFee + BigInt(body.amount)).toString(),
+        token,
+      ),
+      transaction_uuid: uuid,
+    };
   } catch (error) {
-    console.error(error);
     res.status(500).json({ success: false, message: `Error: ${error}` });
   }
 });
@@ -59,9 +110,34 @@ router.post("/send", async (req: Request, res: Response) => {
       .json({ success: false, message: "Invalid request body" });
   }
   const body = result.data;
+  const memory = TRANSACTION_MEMORY.get(body.transaction_uuid);
+  if (!memory) {
+    return res
+      .status(500)
+      .json({ success: false, message: "Transaction does not exist" });
+  }
   try {
-    const sendResult = await executeTransaction(body);
-    res.json(sendResult);
+    const account = await getSmartAccount(
+      body.transaction_uuid,
+      memory.network.chainId as ChainId,
+      memory.network.rpc,
+    );
+    const result = await account.sendUserOp(memory.userOp);
+    const txHash = await result.waitForTxHash();
+    const receipt = txHash.userOperationReceipt ?? (await result.wait());
+    TRANSACTION_MEMORY.delete(body.transaction_uuid);
+    return res.json({
+      success: true,
+      recipient: memory.recipient,
+      amount: memory.amount,
+      token_symbol: memory.token.symbol,
+      gas_fee: formatAmount(receipt.actualGasUsed.toString(), memory.token),
+      total_amount: formatAmount(
+        (BigInt(memory.amount) + receipt.actualGasUsed.toBigInt()).toString(),
+        memory.token,
+      ),
+      transaction_block: `${memory.network.blockExplorerUrls[0]}/tx/${txHash.transactionHash}`,
+    });
   } catch (error) {
     let msg = "Send failed";
     if (typeof error === "object" && !!error && "message" in error) {

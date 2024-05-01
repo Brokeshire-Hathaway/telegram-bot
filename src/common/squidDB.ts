@@ -1,12 +1,32 @@
 import { ChainData, RouteData, Squid, TokenData } from "@0xsquid/sdk";
-import { FUSE } from "./index.js";
 import Fuse from "fuse.js";
 import z from "zod";
-import { getAccountAddress, getSmartAccount } from "../../account/index.js";
+import { getAccountAddress, getSmartAccount } from "../account/index.js";
 import { ChainId } from "@biconomy/core-types";
 import { parseUnits } from "viem";
 
-export function getNetworkInformation(networkName: string, squid: Squid) {
+const isTestNet = (process.env.IS_TESTNET || "true") === "true";
+
+const squidBaseUrl = isTestNet
+  ? "https://testnet.api.squidrouter.com"
+  : "https://api.squidrouter.com";
+
+export const squid = new Squid({
+  baseUrl: squidBaseUrl,
+});
+
+export let FUSE: Fuse<ChainData> | undefined;
+export const NATIVE_TOKEN = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
+
+export async function initSquid() {
+  await squid.init();
+  FUSE = new Fuse(squid.chains, {
+    ignoreLocation: true,
+    keys: ["networkName"],
+  });
+}
+
+export function getNetworkInformation(networkName: string) {
   const fuse =
     FUSE ||
     new Fuse(squid.chains, {
@@ -17,11 +37,19 @@ export function getNetworkInformation(networkName: string, squid: Squid) {
   return fuse.search(networkName)[0].item;
 }
 
+export const address = z.custom<`0x${string}`>((val) => {
+  return typeof val === "string" ? /^0x[a-fA-F0-9]+$/.test(val) : false;
+});
 export async function getTokenInformation(
   chainId: string | number,
   tokenSearch: string,
-  squid: Squid,
 ) {
+  const isAddress = await address.safeParseAsync(tokenSearch);
+  if (isAddress.success)
+    return squid.tokens.find(
+      (v) => v.chainId === chainId && v.address === isAddress.data,
+    );
+
   const response = await fetch(
     `https://api.coingecko.com/api/v3/search?query=${tokenSearch}`,
   );

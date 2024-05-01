@@ -1,7 +1,8 @@
 import express from "express";
 import bodyParser from "body-parser";
 import sendRouter from "./features/send/index.js";
-import swapRouter, { initSquid } from "./features/swap/index.js";
+import swapRouter from "./features/swap/index.js";
+import { initSquid } from "./common/squidDB.js";
 
 // Create express app
 const app = express();
