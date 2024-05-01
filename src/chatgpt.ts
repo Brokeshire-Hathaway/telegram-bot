@@ -5,12 +5,7 @@ import {
   nDocumentsToInclude,
 } from "./config.js";
 import { queryVectorDatabase } from "./database.js";
-import {
-  getMarket,
-  executeTransaction,
-  sendTokenPreview,
-  tools,
-} from "./gpttools.js";
+import { getMarket, tools } from "./gpttools.js";
 import {
   ChatCompletionAssistantMessageParam,
   ChatCompletionCreateParams,
@@ -265,8 +260,6 @@ ${context}`;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const availableFunctions: { [key: string]: (args: any) => any } = {
       getMarket,
-      sendTokenPreview,
-      executeTransaction,
     };
     const functionResPromises: ChatCompletionToolMessageParam[] = [];
     for (const toolCall of toolCalls) {
