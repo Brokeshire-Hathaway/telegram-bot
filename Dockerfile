@@ -1,11 +1,11 @@
-FROM node:18.8-alpine as build
+FROM node:20.12.2-alpine as build
 WORKDIR "/src"
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile --ignore-engines
 COPY . .
 RUN yarn run build
 
-FROM node:18.8-alpine
+FROM node:20.12.2-alpine
 WORKDIR /app
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile --production --ignore-engines
