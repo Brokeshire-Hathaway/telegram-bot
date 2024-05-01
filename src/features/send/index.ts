@@ -12,6 +12,7 @@ import { getGasFee, getSmartContract } from "./smartContract.js";
 import { getSmartAccount } from "../../account/index.js";
 import { randomUUID } from "crypto";
 import { formatAmount, formatTokenUrl } from "../../common/formatters.js";
+import { parseUnits } from "viem";
 
 // Create the router
 const router = express.Router();
@@ -58,10 +59,11 @@ router.post("/prepare", async (req: Request, res: Response) => {
       .status(500)
       .json({ success: false, message: "Token not supported" });
 
+  const amount = parseUnits(body.amount, token.decimals);
   const contract = getSmartContract(
     token.address,
     body.recipient_address,
-    body.amount,
+    amount,
   );
   try {
     const account = await getSmartAccount(
@@ -80,18 +82,15 @@ router.post("/prepare", async (req: Request, res: Response) => {
       token,
       amount: body.amount,
     });
-    return {
+    return res.json({
       recipient: body.recipient_address,
-      amount: formatAmount(body.amount, token),
+      amount: body.amount,
       token_symbol: token.symbol,
       token_url: formatTokenUrl(token, network),
       gas_fee: formatAmount(gasFee.toString(), token),
-      total_amount: formatAmount(
-        (gasFee + BigInt(body.amount)).toString(),
-        token,
-      ),
+      total_amount: formatAmount((gasFee + amount).toString(), token),
       transaction_uuid: uuid,
-    };
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: `Error: ${error}` });
   }
@@ -117,24 +116,33 @@ router.post("/send", async (req: Request, res: Response) => {
   }
   try {
     const account = await getSmartAccount(
-      body.transaction_uuid,
+      memory.accountUid,
       memory.network.chainId as ChainId,
       memory.network.rpc,
     );
     const result = await account.sendUserOp(memory.userOp);
     const txHash = await result.waitForTxHash();
-    const receipt = txHash.userOperationReceipt ?? (await result.wait());
+    const amount = parseUnits(memory.amount, memory.token.decimals);
     TRANSACTION_MEMORY.delete(body.transaction_uuid);
     return res.json({
       success: true,
       recipient: memory.recipient,
       amount: memory.amount,
       token_symbol: memory.token.symbol,
-      gas_fee: formatAmount(receipt.actualGasUsed.toString(), memory.token),
-      total_amount: formatAmount(
-        (BigInt(memory.amount) + receipt.actualGasUsed.toBigInt()).toString(),
-        memory.token,
-      ),
+      gas_fee: txHash.userOperationReceipt
+        ? formatAmount(
+            txHash.userOperationReceipt.actualGasUsed.toString(),
+            memory.token,
+          )
+        : null,
+      total_amount: txHash.userOperationReceipt
+        ? formatAmount(
+            (
+              amount + txHash.userOperationReceipt.actualGasUsed.toBigInt()
+            ).toString(),
+            memory.token,
+          )
+        : null,
       transaction_block: `${memory.network.blockExplorerUrls[0]}/tx/${txHash.transactionHash}`,
     });
   } catch (error) {

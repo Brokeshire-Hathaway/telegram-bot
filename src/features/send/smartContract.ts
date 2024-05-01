@@ -7,21 +7,20 @@ import { BigNumber, BigNumberish } from "ethers";
 export function getSmartContract(
   tokenAddress: string,
   recipientAddress: `0x${string}`,
-  amount: string,
+  amount: bigint,
 ): Transaction {
-  const amountInt = BigInt(amount);
   if (tokenAddress !== NATIVE_TOKEN) {
     const data = encodeFunctionData({
       abi: erc20Abi,
       functionName: "transfer",
-      args: [recipientAddress, amountInt],
+      args: [recipientAddress, amount],
     });
     return { to: tokenAddress, data };
   }
   return {
     to: recipientAddress,
     data: "0x",
-    value: amountInt,
+    value: amount,
   };
 }
 
@@ -34,8 +33,7 @@ function bigNumberishToBigInt(
 
 export function getGasFee(userOp: Partial<UserOperation>) {
   return (
-    (bigNumberishToBigInt(userOp.maxFeePerGas) +
-      bigNumberishToBigInt(userOp.verificationGasLimit) +
+    (bigNumberishToBigInt(userOp.verificationGasLimit) +
       bigNumberishToBigInt(userOp.callGasLimit) +
       bigNumberishToBigInt(userOp.preVerificationGas)) *
     bigNumberishToBigInt(userOp.maxFeePerGas, 1)

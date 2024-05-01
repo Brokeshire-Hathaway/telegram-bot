@@ -45,10 +45,11 @@ export async function getTokenInformation(
   tokenSearch: string,
 ) {
   const isAddress = await address.safeParseAsync(tokenSearch);
-  if (isAddress.success)
+  if (isAddress.success) {
     return squid.tokens.find(
       (v) => v.chainId === chainId && v.address === isAddress.data,
     );
+  }
 
   const response = await fetch(
     `https://api.coingecko.com/api/v3/search?query=${tokenSearch}`,
