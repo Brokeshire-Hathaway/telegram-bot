@@ -21,21 +21,28 @@ export const squid = new Squid({
 export let FUSE: Fuse<ChainData> | undefined;
 export const NATIVE_TOKEN = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
-export async function initSquid() {
-  await squid.init();
-  FUSE = new Fuse(squid.chains, {
+export function getAllChains() {
+  return squid.chains.filter((v) => v.chainType === "evm");
+}
+
+export function getTokensOfChain(network: ChainData) {
+  return squid.tokens.filter((v) => v.chainId === network.chainId);
+}
+
+function createFUSE() {
+  return new Fuse(getAllChains(), {
     ignoreLocation: true,
     keys: ["networkName"],
   });
 }
 
+export async function initSquid() {
+  await squid.init();
+  FUSE = createFUSE();
+}
+
 export function getNetworkInformation(networkName: string) {
-  const fuse =
-    FUSE ||
-    new Fuse(squid.chains, {
-      ignoreLocation: true,
-      keys: ["networkName"],
-    });
+  const fuse = FUSE || createFUSE();
   // Find minimum value by reducing array
   return fuse.search(networkName)[0].item;
 }
@@ -76,7 +83,6 @@ export async function getRoute(
   toNetwork: ChainData,
   toToken: TokenData,
   slippage: number,
-  squid: Squid,
   identifier: string,
 ): Promise<RouteData> {
   const account = await getSmartAccount(

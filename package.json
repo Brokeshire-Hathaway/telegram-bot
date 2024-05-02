@@ -27,7 +27,6 @@
     "grammy": "^1.19.2",
     "langchain": "^0.0.161",
     "markdown-it": "^13.0.2",
-    "moralis": "^2.23.2",
     "openai": "^4.17.5",
     "viem": "^1.19.9"
   },

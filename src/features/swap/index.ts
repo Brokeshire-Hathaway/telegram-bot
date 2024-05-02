@@ -18,7 +18,6 @@ import {
   getTokenInformation,
 } from "../../common/squidDB.js";
 import { ChainId } from "@biconomy/core-types";
-import { squid } from "../../common/squidDB.js";
 
 // Create the router
 const isTestNet = (process.env.IS_TESTNET || "true") === "true";
@@ -82,7 +81,6 @@ router.post("/preview", async (req: Request, res: Response) => {
       toNetwork,
       toToken,
       body.slippage,
-      squid,
       body.sender.identifier,
     );
     if (!route.transactionRequest) {
