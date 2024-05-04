@@ -6,7 +6,6 @@ import * as mod from "@noble/curves/abstract/modular";
 import { secp256k1 } from "@noble/curves/secp256k1";
 import {
   BiconomySmartAccountV2,
-  DEFAULT_ECDSA_OWNERSHIP_MODULE,
   createECDSAOwnershipValidationModule,
   createSmartAccountClient,
 } from "@biconomy/account";
@@ -50,13 +49,11 @@ export async function getSmartAccount(uid: string, chain: Chain) {
   const signer = await getSigner(uid, chain);
   const defaultValidationModule = await createECDSAOwnershipValidationModule({
     signer: signer,
-    moduleAddress: DEFAULT_ECDSA_OWNERSHIP_MODULE,
   });
   return createSmartAccountClient({
     signer,
     bundlerUrl: `https://bundler.biconomy.io/api/v2/${chain.id}/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44`,
     defaultValidationModule,
-    activeValidationModule: defaultValidationModule,
   });
 }
 
