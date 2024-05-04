@@ -164,6 +164,7 @@ router.post("/send", async (req: Request, res: Response) => {
       transaction_block: `${memory.network.blockExplorerUrls[0]}/tx/${txHash.transactionHash}`,
     });
   } catch (error) {
+    console.error(error);
     let msg = "Send failed";
     if (typeof error === "object" && !!error && "message" in error) {
       msg = error.message as string;
