@@ -5,15 +5,11 @@ import { TextLoader } from "langchain/document_loaders/fs/text";
 import { TokenTextSplitter } from "langchain/text_splitter";
 import { chunkSize, chunkOverlap } from "./config.js";
 import { startTelegramBot } from "./telegramBot.js";
-import Moralis from "moralis";
 import { startTransactionService } from "./service.js";
 
 async function main() {
   setOpenAiInstance();
   startTelegramBot();
-  await Moralis.start({
-    apiKey: process.env.MORALIS_API_KEY!,
-  });
   const loader = new DirectoryLoader("documents", {
     ".md": (path) => new TextLoader(path),
   });
