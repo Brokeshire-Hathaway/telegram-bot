@@ -17,8 +17,6 @@ app.use((req, res, next) => {
   console.info("Endpoint", req.path, req.method);
   console.info("");
   next();
-  console.info("=====================");
-  console.info();
 });
 app.use("/transactions", sendRouter);
 app.use("/swap", swapRouter);
