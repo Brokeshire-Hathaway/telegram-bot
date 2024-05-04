@@ -1,7 +1,7 @@
-import { Transaction, UserOperation } from "@biconomy/core-types";
+import { UserOperationStruct, type Transaction } from "@biconomy/account";
 import { erc20Abi } from "abitype/abis";
 import { encodeFunctionData, getContract } from "viem";
-import { NATIVE_TOKEN, getViemChain } from "../../common/squidDB.js";
+import { NATIVE_TOKEN, getViemClient } from "../../common/squidDB.js";
 import { BigNumber, BigNumberish } from "ethers";
 import { ChainData } from "@0xsquid/sdk";
 
@@ -9,11 +9,11 @@ export async function getTokenInfoOfAddress(
   address: `0x${string}`,
   network: ChainData,
 ) {
-  const publicClient = getViemChain(network);
+  const publicClient = getViemClient(network);
   const contract = getContract({
     address: address,
     abi: erc20Abi,
-    publicClient: publicClient,
+    client: publicClient,
   });
   const decimals = await contract.read.decimals();
   const symbol = await contract.read.symbol();
@@ -51,7 +51,7 @@ function bigNumberishToBigInt(
   return number ? BigNumber.from(number).toBigInt() : BigInt(fallback);
 }
 
-export function getGasFee(userOp: Partial<UserOperation>) {
+export function getGasFee(userOp: Partial<UserOperationStruct>) {
   return (
     (bigNumberishToBigInt(userOp.verificationGasLimit) +
       bigNumberishToBigInt(userOp.callGasLimit) +

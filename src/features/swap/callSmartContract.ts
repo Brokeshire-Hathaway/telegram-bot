@@ -1,10 +1,13 @@
 import { ChainData, TokenData, TransactionRequest } from "@0xsquid/sdk";
-import { BiconomySmartAccountV2 } from "@biconomy/account";
-import { Transaction } from "@biconomy/core-types";
+import {
+  BiconomySmartAccountV2,
+  BigNumberish,
+  Transaction,
+} from "@biconomy/account";
 import { erc20Abi } from "abitype/abis";
 import { getAccountAddress } from "../wallet/index.js";
 import { encodeFunctionData, getContract } from "viem";
-import { NATIVE_TOKEN, getViemChain } from "../../common/squidDB.js";
+import { NATIVE_TOKEN, getViemClient } from "../../common/squidDB.js";
 
 async function preSwapContracts(
   fromToken: TokenData,
@@ -18,11 +21,11 @@ async function preSwapContracts(
   // Check current allowance
   if (typeof network.chainId === "number") {
     const accountAddress = await getAccountAddress(smartAccount);
-    const publicClient = getViemChain(network);
+    const publicClient = getViemClient(network);
     const contract = getContract({
       address: fromToken.address as `0x${string}`,
       abi: erc20Abi,
-      publicClient: publicClient,
+      client: publicClient,
     });
     const allowance = await contract.read.allowance([
       accountAddress,
@@ -78,15 +81,10 @@ export default async function (
   );
   const userOp = await smartAccount.buildUserOp(
     otherTransactions.concat([buildTransaction(route)]),
-    {
-      skipBundlerGasEstimation: true,
-      overrides: {
-        maxFeePerGas: route.maxFeePerGas,
-        maxPriorityFeePerGas: route.maxPriorityFeePerGas,
-        callGasLimit: route.gasLimit,
-      },
-    },
   );
+  userOp.callGasLimit = route.gasLimit as BigNumberish;
+  userOp.maxFeePerGas = route.maxFeePerGas as BigNumberish;
+  userOp.maxPriorityFeePerGas = route.maxPriorityFeePerGas as BigNumberish;
   const responseUserOp = await smartAccount.sendUserOp(userOp);
   const transactionHash = await responseUserOp.waitForTxHash();
   return transactionHash.transactionHash;

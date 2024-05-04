@@ -24,7 +24,7 @@ import MarkdownIt from "markdown-it";
 import { ChatFromGetChat, Message } from "grammy/types";
 import {
   getAccountAddress,
-  getSepoliaSmartAccount,
+  getEthSmartAccount,
 } from "./features/wallet/index.js";
 import {
   type ConversationFlavor,
@@ -72,13 +72,20 @@ export function startTelegramBot() {
 
   bot.command("address", async (ctx) => {
     if (!ctx.from) return;
-    const smartAccount = await getSepoliaSmartAccount(ctx.from.id.toString());
+    const smartAccount = await getEthSmartAccount(ctx.from.id.toString());
     const address = await getAccountAddress(smartAccount);
     await ctx.reply(address);
   });
 
   bot.command("balance", async (ctx) => {
     if (!ctx.from) return;
+    await ctx.api.sendMessage(
+      ctx.from.id,
+      "_Searching for the information you requested_",
+      {
+        parse_mode: "MarkdownV2",
+      },
+    );
     const balances = await getAllAccountBalances(ctx.from.id.toString());
     const markdownBalances = formatBalances(balances);
     await ctx.api.sendMessage(ctx.from.id, markdownBalances, {

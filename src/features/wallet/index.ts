@@ -1,21 +1,20 @@
-import {
-  BiconomySmartAccountV2,
-  DEFAULT_ENTRYPOINT_ADDRESS,
-} from "@biconomy/account";
-import {
-  ECDSAOwnershipValidationModule,
-  DEFAULT_ECDSA_OWNERSHIP_MODULE,
-} from "@biconomy/modules";
-import { Bundler } from "@biconomy/bundler";
-import { LocalAccountSigner } from "@alchemy/aa-core";
-import { toHex } from "viem";
-import { Signer } from "ethers";
-import { ChainId } from "@biconomy/core-types";
+import { Chain, createWalletClient, http, toHex } from "viem";
 import { hkdf } from "@noble/hashes/hkdf";
 import { ScryptOpts, scrypt } from "@noble/hashes/scrypt";
 import { keccak_256 } from "@noble/hashes/sha3";
 import * as mod from "@noble/curves/abstract/modular";
 import { secp256k1 } from "@noble/curves/secp256k1";
+import {
+  BiconomySmartAccountV2,
+  DEFAULT_ECDSA_OWNERSHIP_MODULE,
+  createECDSAOwnershipValidationModule,
+  createSmartAccountClient,
+} from "@biconomy/account";
+import { privateKeyToAccount } from "viem/accounts";
+import { IS_TESTNET } from "../../common/settings.js";
+import { sepolia, mainnet } from "viem/chains";
+import { ChainData } from "@0xsquid/sdk";
+import { getViemChain } from "../../common/squidDB.js";
 
 function derivePrivateKey(uid: string): Uint8Array {
   // https://copyprogramming.com/howto/appropriate-scrypt-parameters-when-generating-an-scrypt-hash
@@ -38,51 +37,41 @@ function derivePrivateKey(uid: string): Uint8Array {
 }
 
 // create instance of bundler
-async function getSigner(uid: string) {
+async function getSigner(uid: string, chain: Chain) {
   const privateKey = derivePrivateKey(uid);
-  return LocalAccountSigner.privateKeyToAccountSigner(toHex(privateKey));
+  return createWalletClient({
+    account: privateKeyToAccount(toHex(privateKey)),
+    chain,
+    transport: http(),
+  });
 }
 
-export async function getSmartAccount(
-  uid: string,
-  chainId: ChainId,
-  rpcUrl: string,
-) {
-  const userOpReceiptMaxDurationIntervals = {
-    chainId: 60000,
-  };
-  const bundler = new Bundler({
-    bundlerUrl: `https://bundler.biconomy.io/api/v2/${chainId}/BBagqibhs.HI7fopYh-iJkl-45ic-afU9-6877f7gaia78Cv`,
-    chainId: chainId,
-    entryPointAddress: DEFAULT_ENTRYPOINT_ADDRESS,
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    userOpReceiptMaxDurationIntervals: userOpReceiptMaxDurationIntervals,
-  });
-  const signer = await getSigner(uid);
-  const ownershipModule = await ECDSAOwnershipValidationModule.create({
-    signer: signer as unknown as Signer,
+export async function getSmartAccount(uid: string, chain: Chain) {
+  const signer = await getSigner(uid, chain);
+  const defaultValidationModule = await createECDSAOwnershipValidationModule({
+    signer: signer,
     moduleAddress: DEFAULT_ECDSA_OWNERSHIP_MODULE,
   });
-  const biconomyAccount = await BiconomySmartAccountV2.create({
-    chainId: chainId,
-    rpcUrl: rpcUrl,
-    bundler: bundler,
-    entryPointAddress: DEFAULT_ENTRYPOINT_ADDRESS,
-    defaultValidationModule: ownershipModule,
-    activeValidationModule: ownershipModule,
+  return createSmartAccountClient({
+    signer,
+    bundlerUrl: `https://bundler.biconomy.io/api/v2/${chain.id}/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44`,
+    defaultValidationModule,
+    activeValidationModule: defaultValidationModule,
   });
-  return biconomyAccount;
 }
 
-export async function getSepoliaSmartAccount(id: string) {
-  return await getSmartAccount(
-    id,
-    11155111 as ChainId,
-    "https://rpc.ankr.com/eth_sepolia",
-  );
+export async function getSmartAccountFromChainData(
+  uid: string,
+  chainData: ChainData,
+) {
+  return getSmartAccount(uid, getViemChain(chainData));
+}
+
+export async function getEthSmartAccount(id: string) {
+  if (IS_TESTNET) return await getSmartAccount(id, sepolia);
+  return await getSmartAccount(id, mainnet);
 }
 
 export async function getAccountAddress(smartAccount: BiconomySmartAccountV2) {
-  return (await smartAccount.getAccountAddress()) as `0x${string}`;
+  return smartAccount.getAccountAddress();
 }

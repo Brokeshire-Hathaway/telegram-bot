@@ -3,14 +3,19 @@ import Fuse from "fuse.js";
 import z from "zod";
 import {
   getAccountAddress,
-  getSmartAccount,
+  getSmartAccountFromChainData,
 } from "../features/wallet/index.js";
-import { ChainId } from "@biconomy/core-types";
-import { createPublicClient, defineChain, http, parseUnits } from "viem";
+import {
+  Chain,
+  PublicClient,
+  createPublicClient,
+  defineChain,
+  http,
+  parseUnits,
+} from "viem";
+import { IS_TESTNET } from "./settings.js";
 
-const isTestNet = (process.env.IS_TESTNET || "true") === "true";
-
-const squidBaseUrl = isTestNet
+const squidBaseUrl = IS_TESTNET
   ? "https://testnet.api.squidrouter.com"
   : "https://api.squidrouter.com";
 
@@ -22,7 +27,7 @@ export let FUSE: Fuse<ChainData> | undefined;
 export const NATIVE_TOKEN = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
 export function getAllChains() {
-  return squid.chains.filter((v) => v.chainType === "evm");
+  return squid.chains.filter((v) => v.chainType === "evm" && v.chainId !== 5);
 }
 
 export function getTokensOfChain(network: ChainData) {
@@ -85,15 +90,10 @@ export async function getRoute(
   slippage: number,
   identifier: string,
 ): Promise<RouteData> {
-  const account = await getSmartAccount(
+  const account = await getSmartAccountFromChainData(identifier, fromNetwork);
+  const receiverAccount = await getSmartAccountFromChainData(
     identifier,
-    fromNetwork.chainId as ChainId,
-    fromNetwork.rpc,
-  );
-  const receiverAccount = await getSmartAccount(
-    identifier,
-    toNetwork.chainId as ChainId,
-    toNetwork.rpc,
+    toNetwork,
   );
   if (type === "swap") {
     const fromAmount = parseUnits(amount, fromToken.decimals).toString();
@@ -134,32 +134,36 @@ export async function getRoute(
   return route;
 }
 
-export function getViemChain(network: ChainData) {
+export function getViemChain(network: ChainData): Chain {
+  return defineChain({
+    id: network.chainId as number,
+    name: network.networkName,
+    network: network.networkName,
+    nativeCurrency: {
+      decimals: network.nativeCurrency.decimals,
+      name: network.nativeCurrency.name,
+      symbol: network.nativeCurrency.symbol,
+    },
+    rpcUrls: {
+      default: {
+        http: [network.rpc],
+      },
+      public: {
+        http: [network.rpc],
+      },
+    },
+    blockExplorers: {
+      default: {
+        name: "Explorer",
+        url: network.blockExplorerUrls[0],
+      },
+    },
+  });
+}
+
+export function getViemClient(network: ChainData): PublicClient {
   return createPublicClient({
-    chain: defineChain({
-      id: network.chainId as number,
-      name: network.networkName,
-      network: network.networkName,
-      nativeCurrency: {
-        decimals: network.nativeCurrency.decimals,
-        name: network.nativeCurrency.name,
-        symbol: network.nativeCurrency.symbol,
-      },
-      rpcUrls: {
-        default: {
-          http: [network.rpc],
-        },
-        public: {
-          http: [network.rpc],
-        },
-      },
-      blockExplorers: {
-        default: {
-          name: "Explorer",
-          url: network.blockExplorerUrls[0],
-        },
-      },
-    }),
+    chain: getViemChain(network),
     transport: http(),
   });
 }
