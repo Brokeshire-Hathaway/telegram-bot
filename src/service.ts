@@ -11,6 +11,13 @@ const HOST = "0.0.0.0";
 app.use(bodyParser.json());
 
 // Endpoints router
+app.use((req, res, next) => {
+  console.info();
+  console.info("======= Request incoming", new Date(), "=======");
+  console.info("Endpoint", req.path, req.method);
+  console.info("");
+  next();
+});
 app.use("/transactions", sendRouter);
 app.use("/swap", swapRouter);
 

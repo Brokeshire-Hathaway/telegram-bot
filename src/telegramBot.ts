@@ -22,15 +22,20 @@ import {
 } from "openai/resources/index";
 import MarkdownIt from "markdown-it";
 import { ChatFromGetChat, Message } from "grammy/types";
-import { WalletTokenBalance, getAccountBalances } from "./account/balance.js";
-import { getAccountAddress, getSepoliaSmartAccount } from "./account/index.js";
+import {
+  getAccountAddress,
+  getEthSmartAccount,
+} from "./features/wallet/index.js";
 import {
   type ConversationFlavor,
   conversations,
 } from "@grammyjs/conversations";
-import PreciseNumber from "./common/tokenMath.js";
 import { getMarket, tools } from "./gpttools.js";
 import { messageEmber } from "./features/messageEmber/messageEmber.js";
+import {
+  getAllAccountBalances,
+  formatBalances,
+} from "./features/wallet/balance.js";
 
 interface SessionData {}
 type MyContext = Context & SessionFlavor<SessionData> & ConversationFlavor;
@@ -67,18 +72,25 @@ export function startTelegramBot() {
 
   bot.command("address", async (ctx) => {
     if (!ctx.from) return;
-    const smartAccount = await getSepoliaSmartAccount(ctx.from.id.toString());
+    const smartAccount = await getEthSmartAccount(ctx.from.id.toString());
     const address = await getAccountAddress(smartAccount);
     await ctx.reply(address);
   });
 
   bot.command("balance", async (ctx) => {
     if (!ctx.from) return;
-    const smartAccount = await getSepoliaSmartAccount(ctx.from.id.toString());
-    const address = await getAccountAddress(smartAccount);
-    const balances = await getAccountBalances(address);
-    const markdownBalances = formatAccountBalancesUser(balances);
-    await sendFormattedMessage(ctx, ctx.chat!.id, markdownBalances);
+    await ctx.api.sendMessage(
+      ctx.from.id,
+      "_Searching for the information you requested_",
+      {
+        parse_mode: "MarkdownV2",
+      },
+    );
+    const balances = await getAllAccountBalances(ctx.from.id.toString());
+    const markdownBalances = formatBalances(balances);
+    await ctx.api.sendMessage(ctx.from.id, markdownBalances, {
+      parse_mode: "MarkdownV2",
+    });
   });
 
   const groupBot = bot.chatType(["group", "supergroup"]);
@@ -354,38 +366,6 @@ async function emberReply(
   const replyMessage = promoText ? `${content}\n\n ${promoText}` : content;
 
   await sendFormattedMessage(ctx, ctx.chat!.id, replyMessage);
-}
-
-export function formatAccountBalancesUser(
-  accountBalances: WalletTokenBalance[],
-) {
-  return accountBalances
-    .map(
-      (tokenBalance) =>
-        `**${tokenBalance.name}${tokenBalance.usdBalance ? "・$" + PreciseNumber.toDecimalDisplay(tokenBalance.usdBalance, 2) : ""}**\n└ _${PreciseNumber.toDecimalDisplay(tokenBalance.balance, undefined, tokenBalance.decimals)} ${tokenBalance.symbol}_`,
-    )
-    .join("\n\n");
-}
-
-export function formatAccountBalancesAssistant(
-  accountBalances: WalletTokenBalance[],
-) {
-  return JSON.stringify(
-    accountBalances.map((tokenBalance) => ({
-      name: tokenBalance.name,
-      symbol: tokenBalance.symbol,
-      standardization: tokenBalance.standardization,
-      tokenAddress: tokenBalance.token_address,
-      balance: PreciseNumber.toDecimalDisplay(
-        tokenBalance.balance,
-        undefined,
-        tokenBalance.decimals,
-      ),
-      usdBalance: tokenBalance.usdBalance
-        ? PreciseNumber.toDecimalDisplay(tokenBalance.usdBalance, 2)
-        : null,
-    })),
-  );
 }
 
 export function formatForTelegram(markdown: string, italicize = false) {

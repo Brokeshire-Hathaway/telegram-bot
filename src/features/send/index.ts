@@ -1,6 +1,5 @@
 import express, { Request, Response } from "express";
 import z from "zod";
-import { ChainId, UserOperation } from "@biconomy/core-types";
 import { ChainData } from "@0xsquid/sdk";
 import {
   getNetworkInformation,
@@ -13,10 +12,11 @@ import {
   getSmartContract,
   getTokenInfoOfAddress,
 } from "./smartContract.js";
-import { getSmartAccount } from "../../account/index.js";
+import { getSmartAccountFromChainData } from "../wallet/index.js";
 import { randomUUID } from "crypto";
 import { formatAmount, formatTokenUrl } from "../../common/formatters.js";
 import { parseUnits } from "viem";
+import { UserOperationStruct } from "@biconomy/account";
 
 // Create the router
 const router = express.Router();
@@ -27,7 +27,7 @@ const TRANSACTION_MEMORY = new Map<
   {
     accountUid: string;
     recipient: `0x${string}`;
-    userOp: Partial<UserOperation>;
+    userOp: Partial<UserOperationStruct>;
     network: ChainData;
     amount: string;
     token: {
@@ -83,10 +83,9 @@ router.post("/prepare", async (req: Request, res: Response) => {
     amount,
   );
   try {
-    const account = await getSmartAccount(
+    const account = await getSmartAccountFromChainData(
       body.sender_address.identifier,
-      network.chainId as ChainId,
-      network.rpc,
+      network,
     );
     const userOp = await account.buildUserOp([contract]);
     const gasFee = getGasFee(userOp);
@@ -135,10 +134,9 @@ router.post("/send", async (req: Request, res: Response) => {
       .json({ success: false, message: "Transaction does not exist" });
   }
   try {
-    const account = await getSmartAccount(
+    const account = await getSmartAccountFromChainData(
       memory.accountUid,
-      memory.network.chainId as ChainId,
-      memory.network.rpc,
+      memory.network,
     );
     const result = await account.sendUserOp(memory.userOp);
     const txHash = await result.waitForTxHash();
@@ -151,14 +149,14 @@ router.post("/send", async (req: Request, res: Response) => {
       token_symbol: memory.token.symbol,
       gas_fee: txHash.userOperationReceipt
         ? formatAmount(
-            txHash.userOperationReceipt.actualGasUsed.toString(),
+            BigInt(txHash.userOperationReceipt.actualGasUsed).toString(),
             memory.token,
           )
         : null,
       total_amount: txHash.userOperationReceipt
         ? formatAmount(
             (
-              amount + txHash.userOperationReceipt.actualGasUsed.toBigInt()
+              amount + BigInt(txHash.userOperationReceipt.actualGasUsed)
             ).toString(),
             memory.token,
           )
@@ -166,6 +164,7 @@ router.post("/send", async (req: Request, res: Response) => {
       transaction_block: `${memory.network.blockExplorerUrls[0]}/tx/${txHash.transactionHash}`,
     });
   } catch (error) {
+    console.error(error);
     let msg = "Send failed";
     if (typeof error === "object" && !!error && "message" in error) {
       msg = error.message as string;

@@ -3,7 +3,7 @@ import z from "zod";
 import { ChainData, TokenData, TransactionRequest } from "@0xsquid/sdk";
 import { randomUUID } from "crypto";
 import { UniversalAddress } from "../send/index.js";
-import { getSmartAccount } from "../../account/index.js";
+import { getSmartAccountFromChainData } from "../wallet/index.js";
 import callSmartContract from "./callSmartContract.js";
 import {
   formatAmount,
@@ -17,11 +17,9 @@ import {
   getRoute,
   getTokenInformation,
 } from "../../common/squidDB.js";
-import { ChainId } from "@biconomy/core-types";
-import { squid } from "../../common/squidDB.js";
+import { IS_TESTNET } from "../../common/settings.js";
 
 // Create the router
-const isTestNet = (process.env.IS_TESTNET || "true") === "true";
 const router = express.Router();
 const TRANSACTION_MEMORY = new Map<
   string,
@@ -82,7 +80,6 @@ router.post("/preview", async (req: Request, res: Response) => {
       toNetwork,
       toToken,
       body.slippage,
-      squid,
       body.sender.identifier,
     );
     if (!route.transactionRequest) {
@@ -116,6 +113,7 @@ router.post("/preview", async (req: Request, res: Response) => {
       ),
     });
   } catch (err) {
+    console.error(err);
     return res
       .status(500)
       .json({ success: false, message: "Failed to found route" });
@@ -126,7 +124,7 @@ router.post("/preview", async (req: Request, res: Response) => {
 const Swap = z.object({
   transaction_uuid: z.string(),
 });
-const AXELAR_TESTNET_EXPLORER = isTestNet
+const AXELAR_TESTNET_EXPLORER = IS_TESTNET
   ? "https://testnet.axelarscan.io"
   : "https://axelarscan.io";
 router.post("/", async (req: Request, res: Response) => {
@@ -142,10 +140,9 @@ router.post("/", async (req: Request, res: Response) => {
       .json({ success: false, message: "Transaction does not exist" });
   }
   try {
-    const smartAccount = await getSmartAccount(
+    const smartAccount = await getSmartAccountFromChainData(
       memory.identifier,
-      memory.network.chainId as ChainId,
-      memory.network.rpc,
+      memory.network,
     );
     const transactionHash = await callSmartContract(
       smartAccount,
@@ -159,6 +156,7 @@ router.post("/", async (req: Request, res: Response) => {
       block: `${AXELAR_TESTNET_EXPLORER}/gmp/${transactionHash}`,
     });
   } catch (err) {
+    console.error(err);
     return res
       .status(500)
       .json({ success: false, message: "Failed executing transaction" });
