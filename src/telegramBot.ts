@@ -90,7 +90,7 @@ export function startTelegramBot() {
     const markdownBalances = formatBalances(balances);
     const message =
       markdownBalances.length === 0
-        ? "Could not find any token in your accounts."
+        ? "Could not find any token in your accounts"
         : markdownBalances;
     await ctx.api.sendMessage(ctx.from.id, message, {
       parse_mode: "MarkdownV2",
