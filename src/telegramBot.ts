@@ -213,7 +213,6 @@ export function startTelegramBot() {
         try {
           ctx.api.editMessageText(ctx.chat.id, messageId, formattedMessage, {
             parse_mode: "HTML",
-            disable_web_page_preview: true,
           });
         } catch (error) {
           console.warn(`Error editing message: ${error}`);
@@ -406,12 +405,9 @@ async function sendFormattedMessage(
     const formattedMessage = formatForTelegram(markdownMessage, italicize);
     return await ctx.api.sendMessage(chatId, formattedMessage, {
       parse_mode: "HTML",
-      disable_web_page_preview: true,
     });
   } catch (error) {
     console.error(error);
-    return await ctx.api.sendMessage(chatId, markdownMessage, {
-      disable_web_page_preview: true,
-    });
+    return await ctx.api.sendMessage(chatId, markdownMessage);
   }
 }
