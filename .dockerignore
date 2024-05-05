@@ -5,3 +5,4 @@ scripts
 eslint.*
 nginx.conf
 README.md
+node_modules
