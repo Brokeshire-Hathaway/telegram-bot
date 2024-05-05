@@ -88,7 +88,11 @@ export function startTelegramBot() {
     );
     const balances = await getAllAccountBalances(ctx.from.id.toString());
     const markdownBalances = formatBalances(balances);
-    await ctx.api.sendMessage(ctx.from.id, markdownBalances, {
+    const message =
+      markdownBalances.length === 0
+        ? "Could not find any token in your accounts."
+        : markdownBalances;
+    await ctx.api.sendMessage(ctx.from.id, message, {
       parse_mode: "MarkdownV2",
     });
   });
