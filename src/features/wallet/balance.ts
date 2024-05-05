@@ -21,7 +21,8 @@ async function getAccountBalanceOfChain(userId: string, network: ChainData) {
   let balanceOfAccount;
   try {
     balanceOfAccount = await account.getBalances(tokenAddresses);
-  } catch {
+  } catch (error) {
+    console.error(error);
     return balances;
   }
   for (const balance of balanceOfAccount) {
