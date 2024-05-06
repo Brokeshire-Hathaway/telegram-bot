@@ -5,8 +5,13 @@ import {
 } from "@biconomy/account";
 import { erc20Abi } from "abitype/abis";
 import { encodeFunctionData, getContract } from "viem";
-import { NATIVE_TOKEN, getViemClient } from "../../common/squidDB.js";
+import {
+  NATIVE_TOKEN,
+  TokenInformation,
+  getViemClient,
+} from "../../common/squidDB.js";
 import { ChainData } from "@0xsquid/sdk";
+import { findUsdPrice } from "../../common/coingeckoDB.js";
 
 export async function getTokenInfoOfAddress(
   address: `0x${string}`,
@@ -20,11 +25,40 @@ export async function getTokenInfoOfAddress(
   });
   const decimals = await contract.read.decimals();
   const symbol = await contract.read.symbol();
-  return {
-    decimals,
-    symbol,
-    address,
-  };
+  const name = await contract.read.name();
+  return await findUsdPrice(
+    {
+      decimals,
+      symbol,
+      address,
+      name,
+    },
+    "name",
+  );
+}
+
+export type SendToken = Pick<
+  TokenInformation,
+  "address" | "usdPrice" | "decimals" | "symbol"
+>;
+export function getCosts(
+  amount: bigint | string,
+  token: SendToken,
+  gas: bigint | string,
+  nativeToken: SendToken,
+): [SendToken[], Map<string, bigint>] {
+  const costs = new Map<string, bigint>();
+  const value = BigInt(amount);
+  const gasValue = BigInt(gas);
+  const tokens = [nativeToken];
+  if (token.address === NATIVE_TOKEN) {
+    costs.set(token.symbol, value + gasValue);
+    return [tokens, costs];
+  }
+  costs.set(token.symbol, value);
+  costs.set(nativeToken.symbol, gasValue);
+  tokens.push(token);
+  return [tokens, costs];
 }
 
 export function getSmartContract(
