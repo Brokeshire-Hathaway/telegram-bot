@@ -21,11 +21,7 @@ import {
   parseUnits,
 } from "viem";
 import { IS_TESTNET } from "./settings.js";
-import {
-  addUsdPriceToToken,
-  findUsdPrice,
-  getCoingeckoToken,
-} from "./coingeckoDB.js";
+import { addUsdPriceToToken, getCoingeckoToken } from "./coingeckoDB.js";
 
 const squidBaseUrl = IS_TESTNET
   ? "https://testnet.api.squidrouter.com"
@@ -186,7 +182,7 @@ function addCost(
   txCosts: { token: { symbol: string; decimals: number }; amount: string }[],
 ) {
   for (const cost of txCosts) {
-    let previewCost = costs.get(cost.token.symbol) || BigInt(0);
+    const previewCost = costs.get(cost.token.symbol) || BigInt(0);
     costs.set(cost.token.symbol, previewCost + BigInt(cost.amount));
   }
 }
