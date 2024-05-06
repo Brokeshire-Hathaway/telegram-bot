@@ -18,7 +18,6 @@ docker run -d --rm --name chromadb -p 8000:8000 -v ./chroma:/chroma/chroma -e IS
 Following that, obtain the following API keys:
 
 - [Open AI](https://openai.com/): An open AI key. For the education step to work, you'll need a Tier 1 account, for which you will need a minimum 5 dollar charge in the account.
-- [Moralis](https://moralis.io/): A Moralis API key, you can create a free account to get it.
 
 Lastly, create a test bot by writing to [BotFather](https://t.me/BotFather) and get a token with the username you choose for the test bot.
 
@@ -28,7 +27,6 @@ Then create the `.env` file in the root of the directory as such:
 CHROMA_HOST="localhost"
 CHROMA_PORT=8000
 OPENAI_API_KEY="YOUR_OPEN_AI_KEY_HERE"
-MORALIS_API_KEY="YOUR_MORALIS_API_KEY_HERE"
 TELEGRAM_BOT_USERNAME="THE_USERNAME_YOU_SELECTED"
 TELEGRAM_BOT_TOKEN="THE_TOKEN_BOT_FATHER_GAVE_YOU"
 SECRET_SALT="my_secret_salt"

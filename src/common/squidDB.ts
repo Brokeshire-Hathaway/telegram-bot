@@ -1,4 +1,11 @@
-import { ChainData, RouteData, Squid, TokenData } from "@0xsquid/sdk";
+import {
+  ChainData,
+  FeeCost,
+  GasCost,
+  RouteData,
+  Squid,
+  TokenData,
+} from "@0xsquid/sdk";
 import Fuse from "fuse.js";
 import z from "zod";
 import {
@@ -14,6 +21,7 @@ import {
   parseUnits,
 } from "viem";
 import { IS_TESTNET } from "./settings.js";
+import { addUsdPriceToToken, getCoingeckoToken } from "./coingeckoDB.js";
 
 const squidBaseUrl = IS_TESTNET
   ? "https://testnet.api.squidrouter.com"
@@ -55,26 +63,27 @@ export function getNetworkInformation(networkName: string) {
 export const address = z.custom<`0x${string}`>((val) => {
   return typeof val === "string" ? /^0x[a-fA-F0-9]+$/.test(val) : false;
 });
+export type TokenInformation = TokenData & { usdPrice: number };
 export async function getTokenInformation(
   chainId: string | number,
   tokenSearch: string,
-) {
+): Promise<TokenInformation | undefined> {
   const isAddress = await address.safeParseAsync(tokenSearch);
   if (isAddress.success) {
-    return squid.tokens.find(
+    const token = squid.tokens.find(
       (v) => v.chainId === chainId && v.address === isAddress.data,
     );
+    if (!token) return undefined;
+    return addUsdPriceToToken(token, { id: token.coingeckoId });
   }
 
-  const response = await fetch(
-    `https://api.coingecko.com/api/v3/search?query=${tokenSearch}`,
+  const coingeckoToken = await getCoingeckoToken(tokenSearch);
+  if (!coingeckoToken) return undefined;
+  const token = squid.tokens.find(
+    (v) => v.chainId === chainId && v.coingeckoId === coingeckoToken.id,
   );
-  if (!response.ok) return undefined;
-  const coinsResponse: { coins: { id: string }[] } = await response.json();
-  if (coinsResponse.coins.length === 0) return undefined;
-  return squid.tokens.find(
-    (v) => v.chainId === chainId && v.coingeckoId === coinsResponse.coins[0].id,
-  );
+  if (!token) return undefined;
+  return addUsdPriceToToken(token, coingeckoToken);
 }
 
 export const RouteType = z.union([z.literal("buy"), z.literal("swap")]);
@@ -166,4 +175,36 @@ export function getViemClient(network: ChainData): PublicClient {
     chain: getViemChain(network),
     transport: http(),
   });
+}
+
+function addCost(
+  costs: Map<string, bigint>,
+  txCosts: { token: { symbol: string; decimals: number }; amount: string }[],
+) {
+  for (const cost of txCosts) {
+    const previewCost = costs.get(cost.token.symbol) || BigInt(0);
+    costs.set(cost.token.symbol, previewCost + BigInt(cost.amount));
+  }
+}
+
+export async function routeFeesToTokenMap(
+  feeCosts: FeeCost[],
+  gasCosts: GasCost[],
+): Promise<[TokenInformation[], Map<string, bigint>]> {
+  const tokenMap = new Map(feeCosts.map((v) => [v.token.symbol, v.token]));
+  for (const gasCost of gasCosts) {
+    tokenMap.set(gasCost.token.symbol, gasCost.token);
+  }
+  const costs = new Map<string, bigint>();
+  addCost(costs, feeCosts);
+  addCost(costs, gasCosts);
+  const tokens = [] as TokenInformation[];
+  for (const token of tokenMap.values()) {
+    const tokenInfo = await addUsdPriceToToken(token, {
+      id: token.coingeckoId,
+    });
+    if (!tokenInfo) continue;
+    tokens.push(tokenInfo);
+  }
+  return [tokens, costs];
 }

@@ -8,13 +8,18 @@ import {
   NATIVE_TOKEN,
 } from "../../common/squidDB.js";
 import {
+  getCosts,
   getGasFee,
   getSmartContract,
   getTokenInfoOfAddress,
+  SendToken,
 } from "./smartContract.js";
 import { getSmartAccountFromChainData } from "../wallet/index.js";
 import { randomUUID } from "crypto";
-import { formatAmount, formatTokenUrl } from "../../common/formatters.js";
+import {
+  formatTokenValue,
+  formatTotalAmount,
+} from "../../common/formatters.js";
 import { parseUnits } from "viem";
 import { UserOperationStruct } from "@biconomy/account";
 
@@ -30,11 +35,8 @@ const TRANSACTION_MEMORY = new Map<
     userOp: Partial<UserOperationStruct>;
     network: ChainData;
     amount: string;
-    token: {
-      address: string;
-      decimals: number;
-      symbol: string;
-    };
+    token: SendToken;
+    nativeToken: SendToken;
   }
 >();
 
@@ -61,8 +63,10 @@ router.post("/prepare", async (req: Request, res: Response) => {
   const body = result.data;
   const network = getNetworkInformation(body.sender_address.network);
   if (body.token === "0x") body.token = NATIVE_TOKEN;
-  let token: { decimals: number; symbol: string; address: string } | undefined =
-    await getTokenInformation(network.chainId, body.token);
+  let token: SendToken | undefined = await getTokenInformation(
+    network.chainId,
+    body.token,
+  );
   if (!token) {
     const isAddress = await address.safeParseAsync(body.token);
     if (!isAddress.success)
@@ -90,6 +94,15 @@ router.post("/prepare", async (req: Request, res: Response) => {
     const userOp = await account.buildUserOp([contract]);
     const gasFee = getGasFee(userOp);
     const uuid = randomUUID();
+    const nativeToken =
+      token.address !== NATIVE_TOKEN
+        ? await getTokenInformation(network.chainId, NATIVE_TOKEN)
+        : token;
+    if (!nativeToken)
+      return res
+        .status(500)
+        .json({ success: false, message: "Native token not found" });
+
     TRANSACTION_MEMORY.set(uuid, {
       accountUid: body.sender_address.identifier,
       recipient: body.recipient_address,
@@ -97,14 +110,15 @@ router.post("/prepare", async (req: Request, res: Response) => {
       network,
       token,
       amount: body.amount,
+      nativeToken,
     });
+    const tokenCosts = getCosts(amount, token, gasFee, nativeToken);
+
     return res.json({
       recipient: body.recipient_address,
-      amount: body.amount,
-      token_symbol: token.symbol,
-      token_url: formatTokenUrl(token, network),
-      gas_fee: formatAmount(gasFee.toString(), token),
-      total_amount: formatAmount((gasFee + amount).toString(), token),
+      amount: formatTokenValue(token, amount, network),
+      fees: formatTokenValue(nativeToken, gasFee, network),
+      total: formatTotalAmount(...tokenCosts, network),
       transaction_uuid: uuid,
     });
   } catch (error) {
@@ -140,25 +154,38 @@ router.post("/send", async (req: Request, res: Response) => {
     );
     const result = await account.sendUserOp(memory.userOp);
     const txHash = await result.waitForTxHash();
-    const amount = parseUnits(memory.amount, memory.token.decimals);
+    try {
+      !txHash.userOperationReceipt
+        ? await result.wait()
+        : txHash.userOperationReceipt;
+    } catch {
+      console.warn("User operation receipt could not be found.");
+    }
     TRANSACTION_MEMORY.delete(body.transaction_uuid);
     return res.json({
       success: true,
       recipient: memory.recipient,
-      amount: memory.amount,
-      token_symbol: memory.token.symbol,
-      gas_fee: txHash.userOperationReceipt
-        ? formatAmount(
-            BigInt(txHash.userOperationReceipt.actualGasUsed).toString(),
-            memory.token,
+      amount: formatTokenValue(
+        memory.nativeToken,
+        memory.amount,
+        memory.network,
+      ),
+      fees: txHash.userOperationReceipt
+        ? formatTokenValue(
+            memory.nativeToken,
+            txHash.userOperationReceipt.actualGasUsed,
+            memory.network,
           )
         : null,
-      total_amount: txHash.userOperationReceipt
-        ? formatAmount(
-            (
-              amount + BigInt(txHash.userOperationReceipt.actualGasUsed)
-            ).toString(),
-            memory.token,
+      total: txHash.userOperationReceipt
+        ? formatTotalAmount(
+            ...getCosts(
+              memory.amount,
+              memory.token,
+              txHash.userOperationReceipt.actualGasUsed,
+              memory.nativeToken,
+            ),
+            memory.network,
           )
         : null,
       transaction_block: `${memory.network.blockExplorerUrls[0]}/tx/${txHash.transactionHash}`,

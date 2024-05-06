@@ -6,16 +6,17 @@ import { UniversalAddress } from "../send/index.js";
 import { getSmartAccountFromChainData } from "../wallet/index.js";
 import callSmartContract from "./callSmartContract.js";
 import {
-  formatAmount,
+  formatFees,
   formatTime,
-  formatTokenUrl,
-  totalFeeCosts,
+  formatTokenValue,
+  formatTotalAmount,
 } from "../../common/formatters.js";
 import {
   RouteType,
   getNetworkInformation,
   getRoute,
   getTokenInformation,
+  routeFeesToTokenMap,
 } from "../../common/squidDB.js";
 import { IS_TESTNET } from "../../common/settings.js";
 
@@ -95,22 +96,35 @@ router.post("/preview", async (req: Request, res: Response) => {
       fromAmount: route.estimate.fromAmount,
       fromToken,
     });
+    const feeCosts = await routeFeesToTokenMap(
+      route.estimate.feeCosts,
+      route.estimate.gasCosts,
+    );
+    const totalFees = formatFees(...feeCosts, fromNetwork);
+    const feeOfFromAmount = feeCosts[1].get(fromToken.symbol);
+    if (!feeOfFromAmount) {
+      feeCosts[1].set(fromToken.symbol, BigInt(route.params.fromAmount));
+      feeCosts[0].push(fromToken);
+    } else {
+      feeCosts[1].set(
+        fromToken.symbol,
+        feeOfFromAmount + BigInt(route.params.fromAmount),
+      );
+    }
     return res.json({
       success: true,
       uuid,
-      from_amount: formatAmount(route.estimate.fromAmount, fromToken),
-      from_token_url: formatTokenUrl(fromToken, fromNetwork),
-      from_token_symbol: fromToken.symbol,
+      from_amount: formatTokenValue(
+        fromToken,
+        route.params.fromAmount,
+        fromNetwork,
+      ),
       from_chain: fromNetwork.networkName,
-      to_amount: formatAmount(route.estimate.toAmount, toToken),
-      to_token_url: formatTokenUrl(toToken, toNetwork),
-      to_token_symbol: toToken.symbol,
+      to_amount: formatTokenValue(toToken, route.estimate.toAmount, toNetwork),
       to_chain: toNetwork.networkName,
       duration: formatTime(route.estimate.estimatedRouteDuration),
-      total_costs: totalFeeCosts(
-        route.estimate.feeCosts,
-        route.estimate.gasCosts,
-      ),
+      total_fees: totalFees,
+      total_amount: formatTotalAmount(...feeCosts, fromNetwork),
     });
   } catch (err) {
     console.error(err);
