@@ -20,7 +20,7 @@ import {
   http,
   parseUnits,
 } from "viem";
-import { IS_TESTNET } from "./settings.js";
+import { ARBITRUM_RPC_URL, IS_TESTNET } from "./settings.js";
 import { addUsdPriceToToken, getCoingeckoToken } from "./coingeckoDB.js";
 
 const squidBaseUrl = IS_TESTNET
@@ -49,9 +49,17 @@ function createFUSE() {
   });
 }
 
+const ARBITRUM_CHAIN_ID = 42161;
 export async function initSquid() {
   await squid.init();
   FUSE = createFUSE();
+  if (!ARBITRUM_RPC_URL) return;
+
+  // Patch a
+  for (let i = 0; i < squid.chains.length; i++) {
+    if (squid.chains[i].chainId === ARBITRUM_CHAIN_ID)
+      squid.chains[i].rpc = ARBITRUM_RPC_URL;
+  }
 }
 
 export function getNetworkInformation(networkName: string) {
