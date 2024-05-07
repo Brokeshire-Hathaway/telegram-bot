@@ -18,12 +18,12 @@ jobs:
           echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
           echo "SECRET_SALT=${{ secrets.SECRET_SALT }}" >> .env
           echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" >> .env
+          echo "ARBITRUM_RPC_URL=${{ secrets.ARBITRUM_RPC_URL }}" >> .env
           echo "CHROMA_PORT=${{ vars.CHROMA_PORT }}" >> .env
           echo "SSH_HOST=${{ vars.SSH_HOST }}" >> .env
           echo "TELEGRAM_BOT_USERNAME=${{ vars.TELEGRAM_BOT_USERNAME }}" >> .env
           echo "TELEGRAM_MAIN_CHAT_ID=${{ vars.TELEGRAM_MAIN_CHAT_ID }}" >> .env
           echo "IS_TESTNET=${{ vars.IS_TESTNET }}" >> .env
-          echo "ARBITRUM_RPC_URL=${{ vars.ARBITRUM_RPC_URL }}" >> .env
 
       - name: Set up SSH
         run: |
