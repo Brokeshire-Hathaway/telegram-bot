@@ -23,7 +23,7 @@ jobs:
           echo "TELEGRAM_BOT_USERNAME=${{ vars.TELEGRAM_BOT_USERNAME }}" >> .env
           echo "TELEGRAM_MAIN_CHAT_ID=${{ vars.TELEGRAM_MAIN_CHAT_ID }}" >> .env
           echo "IS_TESTNET=${{ vars.IS_TESTNET }}" >> .env
-          [ ! -z "${ARBITRUM_RPC_URL}" ] && echo "ARBITRUM_RPC_URL=${{ vars.ARBITRUM_RPC_URL }}" >> .env
+          echo "ARBITRUM_RPC_URL=${{ vars.ARBITRUM_RPC_URL }}" >> .env
 
       - name: Set up SSH
         run: |
