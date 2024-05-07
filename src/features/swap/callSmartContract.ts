@@ -4,9 +4,8 @@ import {
   BigNumberish,
   Transaction,
 } from "@biconomy/account";
-import { erc20Abi } from "abitype/abis";
 import { getAccountAddress } from "../wallet/index.js";
-import { encodeFunctionData, getContract } from "viem";
+import { encodeFunctionData, getContract, erc20Abi } from "viem";
 import { NATIVE_TOKEN, getViemClient } from "../../common/squidDB.js";
 
 async function preSwapContracts(

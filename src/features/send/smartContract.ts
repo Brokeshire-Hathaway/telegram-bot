@@ -3,8 +3,7 @@ import {
   type Transaction,
   BigNumberish,
 } from "@biconomy/account";
-import { erc20Abi } from "abitype/abis";
-import { encodeFunctionData, getContract } from "viem";
+import { encodeFunctionData, getContract, erc20Abi } from "viem";
 import {
   NATIVE_TOKEN,
   TokenInformation,
