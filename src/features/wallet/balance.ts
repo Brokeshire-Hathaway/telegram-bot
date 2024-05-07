@@ -19,6 +19,7 @@ async function getAccountBalanceOfTokens(
   const accountAddress = await getAccountAddress(account);
   const balances = new Map<string, string>();
 
+  // Quick request to verify if chain is working and functional in the account address
   try {
     await client.getBytecode({
       address: accountAddress,
@@ -37,7 +38,7 @@ async function getAccountBalanceOfTokens(
       formatUnits(nativeBalance, nativeToken.decimals),
     );
 
-  // Extract all contracts and tokens
+  // Extract all ERC20 contracts and tokens
   const erc20Tokens = tokens.filter((v) => v.address !== NATIVE_TOKEN);
   const erc20TokenContracts = erc20Tokens.map((v) =>
     getContract({
@@ -62,6 +63,7 @@ async function getAccountBalanceOfTokens(
       continue;
     }
 
+    // Retry failed requests
     let tries = 0;
     while (tries < NUMBER_OF_RETRIES) {
       try {
