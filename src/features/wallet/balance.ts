@@ -9,7 +9,7 @@ import z from "zod";
 
 const balanceError = z.object({
   shortMessage: z.string(),
-  metaMessages: z.string(),
+  metaMessages: z.array(z.string()),
 });
 async function getAccountBalanceOfChain(userId: string, network: ChainData) {
   console.log();
@@ -40,7 +40,7 @@ async function getAccountBalanceOfChain(userId: string, network: ChainData) {
       console.error(error);
       return balances;
     }
-    console.error(e.data.metaMessages);
+    console.error(e.data.metaMessages.join("\n"));
     console.error(e.data.shortMessage);
     console.error();
     return balances;
