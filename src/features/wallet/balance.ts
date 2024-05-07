@@ -36,7 +36,10 @@ async function getAccountBalanceOfChain(userId: string, network: ChainData) {
     balanceOfAccount = await account.getBalances(tokenAddresses);
   } catch (error) {
     const e = await balanceError.safeParseAsync(error);
-    if (!e.success) return balances;
+    if (!e.success) {
+      console.error(error);
+      return balances;
+    }
     console.error(e.data.metaMessages);
     console.error(e.data.shortMessage);
     console.error();
