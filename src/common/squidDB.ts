@@ -49,17 +49,9 @@ function createFUSE() {
   });
 }
 
-const ARBITRUM_CHAIN_ID = 42161;
 export async function initSquid() {
   await squid.init();
   FUSE = createFUSE();
-  if (!ARBITRUM_RPC_URL) return;
-
-  // Patch a
-  for (let i = 0; i < squid.chains.length; i++) {
-    if (squid.chains[i].chainId === ARBITRUM_CHAIN_ID)
-      squid.chains[i].rpc = ARBITRUM_RPC_URL;
-  }
 }
 
 export function getNetworkInformation(networkName: string) {
@@ -151,7 +143,12 @@ export async function getRoute(
   return route;
 }
 
+const ARBITRUM_CHAIN_ID = 42161;
 export function getViemChain(network: ChainData): Chain {
+  const rpc =
+    !ARBITRUM_RPC_URL || network.chainId !== ARBITRUM_CHAIN_ID
+      ? network.rpc
+      : ARBITRUM_RPC_URL;
   return defineChain({
     id: network.chainId as number,
     name: network.networkName,
@@ -163,10 +160,10 @@ export function getViemChain(network: ChainData): Chain {
     },
     rpcUrls: {
       default: {
-        http: [network.rpc],
+        http: [rpc],
       },
       public: {
-        http: [network.rpc],
+        http: [rpc],
       },
     },
     blockExplorers: {
