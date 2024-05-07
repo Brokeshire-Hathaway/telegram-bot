@@ -52,7 +52,9 @@ export async function getSmartAccount(uid: string, chain: Chain) {
   });
   return createSmartAccountClient({
     signer,
-    bundlerUrl: `https://bundler.biconomy.io/api/v2/${chain.id}/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44`,
+    bundlerUrl: IS_TESTNET
+      ? `https://bundler.biconomy.io/api/v2/${chain.id}/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44`
+      : `https://bundler.biconomy.io/api/v2/${chain.id}/dewj2189.wh1289hU-7E49-45ic-af80-aVjLXhF0U`,
     defaultValidationModule,
   });
 }
