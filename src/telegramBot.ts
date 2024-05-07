@@ -86,8 +86,11 @@ export function startTelegramBot() {
         parse_mode: "MarkdownV2",
       },
     );
+    console.info("======= Balance search", new Date(), "=======");
+    console.info("");
     const balances = await getAllAccountBalances(ctx.from.id.toString());
     const markdownBalances = formatBalances(balances);
+    console.info("==============");
     const message =
       markdownBalances.length === 0
         ? "Could not find any token in your accounts"

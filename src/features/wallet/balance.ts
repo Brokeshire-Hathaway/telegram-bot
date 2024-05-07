@@ -4,9 +4,15 @@ import {
   getAllChains,
   getTokensOfChain,
 } from "../../common/squidDB.js";
-import { getSmartAccountFromChainData } from "./index.js";
+import { getAccountAddress, getSmartAccountFromChainData } from "./index.js";
+import z from "zod";
 
+const balanceError = z.object({
+  shortMessage: z.string(),
+  metaMessages: z.string(),
+});
 async function getAccountBalanceOfChain(userId: string, network: ChainData) {
+  console.log();
   const tokens = getTokensOfChain(network);
   const tokenAddressToSymbol = new Map<string, string>();
   if (tokens.length == 0) return tokenAddressToSymbol;
@@ -18,10 +24,22 @@ async function getAccountBalanceOfChain(userId: string, network: ChainData) {
     .filter((v) => v != NATIVE_TOKEN);
   const balances = new Map<string, string>();
   const account = await getSmartAccountFromChainData(userId, network);
+  console.log(
+    "Address",
+    await getAccountAddress(account),
+    "Chain",
+    network.chainName,
+  );
+  console.log();
   let balanceOfAccount;
   try {
     balanceOfAccount = await account.getBalances(tokenAddresses);
   } catch (error) {
+    const e = await balanceError.safeParseAsync(error);
+    if (!e.success) return balances;
+    console.error(e.data.metaMessages);
+    console.error(e.data.shortMessage);
+    console.error();
     return balances;
   }
   for (const balance of balanceOfAccount) {
