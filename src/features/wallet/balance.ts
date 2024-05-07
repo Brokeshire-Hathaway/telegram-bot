@@ -10,6 +10,7 @@ import { BiconomySmartAccountV2 } from "@biconomy/account";
 import { Hex, PublicClient, erc20Abi, formatUnits, getContract } from "viem";
 
 const NUMBER_OF_RETRIES = 3;
+const MILLISECONDS_BETWEEN_RETRIES = 100;
 async function getAccountBalanceOfTokens(
   account: BiconomySmartAccountV2,
   tokens: TokenData[],
@@ -72,7 +73,9 @@ async function getAccountBalanceOfTokens(
         break;
       } catch {
         tries += 1;
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) =>
+          setTimeout(resolve, MILLISECONDS_BETWEEN_RETRIES),
+        );
       }
     }
   }
