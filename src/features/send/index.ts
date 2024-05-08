@@ -171,7 +171,7 @@ router.post("/send", async (req: Request, res: Response) => {
       fees: userReceipt
         ? formatTokenValue(
             memory.nativeToken,
-            userReceipt.actualGasUsed,
+            userReceipt.actualGasCost,
             memory.network,
           )
         : null,
@@ -180,7 +180,7 @@ router.post("/send", async (req: Request, res: Response) => {
             ...getCosts(
               amount,
               memory.token,
-              userReceipt.actualGasUsed,
+              userReceipt.actualGasCost,
               memory.nativeToken,
             ),
             memory.network,
