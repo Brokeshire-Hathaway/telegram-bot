@@ -21,7 +21,7 @@ import {
   formatTotalAmount,
 } from "../../common/formatters.js";
 import { parseUnits } from "viem";
-import { UserOperationStruct } from "@biconomy/account";
+import { UserOpReceipt, UserOperationStruct } from "@biconomy/account";
 
 // Create the router
 const router = express.Router();
@@ -154,35 +154,33 @@ router.post("/send", async (req: Request, res: Response) => {
     );
     const result = await account.sendUserOp(memory.userOp);
     const txHash = await result.waitForTxHash();
+    let userReceipt: UserOpReceipt | undefined;
     try {
-      !txHash.userOperationReceipt
+      userReceipt = !txHash.userOperationReceipt
         ? await result.wait()
         : txHash.userOperationReceipt;
     } catch {
       console.warn("User operation receipt could not be found.");
     }
     TRANSACTION_MEMORY.delete(body.transaction_uuid);
+    const amount = parseUnits(memory.amount, memory.token.decimals);
     return res.json({
       success: true,
       recipient: memory.recipient,
-      amount: formatTokenValue(
-        memory.nativeToken,
-        memory.amount,
-        memory.network,
-      ),
-      fees: txHash.userOperationReceipt
+      amount: formatTokenValue(memory.token, amount, memory.network),
+      fees: userReceipt
         ? formatTokenValue(
             memory.nativeToken,
-            txHash.userOperationReceipt.actualGasUsed,
+            userReceipt.actualGasUsed,
             memory.network,
           )
         : null,
-      total: txHash.userOperationReceipt
+      total: userReceipt
         ? formatTotalAmount(
             ...getCosts(
-              memory.amount,
+              amount,
               memory.token,
-              txHash.userOperationReceipt.actualGasUsed,
+              userReceipt.actualGasUsed,
               memory.nativeToken,
             ),
             memory.network,
