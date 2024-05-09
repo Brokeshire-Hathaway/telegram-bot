@@ -36,6 +36,7 @@ import {
   getAllAccountBalances,
   formatBalances,
 } from "./features/wallet/balance.js";
+import { START_MESSAGE } from "./messages.js";
 
 interface SessionData {}
 type MyContext = Context & SessionFlavor<SessionData> & ConversationFlavor;
@@ -45,19 +46,8 @@ const promoText = `_・${promoMessage} – ${sponsoredMessage}・_`;
 export function startTelegramBot() {
   const bot = new Bot<MyContext>(process.env.TELEGRAM_BOT_TOKEN!);
 
-  bot.use(
-    session({
-      initial() {
-        // return empty object for now
-        return {};
-      },
-    }),
-  );
-
+  bot.use(session());
   bot.use(conversations());
-
-  //bot.use(createConversation(sendToken));
-
   bot.use(
     limit({
       timeFrame: 3000,
@@ -69,6 +59,13 @@ export function startTelegramBot() {
       },
     }),
   );
+
+  bot.command("start", async (ctx) => {
+    if (!ctx.from) return;
+    return await ctx.api.sendMessage(ctx.from.id, START_MESSAGE, {
+      parse_mode: "MarkdownV2",
+    });
+  });
 
   bot.command("address", async (ctx) => {
     if (!ctx.from) return;
