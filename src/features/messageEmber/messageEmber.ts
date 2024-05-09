@@ -10,6 +10,20 @@ const ChatEmberRespons = z.object({
 });
 
 const HOST = process.env.EMBER_CORE_URL || "http://ember-core:8101";
+const EMBER_TIMEOUT_MS = 60000;
+
+async function timeoutEmberAction<T>(action: () => Promise<T>): Promise<T> {
+  return Promise.race([
+    action(),
+    new Promise((_, reject) =>
+      setTimeout(
+        reject,
+        EMBER_TIMEOUT_MS,
+        new Error("Operation aborted due to tiemout"),
+      ),
+    ),
+  ]) as T;
+}
 
 export async function messageEmber(
   senderUid: string,
@@ -27,6 +41,7 @@ export async function messageEmber(
       "Content-Type": "application/json",
     },
     body: payload,
+    signal: AbortSignal.timeout(EMBER_TIMEOUT_MS),
   });
 
   if (!response.ok || response.body == null) {
@@ -36,7 +51,8 @@ export async function messageEmber(
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   while (true) {
-    const { done, value } = await reader.read();
+    const readableStream = await timeoutEmberAction(() => reader.read());
+    const { done, value } = readableStream;
     const decodedValue = decoder.decode(value);
     const { event, rawData } = parseSseResponse(decodedValue);
     if (done && event !== "done") {
