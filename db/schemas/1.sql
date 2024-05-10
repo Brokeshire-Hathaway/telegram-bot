@@ -25,7 +25,7 @@ BEFORE UPDATE ON fund_code FOR each ROW EXECUTE PROCEDURE trigger_update_timesta
 CREATE TABLE migrations (
   schema_version INT UNIQUE NOT NULL,
   script_name VARCHAR,
-  run_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  run_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 INSERT INTO migrations(script_name, schema_version) VALUES ('1.sql', 1);
 
