@@ -34,6 +34,7 @@ import {
   formatBalances,
 } from "./features/wallet/balance.js";
 import { START_MESSAGE } from "./messages.js";
+import { fundWallet } from "./features/wallet/fund.js";
 
 interface SessionData {}
 type MyContext = Context & SessionFlavor<SessionData> & ConversationFlavor;
@@ -68,6 +69,29 @@ export function startTelegramBot() {
     if (!ctx.from) return;
     const smartAccount = await getEthSmartAccount(ctx.from.id.toString());
     await ctx.reply(await smartAccount.getAccountAddress());
+  });
+
+  bot.command("fund", async (ctx) => {
+    if (!ctx.from || !ctx.from.username) return;
+    let transactionUrl;
+    try {
+      transactionUrl = await fundWallet(
+        ctx.from.id.toString(),
+        ctx.from.username,
+        ctx.match,
+      );
+    } catch (error) {
+      return ctx.reply(`Failed funding wallet: ${error}`);
+    }
+    return await ctx.api.sendMessage(
+      ctx.from.id,
+      `Coded redemeed sucessfully\\!
+
+    See fund transaction: [View on blockchain](${transactionUrl})`,
+      {
+        parse_mode: "MarkdownV2",
+      },
+    );
   });
 
   bot.command("balance", async (ctx) => {

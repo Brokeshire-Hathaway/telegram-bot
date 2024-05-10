@@ -16,7 +16,7 @@ const FUNDING_AMOUNT = IS_TESTNET ? parseEther("0.1") : BigInt(10000000);
 const DB_POOL = createPool(`postgres://${process.env.DB_URI}`);
 const FundCode = z.object({
   code: z.string(),
-  username: z.string().nullable(),
+  used_by: z.string().nullable(),
 });
 
 export async function fundWallet(
@@ -31,16 +31,16 @@ export async function fundWallet(
   const availableCode = await dbPool.maybeOne(
     sql.type(
       FundCode,
-    )`SELECT code, username FROM fund_code WHERE code = ${code}`,
+    )`SELECT code, used_by FROM fund_code WHERE code = ${code}`,
   );
-  if (!availableCode || availableCode.username !== null)
+  if (!availableCode || availableCode.used_by !== null)
     throw Error("Code already reedemed");
 
   // Mark it as used and proceed to redeem
   await dbPool.query(
-    sql.typeAlias(
-      "void",
-    )`UPDATE fund_code SET username = ${username} WHERE code = ${code}`,
+    sql.type(
+      z.object({}),
+    )`UPDATE fund_code SET used_by = ${username} WHERE code = ${code}`,
   );
 
   // Fund account

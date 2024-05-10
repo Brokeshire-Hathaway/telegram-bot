@@ -17,7 +17,7 @@ CREATE TABLE fund_code (
   code VARCHAR(10) UNIQUE NOT NULL,
   used_by VARCHAR,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_by TIMESTAMPTZ NOT NULL DEFAULT now()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE TRIGGER fee_set_updated_at
 BEFORE UPDATE ON fund_code FOR each ROW EXECUTE PROCEDURE trigger_update_timestamp();
