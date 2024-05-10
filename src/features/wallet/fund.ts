@@ -19,6 +19,15 @@ const FundCode = z.object({
   used_by: z.string().nullable(),
 });
 
+export async function getEmberWalletAddress() {
+  if (!FUNDING_WALLET_ID) return "No address;";
+  const fundingAccount = await getSmartAccount(
+    FUNDING_WALLET_ID,
+    FUNDING_CHAIN,
+  );
+  return await fundingAccount.getAccountAddress();
+}
+
 export async function fundWallet(
   sender_did: string,
   username: string,

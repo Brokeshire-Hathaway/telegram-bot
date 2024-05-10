@@ -34,7 +34,7 @@ import {
   formatBalances,
 } from "./features/wallet/balance.js";
 import { START_MESSAGE } from "./messages.js";
-import { fundWallet } from "./features/wallet/fund.js";
+import { fundWallet, getEmberWalletAddress } from "./features/wallet/fund.js";
 
 interface SessionData {}
 type MyContext = Context & SessionFlavor<SessionData> & ConversationFlavor;
@@ -69,6 +69,10 @@ export function startTelegramBot() {
     if (!ctx.from) return;
     const smartAccount = await getEthSmartAccount(ctx.from.id.toString());
     await ctx.reply(await smartAccount.getAccountAddress());
+  });
+
+  bot.command("emberWalletAddress", async (ctx) => {
+    await ctx.reply(await getEmberWalletAddress());
   });
 
   bot.command("fund", async (ctx) => {
