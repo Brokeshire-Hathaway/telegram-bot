@@ -91,7 +91,7 @@ export function startTelegramBot() {
       ctx.from.id,
       `Coded redemeed sucessfully\\!
 
-    See fund transaction: [View on blockchain](${transactionUrl})`,
+See fund transaction: [View on blockchain](${transactionUrl})`,
       {
         parse_mode: "MarkdownV2",
       },
