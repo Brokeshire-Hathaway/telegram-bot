@@ -4,7 +4,6 @@ import {
   BigNumberish,
   Transaction,
 } from "@biconomy/account";
-import { getAccountAddress } from "../wallet/index.js";
 import { encodeFunctionData, getContract, erc20Abi } from "viem";
 import { NATIVE_TOKEN, getViemClient } from "../../common/squidDB.js";
 
@@ -19,7 +18,7 @@ async function preSwapContracts(
 
   // Check current allowance
   if (typeof network.chainId === "number") {
-    const accountAddress = await getAccountAddress(smartAccount);
+    const accountAddress = await smartAccount.getAccountAddress();
     const publicClient = getViemClient(network);
     const contract = getContract({
       address: fromToken.address as `0x${string}`,

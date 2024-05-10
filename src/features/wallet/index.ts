@@ -5,7 +5,6 @@ import { keccak_256 } from "@noble/hashes/sha3";
 import * as mod from "@noble/curves/abstract/modular";
 import { secp256k1 } from "@noble/curves/secp256k1";
 import {
-  BiconomySmartAccountV2,
   createECDSAOwnershipValidationModule,
   createSmartAccountClient,
 } from "@biconomy/account";
@@ -69,8 +68,4 @@ export async function getSmartAccountFromChainData(
 export async function getEthSmartAccount(id: string) {
   if (IS_TESTNET) return await getSmartAccount(id, sepolia);
   return await getSmartAccount(id, mainnet);
-}
-
-export async function getAccountAddress(smartAccount: BiconomySmartAccountV2) {
-  return smartAccount.getAccountAddress();
 }

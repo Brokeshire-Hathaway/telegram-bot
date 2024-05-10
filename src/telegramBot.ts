@@ -22,10 +22,7 @@ import {
 } from "openai/resources/index";
 import MarkdownIt from "markdown-it";
 import { ChatFromGetChat, Message } from "grammy/types";
-import {
-  getAccountAddress,
-  getEthSmartAccount,
-} from "./features/wallet/index.js";
+import { getEthSmartAccount } from "./features/wallet/index.js";
 import {
   type ConversationFlavor,
   conversations,
@@ -70,8 +67,7 @@ export function startTelegramBot() {
   bot.command("address", async (ctx) => {
     if (!ctx.from) return;
     const smartAccount = await getEthSmartAccount(ctx.from.id.toString());
-    const address = await getAccountAddress(smartAccount);
-    await ctx.reply(address);
+    await ctx.reply(await smartAccount.getAccountAddress());
   });
 
   bot.command("balance", async (ctx) => {
