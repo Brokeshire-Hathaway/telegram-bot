@@ -116,7 +116,7 @@ export function formatBalances(balances: Map<string, Map<string, string>>) {
     }
 
     for (const [token, balance] of balancesOfChain.entries()) {
-      chainBalance += `\n└ \`${balance.padEnd(maxSizeBalance)}\`  _${token}_`;
+      chainBalance += `\n└ \`${balance.padEnd(maxSizeBalance)}\`  _${token.replace(".", "\\.").replace("-", "\\-")}_`;
     }
     balancesPerChain.push(chainBalance);
   }
