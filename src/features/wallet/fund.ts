@@ -3,17 +3,22 @@ import { getSmartAccount } from ".";
 import { createPool, sql } from "slonik";
 import z from "zod";
 import { getSendTransaction } from "../send/smartContract";
-import { IS_TESTNET } from "../../common/settings";
+import { IS_TESTNET, readSensitiveEnv } from "../../common/settings";
 import { NATIVE_TOKEN } from "../../common/squidDB";
 import { parseEther } from "viem";
 
-const FUNDING_WALLET_ID = process.env.FUNDING_WALLET_ID;
+const FUNDING_WALLET_ID = readSensitiveEnv("FUNDING_WALLET_ID");
 const FUNDING_CHAIN = IS_TESTNET ? sepolia : arbitrum;
 const FUNDING_TOKEN = IS_TESTNET
   ? NATIVE_TOKEN
   : "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
 const FUNDING_AMOUNT = IS_TESTNET ? parseEther("0.1") : BigInt(10000000);
-const DB_POOL = createPool(`postgres://${process.env.DB_URI}`);
+const DB_USER = readSensitiveEnv("DB_USER");
+const DB_NAME = readSensitiveEnv("DB_NAME");
+const DB_PASSWORD = readSensitiveEnv("DB_PASSWORD");
+const DB_POOL = createPool(
+  `postgres://${DB_USER}:${DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${DB_NAME}`,
+);
 const FundCode = z.object({
   code: z.string(),
   used_by: z.string().nullable(),

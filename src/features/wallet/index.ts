@@ -9,10 +9,12 @@ import {
   createSmartAccountClient,
 } from "@biconomy/account";
 import { privateKeyToAccount } from "viem/accounts";
-import { IS_TESTNET } from "../../common/settings.js";
+import { IS_TESTNET, readSensitiveEnv } from "../../common/settings.js";
 import { sepolia, mainnet } from "viem/chains";
 import { ChainData } from "@0xsquid/sdk";
 import { getViemChain } from "../../common/squidDB.js";
+
+const SECRET_SALT = readSensitiveEnv("SECRET_SALT");
 
 function derivePrivateKey(uid: string): Uint8Array {
   // https://copyprogramming.com/howto/appropriate-scrypt-parameters-when-generating-an-scrypt-hash
@@ -26,7 +28,7 @@ function derivePrivateKey(uid: string): Uint8Array {
   // Using Scrypt because Argon2 is not yet well supported nor audited. It's just now being added to OpenSSL Q4 2023.
   // Scrypt output is biased, so we need to unbias it.
   // https://crypto.stackexchange.com/questions/100341/how-to-safely-and-randomly-iterate-a-key-derived-from-scrypt
-  const hash = scrypt(uid, process.env.SECRET_SALT!, scryptOptions);
+  const hash = scrypt(uid, SECRET_SALT!, scryptOptions);
   // Use HKDF to unbias the hash.
   // https://github.com/paulmillr/noble-curves#creating-private-keys-from-hashes
   const derivedKey = hkdf(keccak_256, hash, undefined, undefined, 48);
