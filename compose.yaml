@@ -1,0 +1,90 @@
+services:
+  firepot_chatgpt_app:
+    restart: always
+    build: .
+    environment:
+      PORT: 3001
+      CHROMA_PORT: 8000
+      DB_USER_FILE: /run/secrets/db_user
+      DB_PASSWORD_FILE: /run/secrets/db_password
+      DB_NAME_FILE: /run/secrets/db_name
+      DB_PORT: 5432
+      DB_HOST: database
+      OPENAI_API_KEY_FILE: /run/secrets/openai_key
+      SECRET_SALT_FILE: /run/secrets/secret_salt
+      TELEGRAM_BOT_USERNAME:
+      TELEGRAM_BOT_TOKEN:
+      ARBITRUM_RPC_URL:
+      IS_TESTNET:
+      FUNDING_WALLET_ID_FILE: /run/secrets/funding_wallet_id
+    secrets:
+      - db_name
+      - db_user
+      - db_password
+      - funding_wallet_id
+      - openai_key
+      - secret_salt
+    logging:
+      options:
+        max-size: "1m"
+        max-file: "1"
+    networks:
+      - shared_network
+    depends_on:
+      - database
+      - chroma_server
+
+  database:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER_FILE: /run/secrets/db_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+      POSTGRES_DB_FILE: /run/secrets/db_name
+    volumes:
+      - type: volume
+        source: postgres_data
+        target: /var/lib/postgresql/data
+    networks:
+      - shared_network
+    secrets:
+      - db_name
+      - db_user
+      - db_password
+
+  chroma_server:
+    image: chromadb/chroma:latest
+    restart: always
+    volumes:
+      - type: bind
+        source: ./chroma
+        target: /chroma/chroma
+      - type: volume
+        source: index_data
+        target: /index_data
+    networks:
+      - shared_network
+
+volumes:
+  index_data:
+    driver: local
+  postgres_data:
+
+secrets:
+  db_name:
+    environment: "DB_NAME"
+  db_user:
+    environment: "DB_USER"
+  db_password:
+    environment: "DB_PASSWORD"
+  funding_wallet_id:
+    environment: "FUNDING_WALLET_ID"
+  openai_key:
+    environment: "OPENAI_API_KEY"
+  secret_salt:
+    environment: "SECRET_SALT"
+
+networks:
+  shared_network:
+    external: true
