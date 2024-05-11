@@ -89,7 +89,7 @@ export function startTelegramBot() {
     }
     return await ctx.api.sendMessage(
       ctx.from.id,
-      `Coded redemeed sucessfully\\!
+      `Code redeemed successfully\\!
 
 See fund transaction: [View on blockchain](${transactionUrl})`,
       {
