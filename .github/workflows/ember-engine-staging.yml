@@ -32,11 +32,16 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Deploy containers in server
-        uses: hoverkraft-tech/compose-action@v2.0.0
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install Compose
+        uses: ndeloof/install-compose-action@v0.0.1
         with:
-          compose-file: compose.yaml
-          up-flags: -d --build
-          compose-flags: -p ember-engine_stage
+          version: v2.1.0
+
+      - name: Deploy containers in server
         env:
           DOCKER_HOST: "ssh://${{ secrets.SSH_USERNAME }}@${{ vars.SSH_HOST }}"
+        run: |
+          docker compose -f compose.yaml -p ember-engine_stage up -d --build

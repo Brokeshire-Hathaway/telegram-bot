@@ -58,8 +58,8 @@ services:
     image: chromadb/chroma:latest
     restart: always
     volumes:
-      - type: bind
-        source: ./chroma
+      - type: volume
+        source: chroma
         target: /chroma/chroma
       - type: volume
         source: index_data
@@ -69,7 +69,7 @@ services:
 
 volumes:
   index_data:
-    driver: local
+  chroma:
   postgres_data:
 
 secrets:
