@@ -39,4 +39,4 @@ jobs:
           up-flags: -d --build
           compose-flags: -p ember-engine_stage
         env:
-          DOCKER_HOST: "${{ secrets.SSH_USERNAME }}@${{ vars.SSH_HOST }}"
+          DOCKER_HOST: "ssh://${{ secrets.SSH_USERNAME }}@${{ vars.SSH_HOST }}"
