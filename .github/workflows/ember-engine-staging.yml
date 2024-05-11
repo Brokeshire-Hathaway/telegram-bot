@@ -21,17 +21,16 @@ jobs:
 
       - name: Set up .env file
         run: |
-          echo "MORALIS_API_KEY=${{ secrets.MORALIS_API_KEY }}" >> .env
           echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
           echo "SECRET_SALT=${{ secrets.SECRET_SALT }}" >> .env
+          echo "TELEGRAM_BOT_USERNAME=${{ vars.TELEGRAM_BOT_USERNAME }}" >> .env
           echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" >> .env
           echo "ARBITRUM_RPC_URL=${{ secrets.ARBITRUM_RPC_URL }}" >> .env
-          echo "CHROMA_PORT=${{ vars.CHROMA_PORT }}" >> .env
-          echo "TELEGRAM_BOT_USERNAME=${{ vars.TELEGRAM_BOT_USERNAME }}" >> .env
           echo "IS_TESTNET=${{ vars.IS_TESTNET }}" >> .env
           echo "DB_USER=${{ secrets.DB_USER }}" >> .env
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
           echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "FUNDING_WALLET_ID=${{ secrets.FUNDING_WALLET_ID }}" >> .env
 
       - name: Deploy containers in server
         run: |
