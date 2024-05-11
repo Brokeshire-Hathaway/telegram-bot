@@ -12,13 +12,6 @@ jobs:
       - name: Checkout the repo
         uses: actions/checkout@v4
 
-      - name: Set up SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/ember-github
-          chmod 600 ~/.ssh/ember-github
-          ssh-keyscan -H ${{ vars.SSH_HOST }} >> ~/.ssh/known_hosts
-
       - name: Set up environment
         run: |
           echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
@@ -31,6 +24,13 @@ jobs:
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
           echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
           echo "FUNDING_WALLET_ID=${{ secrets.FUNDING_WALLET_ID }}" >> .env
+          mkdir -p ~/.ssh
+          echo ${{ secrets.SSH_KEY }} >> ~/.ssh/known_hosts
+
+      - name: Setup SSH private key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Deploy containers in server
         uses: hoverkraft-tech/compose-action@v2.0.0
