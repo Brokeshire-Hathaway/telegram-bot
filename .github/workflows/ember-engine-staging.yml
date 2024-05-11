@@ -12,6 +12,13 @@ jobs:
       - name: Checkout the repo
         uses: actions/checkout@v4
 
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/ember-github
+          chmod 600 ~/.ssh/ember-github
+          ssh-keyscan -H ${{ vars.SSH_HOST }} >> ~/.ssh/known_hosts
+
       - name: Set up .env file
         run: |
           echo "MORALIS_API_KEY=${{ secrets.MORALIS_API_KEY }}" >> .env
@@ -20,29 +27,13 @@ jobs:
           echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" >> .env
           echo "ARBITRUM_RPC_URL=${{ secrets.ARBITRUM_RPC_URL }}" >> .env
           echo "CHROMA_PORT=${{ vars.CHROMA_PORT }}" >> .env
-          echo "SSH_HOST=${{ vars.SSH_HOST }}" >> .env
           echo "TELEGRAM_BOT_USERNAME=${{ vars.TELEGRAM_BOT_USERNAME }}" >> .env
-          echo "TELEGRAM_MAIN_CHAT_ID=${{ vars.TELEGRAM_MAIN_CHAT_ID }}" >> .env
           echo "IS_TESTNET=${{ vars.IS_TESTNET }}" >> .env
+          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
 
-      - name: Set up SSH
+      - name: Deploy containers in server
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/ember-github
-          chmod 600 ~/.ssh/ember-github
-          ssh-keyscan -H ${{ vars.SSH_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Copy repository to server
-        run: |
-          rsync -Pavz -e "ssh -i ~/.ssh/ember-github" . ${{ secrets.SSH_USERNAME }}@${{ vars.SSH_HOST }}:/opt/staging/ember-engine --exclude=".git" --exclude="src"
-          rsync -Pavz -e "ssh -i ~/.ssh/ember-github" src ${{ secrets.SSH_USERNAME }}@${{ vars.SSH_HOST }}:/opt/staging/ember-engine/ --delete
-
-      - name: Execute deployment script on remote server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ vars.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /opt/staging/ember-engine
-            ./scripts/staging.bash
+          export DOCKER_HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
+          docker compose -p ember-engine_stage -f compose.yml up -d --build
