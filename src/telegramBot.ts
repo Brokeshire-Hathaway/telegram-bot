@@ -35,6 +35,7 @@ import {
 } from "./features/wallet/balance.js";
 import { START_MESSAGE } from "./messages.js";
 import { fundWallet, getEmberWalletAddress } from "./features/wallet/fund.js";
+import { readSensitiveEnv } from "./common/settings.js";
 
 interface SessionData {}
 type MyContext = Context & SessionFlavor<SessionData> & ConversationFlavor;
@@ -42,7 +43,7 @@ type MyContext = Context & SessionFlavor<SessionData> & ConversationFlavor;
 const promoText = `_・${promoMessage} – ${sponsoredMessage}・_`;
 
 export function startTelegramBot() {
-  const bot = new Bot<MyContext>(process.env.TELEGRAM_BOT_TOKEN!);
+  const bot = new Bot<MyContext>(readSensitiveEnv("TELEGRAM_BOT_TOKEN")!);
 
   bot.use(session());
   bot.use(conversations());

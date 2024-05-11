@@ -13,7 +13,7 @@ services:
       OPENAI_API_KEY_FILE: /run/secrets/openai_key
       SECRET_SALT_FILE: /run/secrets/secret_salt
       TELEGRAM_BOT_USERNAME:
-      TELEGRAM_BOT_TOKEN:
+      TELEGRAM_BOT_TOKEN_FILE: /run/secrets/telegram_token
       ARBITRUM_RPC_URL:
       IS_TESTNET:
       FUNDING_WALLET_ID_FILE: /run/secrets/funding_wallet_id
@@ -24,6 +24,7 @@ services:
       - funding_wallet_id
       - openai_key
       - secret_salt
+      - telegram_token
     logging:
       options:
         max-size: "1m"
@@ -84,6 +85,8 @@ secrets:
     environment: "OPENAI_API_KEY"
   secret_salt:
     environment: "SECRET_SALT"
+  telegram_token:
+    environment: "TELEGRAM_BOT_TOKEN"
 
 networks:
   shared_network:
