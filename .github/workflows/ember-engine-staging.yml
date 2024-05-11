@@ -34,7 +34,7 @@ jobs:
           export DOCKER_HOST="${{ secrets.SSH_USERNAME }}@${{ vars.SSH_HOST }}"
 
       - name: Deploy containers in server
-        uses: hoverkraft-tech/compose-action@v0.0.0
+        uses: hoverkraft-tech/compose-action@v2.0.0
         with:
           compose-file: compose.yaml
           up-flags: -d --build
