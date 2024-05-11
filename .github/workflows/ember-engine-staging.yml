@@ -34,5 +34,5 @@ jobs:
 
       - name: Deploy containers in server
         run: |
-          export DOCKER_HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
+          export DOCKER_HOST="${{ secrets.SSH_USERNAME }}@${{ vars.SSH_HOST }}"
           docker compose -p ember-engine_stage -f compose.yml up -d --build
