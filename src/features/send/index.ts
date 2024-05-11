@@ -10,7 +10,7 @@ import {
 import {
   getCosts,
   getGasFee,
-  getSmartContract,
+  getSendTransaction,
   getTokenInfoOfAddress,
   SendToken,
 } from "./smartContract.js";
@@ -81,7 +81,7 @@ router.post("/prepare", async (req: Request, res: Response) => {
       .json({ success: false, message: "Token not supported" });
 
   const amount = parseUnits(body.amount, token.decimals);
-  const contract = getSmartContract(
+  const contract = getSendTransaction(
     token.address,
     body.recipient_address,
     amount,

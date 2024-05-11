@@ -8,10 +8,7 @@ import {
 } from "@0xsquid/sdk";
 import Fuse from "fuse.js";
 import z from "zod";
-import {
-  getAccountAddress,
-  getSmartAccountFromChainData,
-} from "../features/wallet/index.js";
+import { getSmartAccountFromChainData } from "../features/wallet/index.js";
 import {
   Chain,
   PublicClient,
@@ -110,10 +107,10 @@ export async function getRoute(
       fromAmount,
       fromChain: fromNetwork.chainId,
       fromToken: fromToken.address,
-      fromAddress: await getAccountAddress(account),
+      fromAddress: await account.getAccountAddress(),
       toChain: toNetwork.chainId,
       toToken: toToken.address,
-      toAddress: await getAccountAddress(receiverAccount),
+      toAddress: await receiverAccount.getAccountAddress(),
       slippage: slippage,
     });
     return route;
@@ -124,20 +121,20 @@ export async function getRoute(
     fromAmount,
     fromChain: toNetwork.chainId,
     fromToken: toToken.address,
-    fromAddress: await getAccountAddress(receiverAccount),
+    fromAddress: await receiverAccount.getAccountAddress(),
     toChain: fromNetwork.chainId,
     toToken: fromToken.address,
-    toAddress: await getAccountAddress(account),
+    toAddress: await account.getAccountAddress(),
     slippage: slippage,
   });
   const { route } = await squid.getRoute({
     fromAmount: estimatedRoute.estimate.toAmount,
     fromChain: fromNetwork.chainId,
     fromToken: fromToken.address,
-    fromAddress: await getAccountAddress(account),
+    fromAddress: await account.getAccountAddress(),
     toChain: toNetwork.chainId,
     toToken: toToken.address,
-    toAddress: await getAccountAddress(receiverAccount),
+    toAddress: await receiverAccount.getAccountAddress(),
     slippage: slippage,
   });
   return route;

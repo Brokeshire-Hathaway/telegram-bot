@@ -16,6 +16,7 @@ import {
   ChatCompletionToolMessageParam,
   ChatCompletionUserMessageParam,
 } from "openai/resources/index";
+import { readSensitiveEnv } from "./common/settings.js";
 
 //export type Role = "system" | "user" | "assistant";
 //export type Content = string;
@@ -61,7 +62,9 @@ export async function chatgptHandler(
 export let openai: OpenAI;
 export function setOpenAiInstance() {
   if (!openai) {
-    openai = new OpenAI();
+    openai = new OpenAI({
+      apiKey: readSensitiveEnv("OPENAI_API_KEY"),
+    });
   }
 }
 

@@ -5,7 +5,7 @@ import {
   getTokensOfChain,
   getViemClient,
 } from "../../common/squidDB.js";
-import { getAccountAddress, getSmartAccountFromChainData } from "./index.js";
+import { getSmartAccountFromChainData } from "./index.js";
 import { BiconomySmartAccountV2 } from "@biconomy/account";
 import { Hex, PublicClient, erc20Abi, formatUnits, getContract } from "viem";
 
@@ -16,7 +16,7 @@ async function getAccountBalanceOfTokens(
   tokens: TokenData[],
   client: PublicClient,
 ): Promise<Map<string, string>> {
-  const accountAddress = await getAccountAddress(account);
+  const accountAddress = await account.getAccountAddress();
   const balances = new Map<string, string>();
 
   // Quick request to verify if chain is working and functional in the account address

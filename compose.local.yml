@@ -1,0 +1,22 @@
+services:
+  chromadb:
+    image: chromadb/chroma:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - type: bind
+        source: ./chroma
+        target: /chroma/chroma
+    environment:
+      IS_PERSITENT: "TRUE"
+      ANONYMIZED_TELEMETRY: "TRUE"
+
+  database:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: db
+

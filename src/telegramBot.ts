@@ -22,10 +22,7 @@ import {
 } from "openai/resources/index";
 import MarkdownIt from "markdown-it";
 import { ChatFromGetChat, Message } from "grammy/types";
-import {
-  getAccountAddress,
-  getEthSmartAccount,
-} from "./features/wallet/index.js";
+import { getEthSmartAccount } from "./features/wallet/index.js";
 import {
   type ConversationFlavor,
   conversations,
@@ -37,6 +34,7 @@ import {
   formatBalances,
 } from "./features/wallet/balance.js";
 import { START_MESSAGE } from "./messages.js";
+import { fundWallet, getEmberWalletAddress } from "./features/wallet/fund.js";
 
 interface SessionData {}
 type MyContext = Context & SessionFlavor<SessionData> & ConversationFlavor;
@@ -70,8 +68,34 @@ export function startTelegramBot() {
   bot.command("address", async (ctx) => {
     if (!ctx.from) return;
     const smartAccount = await getEthSmartAccount(ctx.from.id.toString());
-    const address = await getAccountAddress(smartAccount);
-    await ctx.reply(address);
+    await ctx.reply(await smartAccount.getAccountAddress());
+  });
+
+  bot.command("emberWalletAddress", async (ctx) => {
+    await ctx.reply(await getEmberWalletAddress());
+  });
+
+  bot.command("fund", async (ctx) => {
+    if (!ctx.from || !ctx.from.username) return;
+    let transactionUrl;
+    try {
+      transactionUrl = await fundWallet(
+        ctx.from.id.toString(),
+        ctx.from.username,
+        ctx.match,
+      );
+    } catch (error) {
+      return ctx.reply(`Failed funding wallet: ${error}`);
+    }
+    return await ctx.api.sendMessage(
+      ctx.from.id,
+      `Code redeemed successfully\\!
+
+See fund transaction: [View on blockchain](${transactionUrl})`,
+      {
+        parse_mode: "MarkdownV2",
+      },
+    );
   });
 
   bot.command("balance", async (ctx) => {

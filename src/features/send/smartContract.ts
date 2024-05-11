@@ -60,7 +60,7 @@ export function getCosts(
   return [tokens, costs];
 }
 
-export function getSmartContract(
+export function getSendTransaction(
   tokenAddress: string,
   recipientAddress: `0x${string}`,
   amount: bigint,

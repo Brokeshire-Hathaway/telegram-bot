@@ -6,20 +6,25 @@ To run the project, you need to have the package manager:
 
 - [yarn](https://classic.yarnpkg.com/lang/en/docs/install)
 - [docker](https://www.docker.com/)
+- [docker-compose](https://docs.docker.com/compose/)
 
-After installing `yarn`, you need to run the database locally. The database used for
-this service is [Chroma](https://www.trychroma.com/). First, create a directory in the
-root of the repository named `chroma`. Then run the following command:
+After installing `yarn`, you need to run the databases locally. The database used for
+this service is [Chroma](https://www.trychroma.com/) and `postgres`. First,
+create a directory in the root of the repository named `chroma`. Then run the
+following command in the root of the repository:
 
 ```bash
-docker run -d --rm --name chromadb -p 8000:8000 -v ./chroma:/chroma/chroma -e IS_PERSISTENT=TRUE -e ANONYMIZED_TELEMETRY=TRUE chromadb/chroma:latest
+docker compose -f compose.local.yml up -d
 ```
 
 Following that, obtain the following API keys:
 
-- [Open AI](https://openai.com/): An open AI key. For the education step to work, you'll need a Tier 1 account, for which you will need a minimum 5 dollar charge in the account.
+- [Open AI](https://openai.com/): An open AI key. For the education step to
+  work, you'll need a Tier 1 account, for which you will need a minimum 5 dollar
+  charge in the account.
 
-Lastly, create a test bot by writing to [BotFather](https://t.me/BotFather) and get a token with the username you choose for the test bot.
+Lastly, create a test bot by writing to [BotFather](https://t.me/BotFather) and
+get a token with the username you choose for the test bot.
 
 Then create the `.env` file in the root of the directory as such:
 
@@ -30,6 +35,14 @@ OPENAI_API_KEY="YOUR_OPEN_AI_KEY_HERE"
 TELEGRAM_BOT_USERNAME="THE_USERNAME_YOU_SELECTED"
 TELEGRAM_BOT_TOKEN="THE_TOKEN_BOT_FATHER_GAVE_YOU"
 SECRET_SALT="my_secret_salt"
+EMBER_CORE_URL="http://localhost:8101"
+IS_TESTNET="true"
+DB_USER="user"
+DB_PASSWORD="password"
+DB_NAME="db"
+DB_HOST="localhost"
+DB_PORT=5432
+FUNDING_WALLET_ID="random_id_for_ember_wallet"
 ```
 
 Lastly, run:
