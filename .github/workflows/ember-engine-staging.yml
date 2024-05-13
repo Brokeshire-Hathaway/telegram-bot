@@ -2,7 +2,7 @@ name: Server Deployment (Staging)
 
 on:
   push:
-    branches: [trunk]
+    branches: [main]
 
 jobs:
   build_and_push:
