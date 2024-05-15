@@ -1,4 +1,5 @@
 import z from "zod";
+import { ENVIRONMENT } from "../../common/settings";
 
 const ChatEmberRespons = z.object({
   status: z.union([
@@ -9,15 +10,13 @@ const ChatEmberRespons = z.object({
   message: z.string(),
 });
 
-const HOST = process.env.EMBER_CORE_URL || "http://ember-core:8101";
-
 export async function messageEmber(
   senderUid: string,
   message: string,
   endpoint: string,
   onActivity: (message: string) => void,
 ): Promise<string> {
-  const URL = HOST + endpoint;
+  const URL = ENVIRONMENT.EMBER_CORE_URL + endpoint;
   const messagePayload = { sender_uid: senderUid, message };
   const payload = JSON.stringify(messagePayload);
   const response = await fetch(URL, {

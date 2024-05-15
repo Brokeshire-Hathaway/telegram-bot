@@ -1,6 +1,5 @@
 import { Bot, Context, SessionFlavor, session } from "grammy";
 import { limit } from "@grammyjs/ratelimiter";
-import { Message, ParseMode } from "grammy/types";
 import { getEthSmartAccount } from "./features/wallet/index.js";
 import {
   type ConversationFlavor,
@@ -13,7 +12,7 @@ import {
 } from "./features/wallet/balance.js";
 import { START_MESSAGE, SUCCESS_FUND_MESSAGE } from "./messages.js";
 import { fundWallet, getEmberWalletAddress } from "./features/wallet/fund.js";
-import { readSensitiveEnv } from "./common/settings.js";
+import { ENVIRONMENT, readSensitiveEnv } from "./common/settings.js";
 
 interface SessionData {}
 type MyContext = Context & SessionFlavor<SessionData> & ConversationFlavor;
@@ -85,10 +84,13 @@ export function startTelegramBot() {
 
   const groupBot = bot.chatType(["group", "supergroup"]);
   const emberUserRegex = new RegExp(
-    `.*@${process.env.TELEGRAM_BOT_USERNAME!}.*`,
+    `.*@${ENVIRONMENT.TELEGRAM_BOT_USERNAME}.*`,
     "i",
   );
-  groupBot.hears(emberUserRegex, async (ctx) => {});
+  groupBot.hears(emberUserRegex, async (ctx) => {
+    if (!ctx.chat) return;
+    await sendResponseFromAgentTeam(ctx, `/v1/threads/${ctx.chat.id}/group`);
+  });
   groupBot.on("message:text", async (ctx) => {
     if (!ctx.chat) return;
     await sendResponseFromAgentTeam(ctx, `/v1/threads/${ctx.chat.id}/group`);
@@ -162,8 +164,8 @@ async function editFormattedMessage(
 }
 
 async function sendFormattedMessage(ctx: MyContext, message: string) {
-  if (!ctx.from) return;
-  return await ctx.api.sendMessage(ctx.from.id, formatForMarkdownV2(message), {
+  if (!ctx.chat) return;
+  return await ctx.api.sendMessage(ctx.chat.id, formatForMarkdownV2(message), {
     parse_mode: "MarkdownV2",
   });
 }
