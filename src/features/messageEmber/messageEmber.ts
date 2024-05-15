@@ -13,12 +13,11 @@ const HOST = process.env.EMBER_CORE_URL || "http://ember-core:8101";
 
 export async function messageEmber(
   senderUid: string,
-  threadId: string,
   message: string,
+  endpoint: string,
   onActivity: (message: string) => void,
 ): Promise<string> {
-  const PATH = `/v1/threads/${threadId}/messages`;
-  const URL = HOST + PATH;
+  const URL = HOST + endpoint;
   const messagePayload = { sender_uid: senderUid, message };
   const payload = JSON.stringify(messagePayload);
   const response = await fetch(URL, {
