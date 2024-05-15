@@ -169,11 +169,20 @@ async function formatMessage(
   ) => Promise<any>,
 ): Promise<Message> {
   try {
-    return await messageAction(chatId, markdownMessage, {
+    return await messageAction(chatId, formatForMarkdownV2(markdownMessage), {
       parse_mode: "MarkdownV2",
     });
   } catch (error) {
     console.error(error);
     return await messageAction(chatId, markdownMessage);
   }
+}
+
+const TELEGRAM_SPECIAL_CHARACTERS = [".", "!", "+", "-"];
+function formatForMarkdownV2(messages: string): string {
+  let message = messages;
+  for (const specialChar of TELEGRAM_SPECIAL_CHARACTERS) {
+    message = messages.replaceAll(specialChar, `\\${specialChar}`);
+  }
+  return messages;
 }
