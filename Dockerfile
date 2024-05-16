@@ -10,5 +10,4 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile --production --ignore-engines
 COPY --from=build /src/build/ src
-COPY documents documents
 ENTRYPOINT ["node", "src/index.js"]
