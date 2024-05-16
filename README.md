@@ -24,7 +24,8 @@ Following that, obtain the following API keys:
   charge in the account.
 
 Lastly, create a test bot by writing to [BotFather](https://t.me/BotFather) and
-get a token with the username you choose for the test bot.
+get a token with the username you choose for the test bot. When creating the bot, make
+sure to disable privacy mode to have seemless experience with group chats.
 
 Then create the `.env` file in the root of the directory as such:
 
