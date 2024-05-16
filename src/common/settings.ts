@@ -17,12 +17,15 @@ const SENSITIVE_KEYS = [
   "FUNDING_WALLET_ID",
 ];
 function preProcessEnv() {
+  const environment = {} as Record<string, unknown>;
   for (const [key, value] of Object.entries(process.env)) {
-    if (!key.endsWith("_FILE") || !SENSITIVE_KEYS.includes(key) || !value)
+    if (!key.endsWith("_FILE") || !SENSITIVE_KEYS.includes(key) || !value) {
+      environment[key] = value;
       continue;
-    process.env[`${key}_FILE`] = readSensitiveEnv(value);
+    }
+    environment[key] = readSensitiveEnv(value);
   }
-  return process.env;
+  return environment;
 }
 
 const Settings = z.object({
