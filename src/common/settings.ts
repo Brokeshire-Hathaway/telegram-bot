@@ -16,6 +16,7 @@ const SENSITIVE_KEYS = [
   "SECRET_SALT",
   "FUNDING_WALLET_ID",
 ];
+const SUFFIX_SIZE = 5;
 function preProcessEnv() {
   const environment = {} as Record<string, unknown>;
   for (const [key, value] of Object.entries(process.env)) {
@@ -23,7 +24,8 @@ function preProcessEnv() {
       environment[key] = value;
       continue;
     }
-    environment[key] = readSensitiveEnv(value);
+    environment[key.substring(0, key.length - SUFFIX_SIZE)] =
+      readSensitiveEnv(value);
   }
   return environment;
 }
