@@ -3,7 +3,8 @@ import { Context, SessionFlavor } from "grammy";
 import MarkdownIt from "markdown-it";
 import { messageEmber } from "../messageEmber/messageEmber";
 
-export type MyContext = Context & SessionFlavor<{}> & ConversationFlavor;
+interface MySession {}
+export type MyContext = Context & SessionFlavor<MySession> & ConversationFlavor;
 
 export async function sendResponseFromAgentTeam(
   ctx: MyContext,
