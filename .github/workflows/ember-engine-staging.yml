@@ -43,5 +43,6 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_NAME: ${{ secrets.DB_NAME }}
           FUNDING_WALLET_ID: ${{ secrets.FUNDING_WALLET_ID }}
+          ENVIRONMENT: ${{ github.event.deployment.environment }}
         run: |
-          docker compose -f compose.yaml -p ember-engine_stage up -d --build
+          docker compose -f compose.yaml -p ember-engine-stage up -d --build
