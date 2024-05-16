@@ -30,7 +30,10 @@ function preProcessEnv() {
 }
 
 const Settings = z.object({
-  IS_TESTNET: z.coerce.boolean(),
+  IS_TESTNET: z.preprocess(
+    val => val === "true" ? true : val === "false" ? false : val,
+    z.boolean()
+  ),
   ARBITRUM_RPC_URL: z.string().optional(),
   EMBER_CORE_URL: z.string().url().default("http://ember-core"),
   PORT: z.coerce.number().int().default(3000),
