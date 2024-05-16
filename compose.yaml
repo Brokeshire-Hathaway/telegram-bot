@@ -31,7 +31,6 @@ services:
       - shared_network
     depends_on:
       - database
-      - chroma_server
 
   database:
     image: postgres
