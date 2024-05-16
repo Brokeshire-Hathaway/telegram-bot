@@ -84,7 +84,9 @@ export async function sendFormattedMessage(
 }
 
 function markdownToHtml(messages: string, italicize: boolean): string {
-  const md = new MarkdownIt();
+  const md = new MarkdownIt({
+    html: true,
+  }).disable(["list"]);
   let html = md.render(messages);
 
   // Match a closing tag, followed by one or more newlines (and optionally other whitespace), then an opening tag
