@@ -46,7 +46,7 @@
     "build": "tsc --build tsconfig.build.json",
     "dev": "node --import tsx -r dotenv/config src/index.ts",
     "test": "mocha",
-    "clean-test": "rm -Rf node_modules && yarn install && mocha",
+    "clean": "rm -Rf node_modules && yarn install",
     "lint:fix": "prettier-eslint --write \"src/**/*.ts\""
   }
 }
