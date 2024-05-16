@@ -3,26 +3,24 @@ services:
     restart: always
     build: .
     environment:
-      PORT: 3001
-      CHROMA_PORT: 8000
+      PORT: 80
       DB_USER_FILE: /run/secrets/db_user
       DB_PASSWORD_FILE: /run/secrets/db_password
       DB_NAME_FILE: /run/secrets/db_name
       DB_PORT: 5432
       DB_HOST: database
-      OPENAI_API_KEY_FILE: /run/secrets/openai_key
       SECRET_SALT_FILE: /run/secrets/secret_salt
       TELEGRAM_BOT_USERNAME:
       TELEGRAM_BOT_TOKEN_FILE: /run/secrets/telegram_token
       ARBITRUM_RPC_URL:
       IS_TESTNET:
       FUNDING_WALLET_ID_FILE: /run/secrets/funding_wallet_id
+      EMBER_CORE_URL: http://ember-core
     secrets:
       - db_name
       - db_user
       - db_password
       - funding_wallet_id
-      - openai_key
       - secret_salt
       - telegram_token
     logging:
@@ -54,22 +52,7 @@ services:
       - db_user
       - db_password
 
-  chroma_server:
-    image: chromadb/chroma:latest
-    restart: always
-    volumes:
-      - type: volume
-        source: chroma
-        target: /chroma/chroma
-      - type: volume
-        source: index_data
-        target: /index_data
-    networks:
-      - shared_network
-
 volumes:
-  index_data:
-  chroma:
   postgres_data:
 
 secrets:
@@ -81,8 +64,6 @@ secrets:
     environment: "DB_PASSWORD"
   funding_wallet_id:
     environment: "FUNDING_WALLET_ID"
-  openai_key:
-    environment: "OPENAI_API_KEY"
   secret_salt:
     environment: "SECRET_SALT"
   telegram_token:
@@ -90,4 +71,5 @@ secrets:
 
 networks:
   shared_network:
+    name: ember-main-${ENVIRONMENT}
     external: true

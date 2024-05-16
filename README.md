@@ -9,33 +9,24 @@ To run the project, you need to have the package manager:
 - [docker-compose](https://docs.docker.com/compose/)
 
 After installing `yarn`, you need to run the databases locally. The database used for
-this service is [Chroma](https://www.trychroma.com/) and `postgres`. First,
-create a directory in the root of the repository named `chroma`. Then run the
-following command in the root of the repository:
+this service is `postgres`. Run the following command in the root of the
+repository:
 
 ```bash
 docker compose -f compose.local.yml up -d
 ```
 
-Following that, obtain the following API keys:
+Then, create a test bot by writing to [BotFather](https://t.me/BotFather) and
+get a token with the username you choose for the test bot. When creating the bot, make
+sure to disable privacy mode to have seemless experience with group chats.
 
-- [Open AI](https://openai.com/): An open AI key. For the education step to
-  work, you'll need a Tier 1 account, for which you will need a minimum 5 dollar
-  charge in the account.
-
-Lastly, create a test bot by writing to [BotFather](https://t.me/BotFather) and
-get a token with the username you choose for the test bot.
-
-Then create the `.env` file in the root of the directory as such:
+After that, create the `.env` file in the root of the directory as such:
 
 ```sh
-CHROMA_HOST="localhost"
-CHROMA_PORT=8000
-OPENAI_API_KEY="YOUR_OPEN_AI_KEY_HERE"
 TELEGRAM_BOT_USERNAME="THE_USERNAME_YOU_SELECTED"
 TELEGRAM_BOT_TOKEN="THE_TOKEN_BOT_FATHER_GAVE_YOU"
 SECRET_SALT="my_secret_salt"
-EMBER_CORE_URL="http://localhost:8101"
+EMBER_CORE_URL="http://localhost:8000"
 IS_TESTNET="true"
 DB_USER="user"
 DB_PASSWORD="password"

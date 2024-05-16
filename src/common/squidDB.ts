@@ -17,10 +17,10 @@ import {
   http,
   parseUnits,
 } from "viem";
-import { ARBITRUM_RPC_URL, IS_TESTNET } from "./settings.js";
+import { ENVIRONMENT } from "./settings.js";
 import { addUsdPriceToToken, getCoingeckoToken } from "./coingeckoDB.js";
 
-const squidBaseUrl = IS_TESTNET
+const squidBaseUrl = ENVIRONMENT.IS_TESTNET
   ? "https://testnet.api.squidrouter.com"
   : "https://api.squidrouter.com";
 
@@ -143,9 +143,9 @@ export async function getRoute(
 const ARBITRUM_CHAIN_ID = 42161;
 export function getViemChain(network: ChainData): Chain {
   const rpc =
-    !ARBITRUM_RPC_URL || network.chainId !== ARBITRUM_CHAIN_ID
+    !ENVIRONMENT.ARBITRUM_RPC_URL || network.chainId !== ARBITRUM_CHAIN_ID
       ? network.rpc
-      : ARBITRUM_RPC_URL;
+      : ENVIRONMENT.ARBITRUM_RPC_URL;
   return defineChain({
     id: network.chainId as number,
     name: network.networkName,

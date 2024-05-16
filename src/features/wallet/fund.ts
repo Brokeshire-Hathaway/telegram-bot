@@ -3,21 +3,19 @@ import { getSmartAccount } from ".";
 import { createPool, sql } from "slonik";
 import z from "zod";
 import { getSendTransaction } from "../send/smartContract";
-import { IS_TESTNET, readSensitiveEnv } from "../../common/settings";
 import { NATIVE_TOKEN } from "../../common/squidDB";
 import { parseEther } from "viem";
+import { ENVIRONMENT } from "../../common/settings";
 
-const FUNDING_WALLET_ID = readSensitiveEnv("FUNDING_WALLET_ID");
-const FUNDING_CHAIN = IS_TESTNET ? sepolia : arbitrum;
-const FUNDING_TOKEN = IS_TESTNET
+const FUNDING_CHAIN = ENVIRONMENT.IS_TESTNET ? sepolia : arbitrum;
+const FUNDING_TOKEN = ENVIRONMENT.IS_TESTNET
   ? NATIVE_TOKEN
   : "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
-const FUNDING_AMOUNT = IS_TESTNET ? parseEther("0.1") : BigInt(10000000);
-const DB_USER = readSensitiveEnv("DB_USER");
-const DB_NAME = readSensitiveEnv("DB_NAME");
-const DB_PASSWORD = readSensitiveEnv("DB_PASSWORD");
+const FUNDING_AMOUNT = ENVIRONMENT.IS_TESTNET
+  ? parseEther("0.1")
+  : BigInt(10000000);
 const DB_POOL = createPool(
-  `postgres://${DB_USER}:${DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${DB_NAME}`,
+  `postgres://${ENVIRONMENT.DB_USER}:${ENVIRONMENT.DB_PASSWORD}@${ENVIRONMENT.DB_HOST}:${ENVIRONMENT.DB_PORT}/${ENVIRONMENT.DB_NAME}`,
 );
 const FundCode = z.object({
   code: z.string(),
@@ -25,9 +23,9 @@ const FundCode = z.object({
 });
 
 export async function getEmberWalletAddress() {
-  if (!FUNDING_WALLET_ID) return "No address;";
+  if (!ENVIRONMENT.FUNDING_WALLET_ID) return "No address;";
   const fundingAccount = await getSmartAccount(
-    FUNDING_WALLET_ID,
+    ENVIRONMENT.FUNDING_WALLET_ID,
     FUNDING_CHAIN,
   );
   return await fundingAccount.getAccountAddress();
@@ -39,7 +37,8 @@ export async function fundWallet(
   code: string,
 ) {
   const dbPool = await DB_POOL;
-  if (!FUNDING_WALLET_ID) throw Error("Funding is not available at the moment");
+  if (!ENVIRONMENT.FUNDING_WALLET_ID)
+    throw Error("Funding is not available at the moment");
 
   // See if code is already used
   const availableCode = await dbPool.maybeOne(
@@ -65,7 +64,7 @@ export async function fundWallet(
     FUNDING_AMOUNT,
   );
   const fundingAccount = await getSmartAccount(
-    FUNDING_WALLET_ID,
+    ENVIRONMENT.FUNDING_WALLET_ID,
     FUNDING_CHAIN,
   );
   const userOp = await fundingAccount.sendTransaction(sendTransaction);

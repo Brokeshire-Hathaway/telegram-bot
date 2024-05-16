@@ -18,7 +18,7 @@ import {
   getTokenInformation,
   routeFeesToTokenMap,
 } from "../../common/squidDB.js";
-import { IS_TESTNET } from "../../common/settings.js";
+import { ENVIRONMENT } from "../../common/settings.js";
 
 // Create the router
 const router = express.Router();
@@ -138,7 +138,7 @@ router.post("/preview", async (req: Request, res: Response) => {
 const Swap = z.object({
   transaction_uuid: z.string(),
 });
-const AXELAR_TESTNET_EXPLORER = IS_TESTNET
+const AXELAR_TESTNET_EXPLORER = ENVIRONMENT.IS_TESTNET
   ? "https://testnet.axelarscan.io"
   : "https://axelarscan.io";
 router.post("/", async (req: Request, res: Response) => {

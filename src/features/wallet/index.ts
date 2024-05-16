@@ -9,12 +9,10 @@ import {
   createSmartAccountClient,
 } from "@biconomy/account";
 import { privateKeyToAccount } from "viem/accounts";
-import { IS_TESTNET, readSensitiveEnv } from "../../common/settings.js";
 import { sepolia, mainnet } from "viem/chains";
 import { ChainData } from "@0xsquid/sdk";
 import { getViemChain } from "../../common/squidDB.js";
-
-const SECRET_SALT = readSensitiveEnv("SECRET_SALT");
+import { ENVIRONMENT } from "../../common/settings.js";
 
 function derivePrivateKey(uid: string): Uint8Array {
   // https://copyprogramming.com/howto/appropriate-scrypt-parameters-when-generating-an-scrypt-hash
@@ -28,7 +26,7 @@ function derivePrivateKey(uid: string): Uint8Array {
   // Using Scrypt because Argon2 is not yet well supported nor audited. It's just now being added to OpenSSL Q4 2023.
   // Scrypt output is biased, so we need to unbias it.
   // https://crypto.stackexchange.com/questions/100341/how-to-safely-and-randomly-iterate-a-key-derived-from-scrypt
-  const hash = scrypt(uid, SECRET_SALT!, scryptOptions);
+  const hash = scrypt(uid, ENVIRONMENT.SECRET_SALT, scryptOptions);
   // Use HKDF to unbias the hash.
   // https://github.com/paulmillr/noble-curves#creating-private-keys-from-hashes
   const derivedKey = hkdf(keccak_256, hash, undefined, undefined, 48);
@@ -53,7 +51,7 @@ export async function getSmartAccount(uid: string, chain: Chain) {
   });
   return createSmartAccountClient({
     signer,
-    bundlerUrl: IS_TESTNET
+    bundlerUrl: ENVIRONMENT.IS_TESTNET
       ? `https://bundler.biconomy.io/api/v2/${chain.id}/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44`
       : `https://bundler.biconomy.io/api/v2/${chain.id}/dewj2189.wh1289hU-7E49-45ic-af80-aVjLXhF0U`,
     defaultValidationModule,
@@ -68,6 +66,6 @@ export async function getSmartAccountFromChainData(
 }
 
 export async function getEthSmartAccount(id: string) {
-  if (IS_TESTNET) return await getSmartAccount(id, sepolia);
+  if (ENVIRONMENT.IS_TESTNET) return await getSmartAccount(id, sepolia);
   return await getSmartAccount(id, mainnet);
 }
