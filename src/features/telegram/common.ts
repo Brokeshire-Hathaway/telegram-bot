@@ -84,14 +84,7 @@ export async function sendFormattedMessage(
 }
 
 function markdownToHtml(messages: string, italicize: boolean): string {
-  const md = new MarkdownIt("zero").enable([
-    "emphasis",
-    "link",
-    "linkify",
-    "strikethrough",
-    "blockquote",
-    "fragments_join",
-  ]);
+  const md = new MarkdownIt();
   let html = md.render(messages);
 
   // Match a closing tag, followed by one or more newlines (and optionally other whitespace), then an opening tag

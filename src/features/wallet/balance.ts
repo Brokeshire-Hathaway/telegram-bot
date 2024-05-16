@@ -109,14 +109,14 @@ export async function getAllAccountBalances(userId: string) {
 export function formatBalances(balances: Map<string, Map<string, string>>) {
   const balancesPerChain = [];
   for (const [chain, balancesOfChain] of balances.entries()) {
-    let chainBalance = `*${chain.replace("-", "\\-")}*`;
+    let chainBalance = `*${chain}*`;
     let maxSizeBalance = 0;
     for (const balance of balancesOfChain.values()) {
       if (balance.length > maxSizeBalance) maxSizeBalance = balance.length;
     }
 
     for (const [token, balance] of balancesOfChain.entries()) {
-      chainBalance += `\n└ \`${balance.padEnd(maxSizeBalance)}\`  _${token.replace(".", "\\.").replace("-", "\\-")}_`;
+      chainBalance += `\n└ \`${balance.padEnd(maxSizeBalance)}\`  _${token}_`;
     }
     balancesPerChain.push(chainBalance);
   }
