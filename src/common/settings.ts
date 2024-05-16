@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import z from "zod";
 
-export function readSensitiveEnv(name: string) {
+function readSensitiveEnv(name: string) {
   if (process.env[name]) return process.env[name];
   const envFile = process.env[`${name}_FILE`];
   if (!envFile) return;

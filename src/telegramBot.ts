@@ -12,13 +12,13 @@ import {
 } from "./features/wallet/balance.js";
 import { START_MESSAGE, SUCCESS_FUND_MESSAGE } from "./messages.js";
 import { fundWallet, getEmberWalletAddress } from "./features/wallet/fund.js";
-import { ENVIRONMENT, readSensitiveEnv } from "./common/settings.js";
+import { ENVIRONMENT } from "./common/settings.js";
 
 interface SessionData {}
 type MyContext = Context & SessionFlavor<SessionData> & ConversationFlavor;
 
 export function startTelegramBot() {
-  const bot = new Bot<MyContext>(readSensitiveEnv("TELEGRAM_BOT_TOKEN")!);
+  const bot = new Bot<MyContext>(ENVIRONMENT.TELEGRAM_BOT_TOKEN);
 
   bot.use(session());
   bot.use(conversations());
