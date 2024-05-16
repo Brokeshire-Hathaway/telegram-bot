@@ -1,4 +1,4 @@
-import { startTelegramBot } from "./telegramBot.js";
+import { startTelegramBot } from "./features/telegram/index.js";
 import { startTransactionService } from "./service.js";
 
 async function main() {
