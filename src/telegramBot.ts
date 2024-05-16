@@ -13,6 +13,7 @@ import {
 import { START_MESSAGE, SUCCESS_FUND_MESSAGE } from "./messages.js";
 import { fundWallet, getEmberWalletAddress } from "./features/wallet/fund.js";
 import { ENVIRONMENT } from "./common/settings.js";
+import MarkdownIt from "markdown-it";
 
 interface SessionData {}
 type MyContext = Context & SessionFlavor<SessionData> & ConversationFlavor;
@@ -156,25 +157,44 @@ async function editFormattedMessage(
   return await ctx.api.editMessageText(
     ctx.from.id,
     messageId,
-    formatForMarkdownV2(message),
+    markdownToHtml(message),
     {
-      parse_mode: "MarkdownV2",
+      parse_mode: "HTML",
     },
   );
 }
 
 async function sendFormattedMessage(ctx: MyContext, message: string) {
   if (!ctx.chat) return;
-  return await ctx.api.sendMessage(ctx.chat.id, formatForMarkdownV2(message), {
-    parse_mode: "MarkdownV2",
+  return await ctx.api.sendMessage(ctx.chat.id, markdownToHtml(message), {
+    parse_mode: "HTML",
   });
 }
 
-const TELEGRAM_SPECIAL_CHARACTERS = [".", "!", "+", "-"];
-function formatForMarkdownV2(messages: string): string {
-  let message = messages;
-  for (const specialChar of TELEGRAM_SPECIAL_CHARACTERS) {
-    message = message.replaceAll(specialChar, `\\${specialChar}`);
-  }
-  return message;
+function markdownToHtml(messages: string): string {
+  const md = new MarkdownIt("zero").enable([
+    "emphasis",
+    "link",
+    "linkify",
+    "strikethrough",
+    "blockquote",
+    "fragments_join",
+  ]);
+  let html = md.render(messages);
+
+  // Match a closing tag, followed by one or more newlines (and optionally other whitespace), then an opening tag
+  html = html.replace(
+    /(<\/([^>]+)>)\s*(\n+)\s*(<([^>]+)>)/g,
+    (match, closingTag, closingTagName, newlines, openingTag) => {
+      return `${closingTag}${newlines}${openingTag}`;
+    },
+  );
+
+  // Replace all occurrences of <p> and </p> because Markdown-It doesn't have an easy way to disable them
+  html = html.replace(/<p>/g, "");
+  html = html.replace(/<\/p>/g, "\n");
+
+  // Telegram specific syntax formatting
+  html = html.replace(/\|\|(.*?)\|\|/g, "<tg-spoiler>$1</tg-spoiler>");
+  return html;
 }
