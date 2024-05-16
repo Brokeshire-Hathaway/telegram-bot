@@ -36,6 +36,7 @@
     "globals": "^15.1.0",
     "mocha": "^10.2.0",
     "prettier": "^3.2.5",
+    "prettier-eslint-cli": "^8.0.1",
     "tsx": "^4.9.0",
     "typescript": "^5.1.6",
     "typescript-eslint": "^7.7.0"
@@ -45,6 +46,6 @@
     "dev": "node --import tsx -r dotenv/config src/index.ts",
     "test": "mocha",
     "clean-test": "rm -Rf node_modules && yarn install && mocha",
-    "lint:fix": "prettier --write src/ && eslint --fix src/"
+    "lint:fix": "prettier-eslint --write \"src/**/*.ts\""
   }
 }
