@@ -1,13 +1,6 @@
 import fs from "node:fs";
 import z from "zod";
 
-function readSensitiveEnv(name: string) {
-  if (process.env[name]) return process.env[name];
-  const envFile = process.env[`${name}_FILE`];
-  if (!envFile) return;
-  return fs.readFileSync(envFile, "utf8");
-}
-
 const SENSITIVE_KEYS = [
   "TELEGRAM_BOT_TOKEN",
   "DB_USER",
@@ -20,12 +13,18 @@ const SUFFIX_SIZE = 5;
 function preProcessEnv() {
   const environment = {} as Record<string, unknown>;
   for (const [key, value] of Object.entries(process.env)) {
-    if (!key.endsWith("_FILE") || !SENSITIVE_KEYS.includes(key) || !value) {
+    if (
+      !key.endsWith("_FILE") ||
+      !SENSITIVE_KEYS.includes(key.substring(0, key.length - SUFFIX_SIZE)) ||
+      !value
+    ) {
       environment[key] = value;
       continue;
     }
-    environment[key.substring(0, key.length - SUFFIX_SIZE)] =
-      readSensitiveEnv(value);
+    environment[key.substring(0, key.length - SUFFIX_SIZE)] = fs.readFileSync(
+      value,
+      "utf8",
+    );
   }
   return environment;
 }
@@ -34,7 +33,7 @@ const Settings = z.object({
   IS_TESTNET: z.coerce.boolean(),
   ARBITRUM_RPC_URL: z.string().optional(),
   EMBER_CORE_URL: z.string().url().default("http://ember-core"),
-  PORT: z.number().int().default(3000),
+  PORT: z.coerce.number().int().default(3000),
   TELEGRAM_BOT_USERNAME: z.string(),
   TELEGRAM_BOT_TOKEN: z.string(),
   SECRET_SALT: z.string(),
