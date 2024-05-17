@@ -46,4 +46,5 @@
     "test": "mocha",
     "clean": "rm -Rf node_modules && yarn install",
     "lint:fix": "prettier --write --log-level silent src/ && eslint --write src/"
+  }
 }
