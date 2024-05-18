@@ -13,7 +13,7 @@ What you can do:
 - Swap different tokens between any pair of EVM chains.`;
 
 export const SUCCESS_FUND_MESSAGE = (
-  url: string,
+  url: string
 ) => `Code redeemed successfully!
 
-See fund transaction: [View on blockchain](${url})`;
+[View airdrop on blockchain](${url}) or use /balance to see it here.`;
