@@ -8,12 +8,10 @@ import { parseEther } from "viem";
 import { ENVIRONMENT } from "../../common/settings";
 
 const FUNDING_CHAIN = ENVIRONMENT.IS_TESTNET ? sepolia : arbitrum;
-const FUNDING_TOKEN = ENVIRONMENT.IS_TESTNET
-  ? NATIVE_TOKEN
-  : "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
+const FUNDING_TOKEN = ENVIRONMENT.IS_TESTNET ? NATIVE_TOKEN : NATIVE_TOKEN;
 const FUNDING_AMOUNT = ENVIRONMENT.IS_TESTNET
   ? parseEther("0.1")
-  : BigInt(10000000);
+  : parseEther("0.003");
 const DB_POOL = createPool(
   `postgres://${ENVIRONMENT.DB_USER}:${ENVIRONMENT.DB_PASSWORD}@${ENVIRONMENT.DB_HOST}:${ENVIRONMENT.DB_PORT}/${ENVIRONMENT.DB_NAME}`,
 );
