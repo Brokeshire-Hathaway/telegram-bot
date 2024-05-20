@@ -1,13 +1,22 @@
-FROM node:20.12.2-alpine as build
-WORKDIR "/src"
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --ignore-engines
-COPY . .
-RUN yarn run build
+ARG NODE_BASE=20.12.2-alpine
 
-FROM node:20.12.2-alpine
+FROM node:$NODE_BASE as base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 WORKDIR /app
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --production --ignore-engines
-COPY --from=build /src/build/ src
+COPY package.json pnpm-lock.yaml ./
+
+FROM base AS production-dependencies
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm i --prod --frozen-lockfile
+
+FROM base AS build
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm i --frozen-lockfile
+COPY . .
+RUN pnpm run build
+
+FROM node:$NODE_BASE
+WORKDIR /app
+COPY --from=production-dependencies /app/node_modules node_modules
+COPY --from=build /app/build src
 ENTRYPOINT ["node", "src/index.js"]
