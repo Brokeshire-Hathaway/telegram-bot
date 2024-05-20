@@ -45,6 +45,6 @@
     "dev": "node --import tsx -r dotenv/config src/index.ts",
     "test": "mocha",
     "clean": "rm -Rf node_modules && yarn install",
-    "lint:fix": "prettier --write --log-level silent src/ && eslint --write src/"
+    "lint:fix": "prettier --write --log-level silent src/ && eslint --fix src/"
   }
 }
