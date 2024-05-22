@@ -1,20 +1,18 @@
 import { arbitrum, sepolia } from "viem/chains";
 import { getSmartAccount } from ".";
-import { createPool, sql } from "slonik";
+import { sql } from "slonik";
 import z from "zod";
 import { getSendTransaction } from "../send/smartContract";
 import { NATIVE_TOKEN } from "../../common/squidDB";
 import { parseEther } from "viem";
 import { ENVIRONMENT } from "../../common/settings";
+import { getPool } from "../../common/database";
 
 const FUNDING_CHAIN = ENVIRONMENT.IS_TESTNET ? sepolia : arbitrum;
 const FUNDING_TOKEN = ENVIRONMENT.IS_TESTNET ? NATIVE_TOKEN : NATIVE_TOKEN;
 const FUNDING_AMOUNT = ENVIRONMENT.IS_TESTNET
   ? parseEther("0.1")
   : parseEther("0.003");
-const DB_POOL = createPool(
-  `postgres://${ENVIRONMENT.DB_USER}:${ENVIRONMENT.DB_PASSWORD}@${ENVIRONMENT.DB_HOST}:${ENVIRONMENT.DB_PORT}/${ENVIRONMENT.DB_NAME}`,
-);
 const FundCode = z.object({
   code: z.string(),
   used_by: z.string().nullable(),
@@ -34,7 +32,7 @@ export async function fundWallet(
   username: string,
   code: string,
 ) {
-  const dbPool = await DB_POOL;
+  const dbPool = await getPool();
   if (!ENVIRONMENT.FUNDING_WALLET_ID)
     throw Error("Funding is not available at the moment");
 
