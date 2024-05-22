@@ -1,6 +1,5 @@
 import express, { Request, Response } from "express";
 import z from "zod";
-import { ChainData } from "@0xsquid/sdk";
 import {
   getNetworkInformation,
   getTokenInformation,
@@ -15,30 +14,12 @@ import {
   SendToken,
 } from "./smartContract.js";
 import { getSmartAccountFromChainData } from "../wallet/index.js";
-import { randomUUID } from "crypto";
-import {
-  formatTokenValue,
-  formatTotalAmount,
-} from "../../common/formatters.js";
+import { costsToUsd } from "../../common/formatters.js";
 import { parseUnits } from "viem";
-import { UserOpReceipt, UserOperationStruct } from "@biconomy/account";
+import { createTransaction } from "../frontendApi/common.js";
 
 // Create the router
 const router = express.Router();
-
-// In memory transaction storage
-const TRANSACTION_MEMORY = new Map<
-  string,
-  {
-    accountUid: string;
-    recipient: `0x${string}`;
-    userOp: Partial<UserOperationStruct>;
-    network: ChainData;
-    amount: string;
-    token: SendToken;
-    nativeToken: SendToken;
-  }
->();
 
 // Endpoint to prepare a transaction
 export const UniversalAddress = z.object({
@@ -93,7 +74,6 @@ router.post("/prepare", async (req: Request, res: Response) => {
     );
     const userOp = await account.buildUserOp([contract]);
     const gasFee = getGasFee(userOp);
-    const uuid = randomUUID();
     const nativeToken =
       token.address !== NATIVE_TOKEN
         ? await getTokenInformation(network.chainId, NATIVE_TOKEN)
@@ -103,98 +83,41 @@ router.post("/prepare", async (req: Request, res: Response) => {
         .status(500)
         .json({ success: false, message: "Native token not found" });
 
-    TRANSACTION_MEMORY.set(uuid, {
-      accountUid: body.sender_address.identifier,
-      recipient: body.recipient_address,
-      userOp,
-      network,
-      token,
-      amount: body.amount,
-      nativeToken,
-    });
     const tokenCosts = getCosts(amount, token, gasFee, nativeToken);
+    const uuid = await createTransaction(
+      {
+        type: "send",
+        total: costsToUsd(...tokenCosts),
+        fees: gasFee,
+      },
+      [
+        {
+          amount,
+          token: token.symbol,
+          token_address: token.address as `0x${string}`,
+          chain: network.networkName,
+          chain_id: network.chainId.toString(),
+          address: "OWNER",
+        },
+        {
+          amount,
+          token: token.symbol,
+          token_address: token.address as `0x${string}`,
+          chain: network.networkName,
+          chain_id: network.chainId.toString(),
+          address: body.recipient_address,
+        },
+      ],
+    );
 
     return res.json({
-      recipient: body.recipient_address,
-      amount: formatTokenValue(token, amount, network),
-      fees: formatTokenValue(nativeToken, gasFee, network),
-      total: formatTotalAmount(...tokenCosts, network),
-      transaction_uuid: uuid,
+      uuid,
     });
   } catch (error) {
     console.error(error);
     res
       .status(500)
       .json({ success: false, message: `Error creating user transaction` });
-  }
-});
-
-// Endpoint to send a prepared transaction
-const SendTransactionBody = z.object({
-  transaction_uuid: z.string().uuid(),
-});
-router.post("/send", async (req: Request, res: Response) => {
-  const result = await SendTransactionBody.safeParseAsync(req.body);
-  if (!result.success) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Invalid request body" });
-  }
-  const body = result.data;
-  const memory = TRANSACTION_MEMORY.get(body.transaction_uuid);
-  if (!memory) {
-    return res
-      .status(500)
-      .json({ success: false, message: "Transaction does not exist" });
-  }
-  try {
-    const account = await getSmartAccountFromChainData(
-      memory.accountUid,
-      memory.network,
-    );
-    const result = await account.sendUserOp(memory.userOp);
-    const txHash = await result.waitForTxHash();
-    let userReceipt: UserOpReceipt | undefined;
-    try {
-      userReceipt = !txHash.userOperationReceipt
-        ? await result.wait()
-        : txHash.userOperationReceipt;
-    } catch {
-      console.warn("User operation receipt could not be found.");
-    }
-    TRANSACTION_MEMORY.delete(body.transaction_uuid);
-    const amount = parseUnits(memory.amount, memory.token.decimals);
-    return res.json({
-      success: true,
-      recipient: memory.recipient,
-      amount: formatTokenValue(memory.token, amount, memory.network),
-      fees: userReceipt
-        ? formatTokenValue(
-            memory.nativeToken,
-            userReceipt.actualGasCost,
-            memory.network,
-          )
-        : null,
-      total: userReceipt
-        ? formatTotalAmount(
-            ...getCosts(
-              amount,
-              memory.token,
-              userReceipt.actualGasCost,
-              memory.nativeToken,
-            ),
-            memory.network,
-          )
-        : null,
-      transaction_block: `${memory.network.blockExplorerUrls[0]}/tx/${txHash.transactionHash}`,
-    });
-  } catch (error) {
-    console.error(error);
-    let msg = "Send failed";
-    if (typeof error === "object" && !!error && "message" in error) {
-      msg = error.message as string;
-    }
-    res.status(500).json({ success: false, message: msg });
   }
 });
 
