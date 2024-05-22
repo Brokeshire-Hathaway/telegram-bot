@@ -43,6 +43,10 @@ router.post("/prepare", async (req: Request, res: Response) => {
   }
   const body = result.data;
   const network = getNetworkInformation(body.sender_address.network);
+  if (!network)
+    return res
+      .status(500)
+      .json({ success: false, message: "Network not supported" });
   if (body.token === "0x") body.token = NATIVE_TOKEN;
   let token: SendToken | undefined = await getTokenInformation(
     network.chainId,

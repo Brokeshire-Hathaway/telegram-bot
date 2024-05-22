@@ -48,7 +48,9 @@ export function getTokensDecimals(chainId: string, tokenAddress: string) {
 }
 
 function createFUSE() {
-  return new Fuse(getAllChains(), {
+  const chains = getAllChains();
+  if (chains.length === 0) return;
+  return new Fuse(chains, {
     ignoreLocation: true,
     keys: ["networkName"],
   });
@@ -61,6 +63,8 @@ export async function initSquid() {
 
 export function getNetworkInformation(networkName: string) {
   const fuse = FUSE || createFUSE();
+  if (!fuse) return undefined;
+
   // Find minimum value by reducing array
   return fuse.search(networkName)[0].item;
 }
