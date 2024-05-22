@@ -1,16 +1,7 @@
 import express, { Request, Response } from "express";
 import z from "zod";
-import { ChainData, TokenData, TransactionRequest } from "@0xsquid/sdk";
-import { randomUUID } from "crypto";
 import { UniversalAddress } from "../send/index.js";
-import { getSmartAccountFromChainData } from "../wallet/index.js";
-import callSmartContract from "./callSmartContract.js";
-import {
-  formatFees,
-  formatTime,
-  formatTokenValue,
-  formatTotalAmount,
-} from "../../common/formatters.js";
+import { costsToUsd } from "../../common/formatters.js";
 import {
   RouteType,
   getNetworkInformation,
@@ -18,20 +9,10 @@ import {
   getTokenInformation,
   routeFeesToTokenMap,
 } from "../../common/squidDB.js";
-import { ENVIRONMENT } from "../../common/settings.js";
+import { createTransaction } from "../frontendApi/common.js";
 
 // Create the router
 const router = express.Router();
-const TRANSACTION_MEMORY = new Map<
-  string,
-  {
-    route: TransactionRequest;
-    identifier: string;
-    network: ChainData;
-    fromAmount: string;
-    fromToken: TokenData;
-  }
->();
 
 // Preview the transaction
 const ChainSource = z.object({
@@ -88,19 +69,13 @@ router.post("/preview", async (req: Request, res: Response) => {
         .status(500)
         .json({ success: false, message: "No contract to execute" });
     }
-    const uuid = randomUUID();
-    TRANSACTION_MEMORY.set(uuid, {
-      route: route.transactionRequest,
-      identifier: body.sender.identifier,
-      network: fromNetwork,
-      fromAmount: route.estimate.fromAmount,
-      fromToken,
-    });
+
+    // Swap fee costs
     const feeCosts = await routeFeesToTokenMap(
       route.estimate.feeCosts,
       route.estimate.gasCosts,
     );
-    const totalFees = formatFees(...feeCosts, fromNetwork);
+    const fees = costsToUsd(...feeCosts);
     const feeOfFromAmount = feeCosts[1].get(fromToken.symbol);
     if (!feeOfFromAmount) {
       feeCosts[1].set(fromToken.symbol, BigInt(route.params.fromAmount));
@@ -111,69 +86,39 @@ router.post("/preview", async (req: Request, res: Response) => {
         feeOfFromAmount + BigInt(route.params.fromAmount),
       );
     }
+    const uuid = await createTransaction(
+      {
+        type: "swap",
+        total: costsToUsd(...feeCosts),
+        fees,
+        information: {
+          fromNetworkId: fromNetwork.chainId,
+          fromTokenAddress: fromToken.address,
+          toNetworkId: toNetwork.chainId,
+          toTokenAdddress: toToken.address,
+          amount: route.estimate.fromAmount,
+        },
+      },
+      [
+        {
+          amount: BigInt(route.estimate.fromAmount),
+          token: fromToken.name,
+        },
+        {
+          amount: BigInt(route.estimate.toAmount),
+          token: toToken.name,
+        },
+      ],
+    );
     return res.json({
       success: true,
       uuid,
-      from_amount: formatTokenValue(
-        fromToken,
-        route.params.fromAmount,
-        fromNetwork,
-      ),
-      from_chain: fromNetwork.networkName,
-      to_amount: formatTokenValue(toToken, route.estimate.toAmount, toNetwork),
-      to_chain: toNetwork.networkName,
-      duration: formatTime(route.estimate.estimatedRouteDuration),
-      total_fees: totalFees,
-      total_amount: formatTotalAmount(...feeCosts, fromNetwork),
     });
   } catch (err) {
     console.error(err);
     return res
       .status(500)
       .json({ success: false, message: "Failed to found route" });
-  }
-});
-
-// Execute swap
-const Swap = z.object({
-  transaction_uuid: z.string(),
-});
-const AXELAR_TESTNET_EXPLORER = ENVIRONMENT.IS_TESTNET
-  ? "https://testnet.axelarscan.io"
-  : "https://axelarscan.io";
-router.post("/", async (req: Request, res: Response) => {
-  const result = await Swap.safeParseAsync(req.body);
-  if (!result.success) {
-    return res.status(400).json({ success: false, message: result.error });
-  }
-  const body = result.data;
-  const memory = TRANSACTION_MEMORY.get(body.transaction_uuid);
-  if (!memory) {
-    return res
-      .status(500)
-      .json({ success: false, message: "Transaction does not exist" });
-  }
-  try {
-    const smartAccount = await getSmartAccountFromChainData(
-      memory.identifier,
-      memory.network,
-    );
-    const transactionHash = await callSmartContract(
-      smartAccount,
-      memory.route,
-      memory.fromToken,
-      memory.network,
-      memory.fromAmount,
-    );
-    TRANSACTION_MEMORY.delete(body.transaction_uuid);
-    return res.json({
-      block: `${AXELAR_TESTNET_EXPLORER}/gmp/${transactionHash}`,
-    });
-  } catch (err) {
-    console.error(err);
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed executing transaction" });
   }
 });
 

@@ -1,5 +1,5 @@
 import { ChainData, TokenData } from "@0xsquid/sdk";
-import { formatUnits } from "viem";
+import { formatUnits, parseUnits } from "viem";
 import { TokenInformation } from "./squidDB";
 
 export function formatTime(timeInSeconds: number) {
@@ -12,34 +12,15 @@ export function formatTime(timeInSeconds: number) {
   return `${(timeInSeconds / 60).toFixed(1)} minutes`;
 }
 
-type FormattableFee = Pick<TokenData, "symbol" | "decimals" | "address">;
-export function formatFees(
-  tokens: FormattableFee[],
-  costs: Map<string, string | bigint>,
-  network: ChainData,
-) {
-  if (tokens.length === 0) return "";
-  let formattedFees = formatTokenValue(
-    tokens[0],
-    costs.get(tokens[0].symbol) || "0",
-    network,
-  );
-  for (const token of tokens.slice(1)) {
-    formattedFees += ` + ${formatTokenValue(token, costs.get(token.symbol) || "0", network)}`;
-  }
-  return formattedFees;
-}
-
 type FormattableToken = Pick<
   TokenInformation,
   "usdPrice" | "symbol" | "address" | "decimals"
 >;
-export function formatTotalAmount(
+export const USD_DISPLAY_DECIMALS = 2;
+export function costsToUsd(
   tokens: FormattableToken[],
   costs: Map<string, string | bigint>,
-  network: ChainData,
 ) {
-  const fees = formatFees(tokens, costs, network);
   let totalUsd = 0;
   for (const token of tokens) {
     totalUsd +=
@@ -47,7 +28,10 @@ export function formatTotalAmount(
         formatUnits(BigInt(costs.get(token.symbol) || 0), token.decimals),
       ) * token.usdPrice;
   }
-  return `$${totalUsd.toFixed(2)} (${fees})`;
+  return parseUnits(
+    totalUsd.toFixed(USD_DISPLAY_DECIMALS),
+    USD_DISPLAY_DECIMALS,
+  );
 }
 
 function formatAmount(value: string | bigint, tokenData: { decimals: number }) {
