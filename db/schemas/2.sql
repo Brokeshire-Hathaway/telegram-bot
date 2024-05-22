@@ -27,7 +27,6 @@ CREATE TABLE "transaction" (
   id SERIAL PRIMARY KEY,
   identifier uuid UNIQUE NOT NULL DEFAULT gen_random_uuid(),
   "type" TransactionType NOT NULL,
-  information jsonb NOT NULL,
   fees INT NOT NULL,
   total INT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -38,8 +37,10 @@ CREATE TABLE route (
   transaction_id INT NOT NULL REFERENCES transaction(id),
   amount INT NOT NULL,
   token VARCHAR NOT NULL,
+  token_address VARCHAR(42) NOT NULL,
   chain VARCHAR NOT NULL,
-  "address" VARCHAR NOT NULL,
+  chain_id VARCHAR NOT NULL,
+  "address" VARCHAR(42) NOT NULL,
   "order" INT NOT NULL
 );
 CREATE UNIQUE INDEX route_idx ON route (
