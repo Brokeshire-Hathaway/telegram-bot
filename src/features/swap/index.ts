@@ -59,7 +59,15 @@ router.post("/preview", async (req: Request, res: Response) => {
 
   // Transform data to pass to squid router
   const fromNetwork = getNetworkInformation(body.sender.network);
+  if (!fromNetwork)
+    return res
+      .status(500)
+      .json({ success: false, message: "Network not supported" });
   const toNetwork = getNetworkInformation(body.to.network);
+  if (!toNetwork)
+    return res
+      .status(500)
+      .json({ success: false, message: "Network not supported" });
   const fromToken = await getTokenInformation(fromNetwork.chainId, body.token);
   if (!fromToken)
     return res
