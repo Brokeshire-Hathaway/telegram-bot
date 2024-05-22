@@ -1,12 +1,11 @@
 import { arbitrum, sepolia } from "viem/chains";
 import { getSmartAccount } from ".";
-import { sql } from "slonik";
 import z from "zod";
 import { getSendTransaction } from "../send/smartContract";
 import { NATIVE_TOKEN } from "../../common/squidDB";
 import { parseEther } from "viem";
 import { ENVIRONMENT } from "../../common/settings";
-import { getPool } from "../../common/database";
+import { getPool, sql } from "../../common/database";
 
 const FUNDING_CHAIN = ENVIRONMENT.IS_TESTNET ? sepolia : arbitrum;
 const FUNDING_TOKEN = ENVIRONMENT.IS_TESTNET ? NATIVE_TOKEN : NATIVE_TOKEN;
@@ -47,8 +46,8 @@ export async function fundWallet(
 
   // Mark it as used and proceed to redeem
   await dbPool.query(
-    sql.type(
-      z.object({}),
+    sql.typeAlias(
+      "void",
     )`UPDATE fund_code SET used_by = ${username} WHERE code = ${code}`,
   );
 
