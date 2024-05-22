@@ -1,5 +1,9 @@
 import express, { Request, Response } from "express";
-import { getAllChains, getViemChain } from "../../common/squidDB.js";
+import {
+  getAllChains,
+  getTokensDecimals,
+  getViemChain,
+} from "../../common/squidDB.js";
 import { getPool, sql } from "../../common/database.js";
 import { Route, Transaction } from "./common.js";
 import z from "zod";
@@ -25,6 +29,8 @@ const TransactionPreview = Transaction.pick({
       token: true,
       address: true,
       chain: true,
+      chain_id: true,
+      token_address: true,
     }),
   ),
 });
@@ -41,8 +47,10 @@ router.get("/transaction/:uuid", async (req: Request, res: Response) => {
           json_build_object(
             'amount', amount,
             'token', token,
+            'token_address', token_address,
             'address', address,
-            'chain', chain
+            'chain', chain,
+            'chain_id', chain_id
           ) as route
         FROM "transaction"
         LEFT JOIN route ON route.transaction_id = "transaction".id
@@ -63,6 +71,15 @@ router.get("/transaction/:uuid", async (req: Request, res: Response) => {
       ...transaction,
       fees: formatUnits(transaction.fees, USD_DISPLAY_DECIMALS),
       total: formatUnits(transaction.total, USD_DISPLAY_DECIMALS),
+      routes: transaction.routes.map((v) => ({
+        amount: formatUnits(
+          v.amount,
+          getTokensDecimals(v.chain_id, v.token_address),
+        ),
+        token: v.token,
+        address: v.address,
+        chain: v.chain,
+      })),
     });
   } catch (error) {
     console.error(error);

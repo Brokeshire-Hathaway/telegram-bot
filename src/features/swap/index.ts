@@ -103,7 +103,7 @@ router.post("/preview", async (req: Request, res: Response) => {
       [
         {
           amount: BigInt(route.estimate.fromAmount),
-          token: fromToken.name,
+          token: fromToken.symbol,
           token_address: fromToken.address as `0x${string}`,
           chain: fromNetwork.networkName,
           chain_id: fromNetwork.chainId.toString(),
@@ -111,7 +111,7 @@ router.post("/preview", async (req: Request, res: Response) => {
         },
         {
           amount: BigInt(route.estimate.toAmount),
-          token: toToken.name,
+          token: toToken.symbol,
           token_address: toToken.address as `0x${string}`,
           chain: toNetwork.networkName,
           chain_id: toNetwork.chainId.toString(),

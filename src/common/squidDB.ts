@@ -39,6 +39,14 @@ export function getTokensOfChain(network: ChainData) {
   return squid.tokens.filter((v) => v.chainId === network.chainId);
 }
 
+export function getTokensDecimals(chainId: string, tokenAddress: string) {
+  const token = squid.tokens.find(
+    (v) => v.chainId.toString() === chainId && v.address === tokenAddress,
+  );
+  if (!token) return 0;
+  return token.decimals;
+}
+
 function createFUSE() {
   const chains = getAllChains();
   if (chains.length === 0) return;
