@@ -7,15 +7,15 @@ CREATE TABLE "transaction" (
   id SERIAL PRIMARY KEY,
   identifier uuid UNIQUE NOT NULL DEFAULT gen_random_uuid(),
   "type" TransactionType NOT NULL,
-  fees INT NOT NULL,
-  total INT NOT NULL,
+  fees BIGINT NOT NULL,
+  total BIGINT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE route (
   id SERIAL PRIMARY KEY,
   transaction_id INT NOT NULL REFERENCES transaction(id),
-  amount INT NOT NULL,
+  amount BIGINT NOT NULL,
   token VARCHAR NOT NULL,
   token_address VARCHAR(42) NOT NULL,
   chain VARCHAR NOT NULL,
