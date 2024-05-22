@@ -4,6 +4,7 @@ import { getPool, sql } from "../../common/database.js";
 import { Route, Transaction } from "./common.js";
 import z from "zod";
 import { formatUnits } from "viem";
+import { USD_DISPLAY_DECIMALS } from "../../common/formatters.js";
 
 // Create the router
 const router = express.Router();
@@ -14,7 +15,6 @@ router.get("/chains", async (req: Request, res: Response) => {
 });
 
 // Get unconsolidated route preview
-const USD_DECIMALS = 2;
 const TransactionPreview = Transaction.pick({
   total: true,
   fees: true,
@@ -57,8 +57,8 @@ router.get("/transaction/:uuid", async (req: Request, res: Response) => {
   `);
     return res.json({
       ...transaction,
-      fees: formatUnits(BigInt(transaction.fees), USD_DECIMALS),
-      total: formatUnits(BigInt(transaction.total), USD_DECIMALS),
+      fees: formatUnits(transaction.fees, USD_DISPLAY_DECIMALS),
+      total: formatUnits(transaction.total, USD_DISPLAY_DECIMALS),
     });
   } catch (error) {
     console.error(error);
