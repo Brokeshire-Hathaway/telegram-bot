@@ -18,6 +18,8 @@ CREATE TABLE route (
   transaction_id INT NOT NULL REFERENCES transaction(id),
   amount INT NOT NULL,
   token VARCHAR NOT NULL,
+  chain VARCHAR NOT NULL,
+  "address" VARCHAR NOT NULL,
   "order" INT NOT NULL
 );
 CREATE UNIQUE INDEX route_idx ON route (

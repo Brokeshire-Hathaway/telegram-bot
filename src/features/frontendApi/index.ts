@@ -23,6 +23,8 @@ const TransactionPreview = Transaction.pick({
     Route.pick({
       amount: true,
       token: true,
+      address: true,
+      chain: true,
     }),
   ),
 });
@@ -38,7 +40,9 @@ router.get("/transaction/:uuid", async (req: Request, res: Response) => {
           "route".id as route_id,
           json_build_object(
             'amount', amount,
-            'token', token
+            'token', token,
+            'address', address,
+            'chain', chain
           ) as route
         FROM "transaction"
         LEFT JOIN route ON route.transaction_id = "transaction".id
