@@ -58,7 +58,9 @@ export function getNetworkInformation(networkName: string) {
   if (!fuse) return undefined;
 
   // Find minimum value by reducing array
-  return fuse.search(networkName)[0].item;
+  const searchNetwork = fuse.search(networkName);
+  if (searchNetwork.length === 0) return undefined;
+  return searchNetwork[0].item;
 }
 
 export const address = z.custom<`0x${string}`>((val) => {
