@@ -35,14 +35,25 @@ export function getAllChains() {
   return squid.chains.filter((v) => v.chainType === "evm" && v.chainId !== 5);
 }
 
+export function getChainByChainId(chainId: string | number) {
+  return squid.chains.find((v) => v.chainId.toString() === chainId.toString());
+}
+
 export function getTokensOfChain(network: ChainData) {
   return squid.tokens.filter((v) => v.chainId === network.chainId);
 }
 
-export function getTokensDecimals(chainId: string, tokenAddress: string) {
-  const token = squid.tokens.find(
+export function getTokenByAddresAndChainId(
+  chainId: string,
+  tokenAddress: string,
+) {
+  return squid.tokens.find(
     (v) => v.chainId.toString() === chainId && v.address === tokenAddress,
   );
+}
+
+export function getTokensDecimals(chainId: string, tokenAddress: string) {
+  const token = getTokenByAddresAndChainId(chainId, tokenAddress);
   if (!token) return 0;
   return token.decimals;
 }
