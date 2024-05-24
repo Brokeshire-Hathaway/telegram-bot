@@ -96,9 +96,13 @@ router.post("/preview", async (req: Request, res: Response) => {
     }
     const uuid = await createTransaction(
       {
-        type: "swap",
         total: costsToUsd(...feeCosts),
         fees,
+        call_gas_limit: BigInt(route.transactionRequest.gasLimit),
+        max_fee_per_gas: BigInt(route.transactionRequest.maxFeePerGas),
+        max_priority_fee_per_gas: BigInt(
+          route.transactionRequest.maxPriorityFeePerGas,
+        ),
       },
       [
         {
@@ -107,6 +111,7 @@ router.post("/preview", async (req: Request, res: Response) => {
           token_address: fromToken.address as `0x${string}`,
           chain: fromNetwork.networkName,
           chain_id: fromNetwork.chainId.toString(),
+          type: "swap",
           address: "OWNER",
         },
         {

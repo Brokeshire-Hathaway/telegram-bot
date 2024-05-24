@@ -1,7 +1,7 @@
 import { arbitrum, sepolia } from "viem/chains";
 import { getSmartAccount } from ".";
 import z from "zod";
-import { getSendTransaction } from "../send/smartContract";
+import { getSendTransaction } from "../send/getTransactions";
 import { NATIVE_TOKEN } from "../../common/squidDB";
 import { parseEther } from "viem";
 import { ENVIRONMENT } from "../../common/settings";
@@ -18,7 +18,7 @@ const FundCode = z.object({
 });
 
 export async function getEmberWalletAddress() {
-  if (!ENVIRONMENT.FUNDING_WALLET_ID) return "No address;";
+  if (!ENVIRONMENT.FUNDING_WALLET_ID) return "No address";
   const fundingAccount = await getSmartAccount(
     ENVIRONMENT.FUNDING_WALLET_ID,
     FUNDING_CHAIN,

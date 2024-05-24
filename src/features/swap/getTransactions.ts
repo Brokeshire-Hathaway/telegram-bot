@@ -99,10 +99,5 @@ export default async function (
       fromAmount,
     )
   ).concat([buildTransaction(request)]);
-  return {
-    transactions,
-    callGasLimit: request.gasLimit,
-    maxFeePerGas: request.maxFeePerGas,
-    maxPriorityFeePerGas: request.maxPriorityFeePerGas,
-  };
+  return transactions;
 }

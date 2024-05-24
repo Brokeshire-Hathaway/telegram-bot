@@ -3,6 +3,8 @@ import { getPool, sql } from "../../common/database";
 import { address } from "../../common/squidDB";
 
 // All types for the API
+const TransactionType = z.union([z.literal("swap"), z.literal("send")]);
+
 export const Route = z.object({
   id: z.number().int(),
   transaction_id: z.number().int(),
@@ -13,6 +15,7 @@ export const Route = z.object({
   chain_id: z.string(),
   address: z.union([z.literal("OWNER"), address]),
   order: z.number().int(),
+  type: TransactionType.nullish(),
 });
 const RouteCreate = Route.omit({
   id: true,
@@ -21,14 +24,14 @@ const RouteCreate = Route.omit({
 });
 type RouteCreate = z.infer<typeof RouteCreate>;
 
-const TransactionType = z.union([z.literal("swap"), z.literal("send")]);
-
 export const Transaction = z.object({
   id: z.number().int(),
   identifier: z.string().uuid(),
-  type: TransactionType,
   fees: z.bigint().positive(),
   total: z.bigint().positive(),
+  call_gas_limit: z.bigint().nullish(),
+  max_fee_per_gas: z.bigint().nullish(),
+  max_priority_fee_per_gas: z.bigint().nullish(),
   created_at: z.date(),
 });
 const TransactionCreate = Transaction.omit({
@@ -48,11 +51,19 @@ export async function createTransaction(
     const tx = await dbTransaction.one(sql.type(
       Transaction.pick({ identifier: true, id: true }),
     )`
-        INSERT INTO transaction ("type", fees, total)
+        INSERT INTO transaction (
+          fees,
+          total,
+          call_gas_limit,
+          max_fee_per_gas,
+          max_priority_fee_per_gas
+        )
         VALUES (
-            ${transaction.type},
             ${transaction.fees},
-            ${transaction.total}
+            ${transaction.total},
+            ${transaction.call_gas_limit || null},
+            ${transaction.max_fee_per_gas || null},
+            ${transaction.max_priority_fee_per_gas || null}
         )
         RETURNING id
     `);
@@ -65,7 +76,8 @@ export async function createTransaction(
           chain,
           address,
           token_address,
-          chain_id
+          chain_id,
+          "type"
         )
         SELECT *
         FROM ${sql.unnest(
@@ -78,6 +90,7 @@ export async function createTransaction(
             v.address,
             v.token_address,
             v.chain_id,
+            v.type || null,
           ]),
           [
             "int8",
@@ -88,6 +101,7 @@ export async function createTransaction(
             "varchar",
             "varchar",
             "varchar",
+            "transactiontype",
           ],
         )}
     `);
