@@ -87,11 +87,15 @@ router.post("/prepare", async (req: Request, res: Response) => {
         .status(500)
         .json({ success: false, message: "Native token not found" });
 
+    const gasFeeUsd = costsToUsd(
+      [nativeToken],
+      new Map([[nativeToken.symbol, gasFee]]),
+    );
     const tokenCosts = getCosts(amount, token, gasFee, nativeToken);
     const uuid = await createTransaction(
       {
         total: costsToUsd(...tokenCosts),
-        fees: gasFee,
+        fees: gasFeeUsd,
         call_gas_limit: userOp.callGasLimit
           ? BigInt(userOp.callGasLimit)
           : undefined,
