@@ -65,7 +65,7 @@ export async function createTransaction(
             ${transaction.max_fee_per_gas || null},
             ${transaction.max_priority_fee_per_gas || null}
         )
-        RETURNING id
+        RETURNING id, identifier
     `);
     await dbTransaction.query(sql.typeAlias("void")`
         INSERT INTO route (
