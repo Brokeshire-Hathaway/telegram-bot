@@ -9,22 +9,22 @@ const SENSITIVE_KEYS = [
   "SECRET_SALT",
   "FUNDING_WALLET_ID",
 ];
-const SUFFIX_SIZE = 5;
+const FILE_SUFFIX = "_FILE";
 function preProcessEnv() {
   const environment = {} as Record<string, unknown>;
   for (const [key, value] of Object.entries(process.env)) {
     if (
-      !key.endsWith("_FILE") ||
-      !SENSITIVE_KEYS.includes(key.substring(0, key.length - SUFFIX_SIZE)) ||
+      !key.endsWith(FILE_SUFFIX) ||
+      !SENSITIVE_KEYS.includes(
+        key.substring(0, key.length - FILE_SUFFIX.length),
+      ) ||
       !value
     ) {
       environment[key] = value;
       continue;
     }
-    environment[key.substring(0, key.length - SUFFIX_SIZE)] = fs.readFileSync(
-      value,
-      "utf8",
-    );
+    environment[key.substring(0, key.length - FILE_SUFFIX.length)] =
+      fs.readFileSync(value, "utf8");
   }
   return environment;
 }
@@ -46,6 +46,7 @@ const Settings = z.object({
   DB_HOST: z.string(),
   DB_PORT: z.coerce.number().int().default(5432),
   FUNDING_WALLET_ID: z.string().optional(),
+  FRONTEND_URL: z.string(),
 });
 
 export const ENVIRONMENT = Settings.parse(preProcessEnv());

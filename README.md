@@ -34,6 +34,7 @@ DB_NAME="db"
 DB_HOST="localhost"
 DB_PORT=5432
 FUNDING_WALLET_ID="random_id_for_ember_wallet"
+FRONTEND_URL="http://localhost:3001"
 ```
 
 Lastly, run:
