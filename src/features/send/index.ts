@@ -16,6 +16,7 @@ import { createTransaction } from "../frontendApi/common.js";
 import { BigNumberish, UserOperationStruct } from "@biconomy/account";
 import { ChainData } from "@0xsquid/sdk";
 import { findUsdPrice } from "../../common/coingeckoDB.js";
+import { ENVIRONMENT } from "../../common/settings.js";
 
 // Create the router
 const router = express.Router();
@@ -123,7 +124,8 @@ router.post("/prepare", async (req: Request, res: Response) => {
     );
 
     return res.json({
-      uuid,
+      success: true,
+      url: `${ENVIRONMENT.FRONTEND_URL}/${uuid}`,
     });
   } catch (error) {
     console.error(error);
