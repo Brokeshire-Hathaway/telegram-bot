@@ -12,6 +12,7 @@ import z from "zod";
 import { formatUnits } from "viem";
 import { USD_DISPLAY_DECIMALS } from "../../common/formatters.js";
 import getSwapTransactions from "../swap/getTransactions.js";
+import getSendTransactions from "../send/getTransactions.js";
 
 // Create the router
 const router = express.Router();
@@ -25,10 +26,13 @@ router.get("/chains", async (req: Request, res: Response) => {
 const TransactionPreview = Transaction.pick({
   total: true,
   fees: true,
-  type: true,
+  call_gas_limit: true,
+  max_fee_per_gas: true,
+  max_priority_fee_per_gas: true,
 }).extend({
   routes: z.array(
     Route.pick({
+      type: true,
       amount: true,
       token: true,
       address: true,
@@ -48,15 +52,18 @@ router.get("/transaction/:uuid", async (req: Request, res: Response) => {
           "transaction".id,
           total,
           fees,
-          "type",
           "route".id as route_id,
+          call_gas_limit,
+          max_fee_per_gas,
+          max_priority_fee_per_gas,
           json_build_object(
             'amount', amount,
             'token', token,
             'token_address', token_address,
             'address', address,
             'chain', chain,
-            'chain_id', chain_id
+            'chain_id', chain_id,
+            'type', "type"
           ) as route
         FROM "transaction"
         LEFT JOIN route ON route.transaction_id = "transaction".id
@@ -66,7 +73,9 @@ router.get("/transaction/:uuid", async (req: Request, res: Response) => {
       SELECT
         total,
         fees,
-        type,
+        call_gas_limit,
+        max_fee_per_gas,
+        max_priority_fee_per_gas,
         COALESCE(
           json_agg(route) FILTER (WHERE route_id IS NOT NULL) over (partition by id),
           '[]'
@@ -95,6 +104,7 @@ router.get("/transaction/:uuid", async (req: Request, res: Response) => {
           v.amount,
           getTokensDecimals(v.chain_id, v.token_address),
         ),
+        type: v.type,
         token: v.token,
         address: v.address,
         chain: v.chain,
@@ -109,19 +119,20 @@ router.get("/transaction/:uuid", async (req: Request, res: Response) => {
 
 type ConsolidatedTransaction = {
   transactions: DataTransaction[];
-  maxFeePerGas?: string;
-  callGasLimit?: string;
-  maxPriorityFeePerGas?: string;
+  max_fee_per_gas?: string;
+  call_gas_limit?: string;
+  max_priority_fee_per_gas?: string;
 };
 async function getTransactionsAndGasFee(
   transactionPreview: TransactionPreview,
   accountAddress: `0x${string}`,
 ): Promise<ConsolidatedTransaction> {
-  switch (transactionPreview.type) {
+  if (transactionPreview.routes.length < 2)
+    throw new Error("Inconsistent route, try again later.");
+  let transactions;
+  switch (transactionPreview.routes[0].type) {
     case "swap":
-      if (transactionPreview.routes.length < 2)
-        throw new Error("Inconsistent route, try again later.");
-      return await getSwapTransactions(
+      transactions = await getSwapTransactions(
         accountAddress,
         transactionPreview.routes[0].chain_id,
         transactionPreview.routes[0].token_address,
@@ -129,9 +140,29 @@ async function getTransactionsAndGasFee(
         transactionPreview.routes[1].token_address,
         transactionPreview.routes[0].amount,
       );
+      break;
 
-    case "send":
-      throw new Error("Route not implemented");
+    case "send": {
+      const recipientAddress = await address.safeParseAsync(
+        transactionPreview.routes[1].address,
+      );
+      if (!recipientAddress.success)
+        throw new Error("Address belongs to owner");
+      transactions = getSendTransactions(
+        transactionPreview.routes[0].token_address,
+        recipientAddress.data,
+        transactionPreview.routes[0].amount,
+      );
+      break;
+    }
   }
+  if (!transactions) throw new Error("Transactions not found");
+  return {
+    transactions,
+    call_gas_limit: transactionPreview.call_gas_limit?.toString(),
+    max_fee_per_gas: transactionPreview.max_fee_per_gas?.toString(),
+    max_priority_fee_per_gas:
+      transactionPreview.max_priority_fee_per_gas?.toString(),
+  };
 }
 export default router;

@@ -5,18 +5,17 @@ import {
   getTokenInformation,
   address,
   NATIVE_TOKEN,
+  getViemClient,
+  TokenInformation,
 } from "../../common/squidDB.js";
-import {
-  getCosts,
-  getGasFee,
-  getSendTransaction,
-  getTokenInfoOfAddress,
-  SendToken,
-} from "./smartContract.js";
+import { getSendTransaction } from "./getTransactions.js";
 import { getSmartAccountFromChainData } from "../wallet/index.js";
 import { costsToUsd } from "../../common/formatters.js";
-import { parseUnits } from "viem";
+import { erc20Abi, getContract, parseUnits } from "viem";
 import { createTransaction } from "../frontendApi/common.js";
+import { BigNumberish, UserOperationStruct } from "@biconomy/account";
+import { ChainData } from "@0xsquid/sdk";
+import { findUsdPrice } from "../../common/coingeckoDB.js";
 
 // Create the router
 const router = express.Router();
@@ -67,7 +66,7 @@ router.post("/prepare", async (req: Request, res: Response) => {
 
   const amount = parseUnits(body.amount, token.decimals);
   const contract = getSendTransaction(
-    token.address,
+    token.address as `0x${string}`,
     body.recipient_address,
     amount,
   );
@@ -90,9 +89,17 @@ router.post("/prepare", async (req: Request, res: Response) => {
     const tokenCosts = getCosts(amount, token, gasFee, nativeToken);
     const uuid = await createTransaction(
       {
-        type: "send",
         total: costsToUsd(...tokenCosts),
         fees: gasFee,
+        call_gas_limit: userOp.callGasLimit
+          ? BigInt(userOp.callGasLimit)
+          : undefined,
+        max_fee_per_gas: userOp.maxFeePerGas
+          ? BigInt(userOp.maxFeePerGas)
+          : undefined,
+        max_priority_fee_per_gas: userOp.maxPriorityFeePerGas
+          ? BigInt(userOp.maxPriorityFeePerGas)
+          : undefined,
       },
       [
         {
@@ -101,6 +108,7 @@ router.post("/prepare", async (req: Request, res: Response) => {
           token_address: token.address as `0x${string}`,
           chain: network.networkName,
           chain_id: network.chainId.toString(),
+          type: "send",
           address: "OWNER",
         },
         {
@@ -124,5 +132,69 @@ router.post("/prepare", async (req: Request, res: Response) => {
       .json({ success: false, message: `Error creating user transaction` });
   }
 });
+
+function bigNumberishToBigInt(
+  number: BigNumberish | undefined,
+  fallback: number = 0,
+): bigint {
+  return number ? BigInt(number) : BigInt(fallback);
+}
+
+function getGasFee(userOp: Partial<UserOperationStruct>) {
+  return (
+    (bigNumberishToBigInt(userOp.verificationGasLimit) +
+      bigNumberishToBigInt(userOp.callGasLimit) +
+      bigNumberishToBigInt(userOp.preVerificationGas)) *
+    bigNumberishToBigInt(userOp.maxFeePerGas, 1)
+  );
+}
+
+async function getTokenInfoOfAddress(
+  address: `0x${string}`,
+  network: ChainData,
+) {
+  const publicClient = getViemClient(network);
+  const contract = getContract({
+    address: address,
+    abi: erc20Abi,
+    client: publicClient,
+  });
+  const decimals = await contract.read.decimals();
+  const symbol = await contract.read.symbol();
+  const name = await contract.read.name();
+  return await findUsdPrice(
+    {
+      decimals,
+      symbol,
+      address,
+      name,
+    },
+    "name",
+  );
+}
+
+export type SendToken = Pick<
+  TokenInformation,
+  "address" | "usdPrice" | "decimals" | "symbol"
+>;
+export function getCosts(
+  amount: bigint | string,
+  token: SendToken,
+  gas: bigint | string,
+  nativeToken: SendToken,
+): [SendToken[], Map<string, bigint>] {
+  const costs = new Map<string, bigint>();
+  const value = BigInt(amount);
+  const gasValue = BigInt(gas);
+  const tokens = [nativeToken];
+  if (token.address === NATIVE_TOKEN) {
+    costs.set(token.symbol, value + gasValue);
+    return [tokens, costs];
+  }
+  costs.set(token.symbol, value);
+  costs.set(nativeToken.symbol, gasValue);
+  tokens.push(token);
+  return [tokens, costs];
+}
 
 export default router;
