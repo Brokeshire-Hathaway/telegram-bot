@@ -9,8 +9,7 @@ import {
   getTokenInformation,
   routeFeesToTokenMap,
 } from "../../common/squidDB.js";
-import { createTransaction } from "../frontendApi/common.js";
-import { ENVIRONMENT } from "../../common/settings.js";
+import { createTransaction, getUrl } from "../frontendApi/common.js";
 
 // Create the router
 const router = express.Router();
@@ -127,7 +126,7 @@ router.post("/preview", async (req: Request, res: Response) => {
     );
     return res.json({
       success: true,
-      url: `${ENVIRONMENT.FRONTEND_URL}/${uuid}`,
+      url: getUrl(uuid),
     });
   } catch (err) {
     console.error(err);

@@ -1,6 +1,7 @@
 import z from "zod";
 import { getPool, sql } from "../../common/database";
 import { address } from "../../common/squidDB";
+import { ENVIRONMENT } from "../../common/settings";
 
 // All types for the API
 const TransactionType = z.union([z.literal("swap"), z.literal("send")]);
@@ -107,4 +108,8 @@ export async function createTransaction(
     `);
     return tx.identifier;
   });
+}
+
+export function getUrl(identifier: string) {
+  return `${ENVIRONMENT.FRONTEND_URL}/tx/${identifier}`;
 }

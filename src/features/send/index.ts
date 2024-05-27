@@ -12,11 +12,10 @@ import { getSendTransaction } from "./getTransactions.js";
 import { getSmartAccountFromChainData } from "../wallet/index.js";
 import { costsToUsd } from "../../common/formatters.js";
 import { erc20Abi, getContract, parseUnits } from "viem";
-import { createTransaction } from "../frontendApi/common.js";
+import { createTransaction, getUrl } from "../frontendApi/common.js";
 import { BigNumberish, UserOperationStruct } from "@biconomy/account";
 import { ChainData } from "@0xsquid/sdk";
 import { findUsdPrice } from "../../common/coingeckoDB.js";
-import { ENVIRONMENT } from "../../common/settings.js";
 
 // Create the router
 const router = express.Router();
@@ -129,7 +128,7 @@ router.post("/prepare", async (req: Request, res: Response) => {
 
     return res.json({
       success: true,
-      url: `${ENVIRONMENT.FRONTEND_URL}/${uuid}`,
+      url: getUrl(uuid),
     });
   } catch (error) {
     console.error(error);
