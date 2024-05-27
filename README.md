@@ -4,11 +4,11 @@
 
 To run the project, you need to have the package manager:
 
-- [yarn](https://classic.yarnpkg.com/lang/en/docs/install)
+- [pnpm](https://pnpm.io/)
 - [docker](https://www.docker.com/)
 - [docker-compose](https://docs.docker.com/compose/)
 
-After installing `yarn`, you need to run the databases locally. The database used for
+After installing `pnpm`, you need to run the databases locally. The database used for
 this service is `postgres`. Run the following command in the root of the
 repository:
 
@@ -40,7 +40,8 @@ FRONTEND_URL="http://localhost:3001"
 Lastly, run:
 
 ```sh
-yarn dev
+pnpm i
+pnpm dev
 ```
 
 If it was sucessfull, you should see in your console something like:
@@ -62,7 +63,7 @@ that `eslint` gives with the according configuration setup in the repository. To
 all the code style errors and get some corrections from eslint do:
 
 ```bash
-yarn lint:fix
+pnpm lint:fix
 ```
 
 Additionally, the `.vscode` folder has been setup so the formatter is run on each file

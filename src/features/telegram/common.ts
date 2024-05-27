@@ -11,10 +11,12 @@ export async function sendResponseFromAgentTeam(
   endpoint: string,
 ) {
   let messageId: number | undefined;
+  let text: string | undefined;
 
   const onActivity = async (messageText: string) => {
     if (!messageId) {
       try {
+        text = messageText;
         const message = await sendFormattedMessage(ctx, messageText, true);
         if (!message) return;
         messageId = message.message_id;
@@ -26,6 +28,7 @@ export async function sendResponseFromAgentTeam(
     }
 
     try {
+      if (messageText === text) return;
       editFormattedMessage(ctx, messageText, messageId, true);
     } catch (error) {
       console.warn(`Error editing message: ${error}`);

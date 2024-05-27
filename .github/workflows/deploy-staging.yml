@@ -1,8 +1,6 @@
 name: Server Deployment (Staging)
 
-on:
-  push:
-    branches: [main]
+on: workflow_dispatch
 
 jobs:
   build_and_push:
@@ -32,7 +30,7 @@ jobs:
 
       - name: Deploy containers in server
         env:
-          DOCKER_HOST: ssh://${{ secrets.SSH_USERNAME }}@${{ vars.SSH_HOST }}
+          DOCKER_HOST: ssh://${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SECRET_SALT: ${{ secrets.SECRET_SALT }}
           TELEGRAM_BOT_USERNAME: ${{ vars.TELEGRAM_BOT_USERNAME }}
@@ -43,6 +41,7 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_NAME: ${{ secrets.DB_NAME }}
           FUNDING_WALLET_ID: ${{ secrets.FUNDING_WALLET_ID }}
+          DB_PORT: ${{ vars.DB_PORT }}
           ENVIRONMENT: staging
         run: |
           docker compose -f compose.yaml -p ember-engine-stage up -d --build
