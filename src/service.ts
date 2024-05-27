@@ -5,11 +5,13 @@ import swapRouter from "./features/swap";
 import frontendApiRouter from "./features/frontendApi";
 import { initSquid } from "./common/squidDB";
 import { ENVIRONMENT } from "./common/settings";
+import cors from "cors";
 
 // Create express app
 const app = express();
 const HOST = "0.0.0.0";
 app.use(bodyParser.json());
+app.use(cors());
 
 // Endpoints router
 app.use((req, res, next) => {
