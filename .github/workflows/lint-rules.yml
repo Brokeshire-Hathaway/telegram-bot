@@ -1,0 +1,28 @@
+name: Lint Rules Enforcement
+
+on:
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  check_linting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Check if code standards are enforced
+        run: |
+          pnpm i --frozen-lockfile
+          pnpm lint:check
