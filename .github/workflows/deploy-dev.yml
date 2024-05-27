@@ -50,6 +50,7 @@ jobs:
           DB_NAME: ${{ secrets.DB_NAME }}
           FUNDING_WALLET_ID: ${{ secrets.FUNDING_WALLET_ID }}
           DB_PORT: ${{ vars.DB_PORT }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
           ENVIRONMENT: development
         run: |
           docker compose -f compose.yaml -p ember-engine-$ENVIRONMENT up -d --build
