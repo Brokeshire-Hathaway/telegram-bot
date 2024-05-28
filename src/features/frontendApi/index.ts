@@ -108,6 +108,7 @@ router.get("/transaction/:uuid", async (req: Request, res: Response) => {
         token: v.token,
         address: v.address,
         chain: v.chain,
+        chain_id: v.chain_id,
       })),
       transaction: transactionInformation,
     });
