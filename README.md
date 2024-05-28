@@ -13,7 +13,7 @@ this service is `postgres`. Run the following command in the root of the
 repository:
 
 ```bash
-docker compose -f compose.local.yml up -d
+docker compose -f compose.local.yaml up -d
 ```
 
 Then, create a test bot by writing to [BotFather](https://t.me/BotFather) and
