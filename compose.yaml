@@ -1,5 +1,6 @@
 services:
-  firepot_chatgpt_app:
+  ember_engine:
+    name: ember-engine-${ENVIRONMENT}
     restart: always
     build: .
     environment:
