@@ -1,6 +1,6 @@
 services:
   ember_engine:
-    name: ember-engine-${ENVIRONMENT}
+    container_name: ember-engine-${ENVIRONMENT}
     restart: always
     build: .
     environment:
