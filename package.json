@@ -6,7 +6,8 @@
   "license": "MIT",
   "type": "commonjs",
   "dependencies": {
-    "@0xsquid/sdk": "^1.0.0",
+    "@0xsquid/sdk": "^2.8.0",
+    "@0xsquid/squid-types": "^0.1.75",
     "@biconomy/account": "^4.0.0",
     "@grammyjs/conversations": "^1.1.2",
     "@grammyjs/ratelimiter": "^1.2.0",

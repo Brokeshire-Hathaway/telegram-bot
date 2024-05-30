@@ -98,9 +98,9 @@ router.post("/preview", async (req: Request, res: Response) => {
       {
         total: costsToUsd(...feeCosts),
         fees,
-        call_gas_limit: BigInt(route.transactionRequest.gasLimit),
-        max_fee_per_gas: BigInt(route.transactionRequest.maxFeePerGas),
-        max_priority_fee_per_gas: BigInt(
+        call_gas_limit: toBigInt(route.transactionRequest.gasLimit),
+        max_fee_per_gas: toBigInt(route.transactionRequest.maxFeePerGas),
+        max_priority_fee_per_gas: toBigInt(
           route.transactionRequest.maxPriorityFeePerGas,
         ),
       },
@@ -135,5 +135,9 @@ router.post("/preview", async (req: Request, res: Response) => {
       .json({ success: false, message: "Failed to found route" });
   }
 });
+
+function toBigInt(number: string | number | bigint | undefined) {
+  return number ? BigInt(number) : undefined;
+}
 
 export default router;

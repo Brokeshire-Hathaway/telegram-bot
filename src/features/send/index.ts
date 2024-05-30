@@ -14,8 +14,8 @@ import { costsToUsd } from "../../common/formatters.js";
 import { erc20Abi, getContract, parseUnits } from "viem";
 import { createTransaction, getUrl } from "../frontendApi/common.js";
 import { BigNumberish, UserOperationStruct } from "@biconomy/account";
-import { ChainData } from "@0xsquid/sdk";
 import { findUsdPrice } from "../../common/coingeckoDB.js";
+import { ChainData } from "@0xsquid/squid-types";
 
 // Create the router
 const router = express.Router();
