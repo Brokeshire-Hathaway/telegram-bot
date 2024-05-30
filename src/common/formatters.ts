@@ -1,4 +1,4 @@
-import { ChainData, TokenData } from "@0xsquid/sdk";
+import { ChainData, Token } from "@0xsquid/squid-types";
 import { formatUnits, parseUnits } from "viem";
 import { TokenInformation } from "./squidDB";
 
@@ -38,7 +38,7 @@ function formatAmount(value: string | bigint, tokenData: { decimals: number }) {
   return formatUnits(BigInt(value), tokenData.decimals);
 }
 
-type FormattableValue = Pick<TokenData, "symbol" | "decimals" | "address">;
+type FormattableValue = Pick<Token, "symbol" | "decimals" | "address">;
 export function formatTokenValue(
   token: FormattableValue,
   cost: string | bigint,
