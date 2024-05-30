@@ -160,7 +160,10 @@ export async function getRoute(
   fromAddress: string,
   toAddress: string,
 ) {
-  const slippageConfig = { autoMode: slippage };
+  const squidBaseConfig = {
+    slippageConfig: { autoMode: slippage },
+    enableBoost: true,
+  } as Partial<CorrectedRouteRequest>;
   if (type === "swap") {
     const { route } = await squid.getRoute({
       fromAmount: amount,
@@ -170,7 +173,7 @@ export async function getRoute(
       toChain: toNetworkChainId,
       toToken: toTokenAddress,
       toAddress,
-      slippageConfig,
+      ...squidBaseConfig,
     } as CorrectedRouteRequest as unknown as RouteRequest);
     return route;
   }
@@ -183,7 +186,6 @@ export async function getRoute(
     toChain: fromNetworkChainId,
     toToken: toTokenAddress,
     toAddress,
-    slippageConfig,
   } as CorrectedRouteRequest as unknown as RouteRequest);
   const { route } = await squid.getRoute({
     fromAmount: estimatedRoute.estimate.toAmount,
@@ -193,7 +195,7 @@ export async function getRoute(
     toChain: toNetworkChainId,
     toToken: toTokenAddress,
     toAddress,
-    slippageConfig,
+    ...squidBaseConfig,
   } as CorrectedRouteRequest as unknown as RouteRequest);
   return route;
 }
