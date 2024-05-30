@@ -1,11 +1,4 @@
-import {
-  ChainData,
-  FeeCost,
-  GasCost,
-  RouteData,
-  Squid,
-  TokenData,
-} from "@0xsquid/sdk";
+import { Squid } from "@0xsquid/sdk";
 import Fuse from "fuse.js";
 import z from "zod";
 import { getSmartAccountFromChainData } from "../features/wallet/index.js";
@@ -19,24 +12,26 @@ import {
 } from "viem";
 import { ENVIRONMENT } from "./settings.js";
 import { addUsdPriceToToken, getCoingeckoToken } from "./coingeckoDB.js";
+import { ChainData, FeeCost, GasCost, Token } from "@0xsquid/squid-types";
 
 const squidBaseUrl = ENVIRONMENT.IS_TESTNET
-  ? "https://testnet.api.squidrouter.com"
-  : "https://api.squidrouter.com";
+  ? "https://testnet.v2.api.squidrouter.com"
+  : "https://v2.api.squidrouter.com";
 
 export const squid = new Squid({
   baseUrl: squidBaseUrl,
+  integratorId: ENVIRONMENT.SQUID_INTEGRATOR_ID,
 });
 
 export let FUSE: Fuse<ChainData> | undefined;
 export const NATIVE_TOKEN = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
 export function getAllChains() {
-  return squid.chains.filter((v) => v.chainType === "evm" && v.chainId !== 5);
+  return squid.chains.filter((v) => v.chainType === "evm" && v.chainId !== "5");
 }
 
 export function getChainByChainId(chainId: string | number) {
-  return squid.chains.find((v) => v.chainId.toString() === chainId.toString());
+  return squid.chains.find((v) => v.chainId === chainId.toString());
 }
 
 export function getTokensOfChain(network: ChainData) {
@@ -85,7 +80,7 @@ export function getNetworkInformation(networkName: string) {
 export const address = z.custom<`0x${string}`>((val) => {
   return typeof val === "string" ? /^0x[a-fA-F0-9]+$/.test(val) : false;
 });
-export type TokenInformation = TokenData & { usdPrice: number };
+export type TokenInformation = Token & { usdPrice: number };
 export async function getTokenInformation(
   chainId: string | number,
   tokenSearch: string,
@@ -95,7 +90,7 @@ export async function getTokenInformation(
     const token = squid.tokens.find(
       (v) => v.chainId === chainId && v.address === isAddress.data,
     );
-    if (!token) return undefined;
+    if (!token || !token.coingeckoId) return undefined;
     return addUsdPriceToToken(token, { id: token.coingeckoId });
   }
 
@@ -115,12 +110,12 @@ export async function getRoute(
   type: RouteType,
   amount: string,
   fromNetwork: ChainData,
-  fromToken: TokenData,
+  fromToken: Token,
   toNetwork: ChainData,
-  toToken: TokenData,
+  toToken: Token,
   slippage: number,
   identifier: string,
-): Promise<RouteData> {
+) {
   const account = await getSmartAccountFromChainData(identifier, fromNetwork);
   const receiverAccount = await getSmartAccountFromChainData(
     identifier,
@@ -136,7 +131,7 @@ export async function getRoute(
       toChain: toNetwork.chainId,
       toToken: toToken.address,
       toAddress: await receiverAccount.getAccountAddress(),
-      slippage: slippage,
+      slippage,
     });
     return route;
   }
@@ -150,7 +145,7 @@ export async function getRoute(
     toChain: fromNetwork.chainId,
     toToken: fromToken.address,
     toAddress: await account.getAccountAddress(),
-    slippage: slippage,
+    slippage,
   });
   const { route } = await squid.getRoute({
     fromAmount: estimatedRoute.estimate.toAmount,
@@ -160,19 +155,22 @@ export async function getRoute(
     toChain: toNetwork.chainId,
     toToken: toToken.address,
     toAddress: await receiverAccount.getAccountAddress(),
-    slippage: slippage,
+    slippage,
   });
   return route;
 }
 
-const ARBITRUM_CHAIN_ID = 42161;
+const ARBITRUM_CHAIN_ID = "42161";
 export function getViemChain(network: ChainData): Chain {
   const rpc =
     !ENVIRONMENT.ARBITRUM_RPC_URL || network.chainId !== ARBITRUM_CHAIN_ID
       ? network.rpc
       : ENVIRONMENT.ARBITRUM_RPC_URL;
+  if (network.chainType !== "evm")
+    throw Error("Only EVM chains are supported currently");
+
   return defineChain({
-    id: network.chainId as number,
+    id: parseInt(network.chainId),
     name: network.networkName,
     network: network.networkName,
     nativeCurrency: {
@@ -227,6 +225,7 @@ export async function routeFeesToTokenMap(
   addCost(costs, gasCosts);
   const tokens = [] as TokenInformation[];
   for (const token of tokenMap.values()) {
+    if (!token.coingeckoId) throw Error("Coingecko id is not set for token");
     const tokenInfo = await addUsdPriceToToken(token, {
       id: token.coingeckoId,
     });

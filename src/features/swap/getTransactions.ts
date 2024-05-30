@@ -1,4 +1,3 @@
-import { ChainData, TokenData, TransactionRequest } from "@0xsquid/sdk";
 import { Transaction } from "@biconomy/account";
 import { encodeFunctionData, getContract, erc20Abi } from "viem";
 import {
@@ -8,38 +7,37 @@ import {
   getViemClient,
   squid,
 } from "../../common/squidDB.js";
+import { ChainData, SquidData, Token } from "@0xsquid/squid-types";
 
 async function preSwapContracts(
-  fromToken: TokenData,
+  fromToken: Token,
   network: ChainData,
   accountAddress: `0x${string}`,
-  route: TransactionRequest,
+  route: SquidData,
   fromAmount: bigint,
 ): Promise<Transaction[]> {
   if (fromToken.address === NATIVE_TOKEN) return [];
 
   // Check current allowance
-  if (typeof network.chainId === "number") {
-    const publicClient = getViemClient(network);
-    const contract = getContract({
-      address: fromToken.address as `0x${string}`,
-      abi: erc20Abi,
-      client: publicClient,
-    });
-    const allowance = await contract.read.allowance([
-      accountAddress,
-      route.targetAddress as `0x${string}`,
-    ]);
-    if (fromAmount <= allowance) {
-      return [];
-    }
+  const publicClient = getViemClient(network);
+  const contract = getContract({
+    address: fromToken.address as `0x${string}`,
+    abi: erc20Abi,
+    client: publicClient,
+  });
+  const allowance = await contract.read.allowance([
+    accountAddress,
+    route.target as `0x${string}`,
+  ]);
+  if (fromAmount <= allowance) {
+    return [];
   }
 
   // If allowance is not enough, ask for max allowance
   const dataApprove = encodeFunctionData({
     abi: erc20Abi,
     functionName: "approve",
-    args: [route.targetAddress as `0x${string}`, fromAmount],
+    args: [route.target as `0x${string}`, fromAmount],
   });
   return [
     {
@@ -49,18 +47,12 @@ async function preSwapContracts(
   ];
 }
 
-function buildTransaction(route: TransactionRequest): Transaction {
-  let transaction: Transaction = {
-    to: route.targetAddress,
+function buildTransaction(route: SquidData): Transaction {
+  return {
+    to: route.target,
     data: route.data,
+    value: route.value,
   };
-  if (route.routeType !== "SEND") {
-    transaction = {
-      ...transaction,
-      value: route.value,
-    };
-  }
-  return transaction;
 }
 
 export default async function (
