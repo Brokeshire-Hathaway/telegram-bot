@@ -5,7 +5,7 @@ import { costsToUsd } from "../../common/formatters.js";
 import {
   RouteType,
   getNetworkInformation,
-  getRoute,
+  getRouteWithEmberAccount,
   getTokenInformation,
   routeFeesToTokenMap,
 } from "../../common/squidDB.js";
@@ -62,7 +62,7 @@ router.post("/preview", async (req: Request, res: Response) => {
 
   // Get route and store in memory
   try {
-    const route = await getRoute(
+    const route = await getRouteWithEmberAccount(
       body.type,
       body.amount,
       fromNetwork,
