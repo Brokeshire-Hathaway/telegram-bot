@@ -3,9 +3,9 @@ import { encodeFunctionData, getContract, erc20Abi } from "viem";
 import {
   NATIVE_TOKEN,
   getChainByChainId,
+  getRoute,
   getTokenByAddresAndChainId,
   getViemClient,
-  squid,
 } from "../../common/squidDB.js";
 import { ChainData, SquidData, Token } from "@0xsquid/squid-types";
 
@@ -63,16 +63,17 @@ export default async function (
   toTokenAddress: string,
   fromAmount: bigint,
 ) {
-  const { route } = await squid.getRoute({
-    fromAmount: fromAmount.toString(),
-    fromChain: fromChainId,
-    toChain: toChainId,
-    fromToken: fromTokenAddress,
-    toToken: toTokenAddress,
-    fromAddress: accountAddress,
-    toAddress: accountAddress,
-    slippage: 1.0,
-  });
+  const route = await getRoute(
+    "swap",
+    fromAmount.toString(),
+    fromChainId,
+    fromTokenAddress,
+    toChainId,
+    toTokenAddress,
+    1,
+    accountAddress,
+    accountAddress,
+  );
   if (!route.transactionRequest)
     throw new Error("Route could not be constructed");
   const request = route.transactionRequest;

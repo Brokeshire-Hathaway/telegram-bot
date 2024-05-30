@@ -12,7 +12,13 @@ import {
 } from "viem";
 import { ENVIRONMENT } from "./settings.js";
 import { addUsdPriceToToken, getCoingeckoToken } from "./coingeckoDB.js";
-import { ChainData, FeeCost, GasCost, Token } from "@0xsquid/squid-types";
+import {
+  ChainData,
+  FeeCost,
+  GasCost,
+  RouteRequest,
+  Token,
+} from "@0xsquid/squid-types";
 
 const squidBaseUrl = ENVIRONMENT.IS_TESTNET
   ? "https://testnet.v2.api.squidrouter.com"
@@ -106,7 +112,12 @@ export async function getTokenInformation(
 export const RouteType = z.union([z.literal("buy"), z.literal("swap")]);
 type RouteType = z.infer<typeof RouteType>;
 
-export async function getRoute(
+interface CorrectedRouteRequest extends Omit<RouteRequest, "slippage"> {
+  slippageConfig: {
+    autoMode: number;
+  };
+}
+export async function getRouteWithEmberAccount(
   type: RouteType,
   amount: string,
   fromNetwork: ChainData,
@@ -121,42 +132,69 @@ export async function getRoute(
     identifier,
     toNetwork,
   );
+  const fromAmount = parseUnits(
+    amount,
+    type === "swap" ? fromToken.decimals : toToken.decimals,
+  ).toString();
+  return await getRoute(
+    type,
+    fromAmount,
+    fromNetwork.chainId,
+    fromToken.address,
+    toNetwork.chainId,
+    toToken.address,
+    slippage,
+    await account.getAccountAddress(),
+    await receiverAccount.getAccountAddress(),
+  );
+}
+
+export async function getRoute(
+  type: RouteType,
+  amount: string,
+  fromNetworkChainId: string,
+  fromTokenAddress: string,
+  toNetworkChainId: string,
+  toTokenAddress: string,
+  slippage: number,
+  fromAddress: string,
+  toAddress: string,
+) {
+  const slippageConfig = { autoMode: slippage };
   if (type === "swap") {
-    const fromAmount = parseUnits(amount, fromToken.decimals).toString();
     const { route } = await squid.getRoute({
-      fromAmount,
-      fromChain: fromNetwork.chainId,
-      fromToken: fromToken.address,
-      fromAddress: await account.getAccountAddress(),
-      toChain: toNetwork.chainId,
-      toToken: toToken.address,
-      toAddress: await receiverAccount.getAccountAddress(),
-      slippage,
-    });
+      fromAmount: amount,
+      fromChain: fromNetworkChainId,
+      fromToken: fromTokenAddress,
+      fromAddress,
+      toChain: toNetworkChainId,
+      toToken: toTokenAddress,
+      toAddress,
+      slippageConfig,
+    } as CorrectedRouteRequest as unknown as RouteRequest);
     return route;
   }
 
-  const fromAmount = parseUnits(amount, toToken.decimals).toString();
   const { route: estimatedRoute } = await squid.getRoute({
-    fromAmount,
-    fromChain: toNetwork.chainId,
-    fromToken: toToken.address,
-    fromAddress: await receiverAccount.getAccountAddress(),
-    toChain: fromNetwork.chainId,
-    toToken: fromToken.address,
-    toAddress: await account.getAccountAddress(),
-    slippage,
-  });
+    fromAmount: amount,
+    fromChain: toNetworkChainId,
+    fromToken: toTokenAddress,
+    fromAddress,
+    toChain: fromNetworkChainId,
+    toToken: toTokenAddress,
+    toAddress,
+    slippageConfig,
+  } as CorrectedRouteRequest as unknown as RouteRequest);
   const { route } = await squid.getRoute({
     fromAmount: estimatedRoute.estimate.toAmount,
-    fromChain: fromNetwork.chainId,
-    fromToken: fromToken.address,
-    fromAddress: await account.getAccountAddress(),
-    toChain: toNetwork.chainId,
-    toToken: toToken.address,
-    toAddress: await receiverAccount.getAccountAddress(),
-    slippage,
-  });
+    fromChain: fromNetworkChainId,
+    fromToken: fromTokenAddress,
+    fromAddress,
+    toChain: toNetworkChainId,
+    toToken: toTokenAddress,
+    toAddress,
+    slippageConfig,
+  } as CorrectedRouteRequest as unknown as RouteRequest);
   return route;
 }
 
