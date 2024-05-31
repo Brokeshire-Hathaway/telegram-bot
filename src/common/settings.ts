@@ -29,11 +29,13 @@ function preProcessEnv() {
   return environment;
 }
 
+const booleanString = z.preprocess(
+  (val) => (val === "true" ? true : val === "false" ? false : val),
+  z.boolean(),
+);
+
 const Settings = z.object({
-  IS_TESTNET: z.preprocess(
-    (val) => (val === "true" ? true : val === "false" ? false : val),
-    z.boolean(),
-  ),
+  IS_TESTNET: booleanString,
   ARBITRUM_RPC_URL: z.string().optional(),
   EMBER_CORE_URL: z.string().url().default("http://ember-core"),
   PORT: z.coerce.number().int().default(3000),
@@ -47,6 +49,9 @@ const Settings = z.object({
   DB_PORT: z.coerce.number().int().default(5432),
   FUNDING_WALLET_ID: z.string().optional(),
   FRONTEND_URL: z.string(),
+
+  // Feature flag for using's ember custom wallet implementation
+  FF_EMBER_WALLET: booleanString.default(false),
 });
 
 export const ENVIRONMENT = Settings.parse(preProcessEnv());

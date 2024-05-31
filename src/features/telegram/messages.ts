@@ -1,10 +1,17 @@
-export const START_MESSAGE = `Hi! To start using Ember:
+import { ENVIRONMENT } from "../../common/settings";
 
+const EXPLANATION_EMBER_WALLET = ENVIRONMENT.FF_EMBER_WALLET
+  ? `
 - Check your Ember wallet address using \`/address\`.
 - Send funds in your preferred EVM chain to that address.
 - Check the funds were added to your account correctly using the \`/balance\` command.
 
 What you can do:
+`
+  : "";
+
+export const START_MESSAGE = `Hi! To start using Ember:
+  ${EXPLANATION_EMBER_WALLET}
 
 - Ask Ember about what he can do for you.
 - Ask about a project or token to get an overview and market data.

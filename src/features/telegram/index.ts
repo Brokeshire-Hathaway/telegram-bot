@@ -4,6 +4,7 @@ import { ENVIRONMENT } from "../../common/settings";
 import { conversations } from "@grammyjs/conversations";
 import { limit } from "@grammyjs/ratelimiter";
 import { commands } from "./commands";
+import { walletCommands } from "./walletCommands";
 
 export function startTelegramBot() {
   const bot = new Bot<MyContext>(ENVIRONMENT.TELEGRAM_BOT_TOKEN);
@@ -22,6 +23,7 @@ export function startTelegramBot() {
     }),
   );
   bot.use(commands);
+  if (ENVIRONMENT.FF_EMBER_WALLET) bot.use(walletCommands);
 
   // Handle errors
   bot.catch((err) => {
