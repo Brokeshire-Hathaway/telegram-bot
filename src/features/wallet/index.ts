@@ -10,7 +10,7 @@ import {
 } from "@biconomy/account";
 import { privateKeyToAccount } from "viem/accounts";
 import { sepolia, mainnet } from "viem/chains";
-import { ChainData } from "@0xsquid/sdk";
+import { ChainData } from "@0xsquid/squid-types";
 import { getViemChain } from "../../common/squidDB.js";
 import { ENVIRONMENT } from "../../common/settings.js";
 
