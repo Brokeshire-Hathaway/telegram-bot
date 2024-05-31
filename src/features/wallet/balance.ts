@@ -1,4 +1,4 @@
-import { ChainData, TokenData } from "@0xsquid/sdk";
+import { ChainData, Token } from "@0xsquid/squid-types";
 import {
   NATIVE_TOKEN,
   getAllChains,
@@ -13,7 +13,7 @@ const NUMBER_OF_RETRIES = 3;
 const MILLISECONDS_BETWEEN_RETRIES = 100;
 async function getAccountBalanceOfTokens(
   account: BiconomySmartAccountV2,
-  tokens: TokenData[],
+  tokens: Token[],
   client: PublicClient,
 ): Promise<Map<string, string>> {
   const accountAddress = await account.getAccountAddress();
@@ -90,7 +90,7 @@ async function getAccountBalanceOfChain(
   network: ChainData,
 ): Promise<[string, Map<string, string>]> {
   const tokens = getTokensOfChain(network);
-  if (tokens.length == 0) return [network.chainName, new Map()];
+  if (tokens.length == 0) return [network.axelarChainName, new Map()];
   const account = await getSmartAccountFromChainData(userId, network);
   return [
     network.networkName,
