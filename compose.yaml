@@ -17,6 +17,7 @@ services:
       IS_TESTNET:
       FUNDING_WALLET_ID_FILE: /run/secrets/funding_wallet_id
       EMBER_CORE_URL: http://ember-core
+      FF_EMBER_WALLET:
       FRONTEND_URL:
     secrets:
       - db_name
