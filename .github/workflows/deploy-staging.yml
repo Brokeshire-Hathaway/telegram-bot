@@ -31,7 +31,6 @@ jobs:
       - name: Deploy containers in server
         env:
           DOCKER_HOST: ssh://${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SECRET_SALT: ${{ secrets.SECRET_SALT }}
           TELEGRAM_BOT_USERNAME: ${{ vars.TELEGRAM_BOT_USERNAME }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -45,4 +44,4 @@ jobs:
           FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
           ENVIRONMENT: staging
         run: |
-          docker compose -f compose.yaml -p ember-engine-stage up -d --build
+          docker compose -f compose.yaml -p ember-engine-$ENVIRONMENT up -d --build
