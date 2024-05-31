@@ -6,10 +6,7 @@ const booleanString = z.preprocess(
   z.boolean(),
 );
 const Settings = z.object({
-  IS_TESTNET: z.preprocess(
-    (val) => (val === "true" ? true : val === "false" ? false : val),
-    z.boolean(),
-  ),
+  IS_TESTNET: booleanString,
   ARBITRUM_RPC_URL: z.string().optional(),
   EMBER_CORE_URL: z.string().url().default("http://ember-core"),
   PORT: z.coerce.number().int().default(3000),
