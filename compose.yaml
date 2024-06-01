@@ -18,8 +18,10 @@ services:
       FUNDING_WALLET_ID_FILE: /run/secrets/funding_wallet_id
       EMBER_CORE_URL: http://ember-core
       FF_EMBER_WALLET:
+      SQUID_INTEGRATOR_ID:
       FRONTEND_URL:
     secrets:
+      - squid_integrator_id
       - db_name
       - db_user
       - db_password
@@ -70,6 +72,8 @@ secrets:
     environment: "SECRET_SALT"
   telegram_token:
     environment: "TELEGRAM_BOT_TOKEN"
+  squid_integrator_id:
+    environment: "SQUID_INTEGRATOR_ID"
 
 networks:
   shared_network:
