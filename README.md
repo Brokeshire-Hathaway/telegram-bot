@@ -34,8 +34,10 @@ DB_NAME="db"
 DB_HOST="localhost"
 DB_PORT=5432
 FUNDING_WALLET_ID="random_id_for_ember_wallet"
-FRONTEND_URL="http://localhost:3001"
+FRONTEND_URL="http://127.0.0.1:3001"
 ```
+
+_Warning: Defining `localhost` for the `FRONTEND_URL` environment variable (like so `FRONTEND_URL="http://localhost:5173"`) will break Telegram's ability to render a hyperlink to the transaction. Therefore, `127.0.0.1` must be used._
 
 Lastly, run:
 
