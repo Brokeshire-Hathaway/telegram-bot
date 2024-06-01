@@ -35,7 +35,7 @@ DB_HOST="localhost"
 DB_PORT=5432
 FUNDING_WALLET_ID="random_id_for_ember_wallet"
 FRONTEND_URL="http://127.0.0.1:3001"
-SQUID_INTEGRATOR_ID="ASK_FOR_SQUID_V2_INTGRATOR_ID"
+SQUID_INTEGRATOR_ID="ASK_FOR_SQUID_V2_INTEGRATOR_ID"
 ```
 
 _Warning: Defining `localhost` for the `FRONTEND_URL` environment variable
@@ -49,7 +49,7 @@ pnpm i
 pnpm dev
 ```
 
-If it was sucessfull, you should see in your console something like:
+If it was successfull, you should see in your console something like:
 
 ```bash
 (node:12714) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
