@@ -76,10 +76,13 @@ save. Please install the recommended extensions for it to work, that is install
 `esbenp.prettier-vscode`.
 
 ## Feature flags
+
 For now, feature flags in the codebase are set using the environment variables
-of the code and all use the same boolean expression. Additionally, all of them have
-a default value and use the prefix `FF_` to denote feature flag. The current feature
-flags of the project are:
+of the code and are activate by setting them to the string value "true".
+Additionally, all of them have a default value so they can be unset in the
+`.env` file and use the prefix `FF_` to denote feature flag.
+
+The current feature flags of the project are:
 
 - `FF_EMBER_WALLET`: Feature flag for using the custom made wallet using
-Biconomy SDK, if activated the `/balance` and `/address` command are enabled.
+  Biconomy SDK, if activated the `/balance` and `/address` command are enabled.
