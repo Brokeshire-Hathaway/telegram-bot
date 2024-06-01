@@ -35,9 +35,12 @@ DB_HOST="localhost"
 DB_PORT=5432
 FUNDING_WALLET_ID="random_id_for_ember_wallet"
 FRONTEND_URL="http://127.0.0.1:3001"
+SQUID_INTEGRATOR_ID="ASK_FOR_SQUID_V2_INTGRATOR_ID"
 ```
 
-_Warning: Defining `localhost` for the `FRONTEND_URL` environment variable (like so `FRONTEND_URL="http://localhost:5173"`) will break Telegram's ability to render a hyperlink to the transaction. Therefore, `127.0.0.1` must be used._
+_Warning: Defining `localhost` for the `FRONTEND_URL` environment variable
+(like so `FRONTEND_URL="http://localhost:5173"`) will break Telegram's ability
+to render a hyperlink to the transaction. Therefore, `127.0.0.1` must be used._
 
 Lastly, run:
 
