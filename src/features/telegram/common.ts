@@ -67,6 +67,9 @@ export async function editFormattedMessage(
     markdownToHtml(message, italicize),
     {
       parse_mode: "HTML",
+      link_preview_options: {
+        is_disabled: true,
+      },
     },
   );
 }
@@ -82,6 +85,9 @@ export async function sendFormattedMessage(
     markdownToHtml(message, italicize),
     {
       parse_mode: "HTML",
+      link_preview_options: {
+        is_disabled: true,
+      },
     },
   );
 }
