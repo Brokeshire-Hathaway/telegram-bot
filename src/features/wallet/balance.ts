@@ -1,16 +1,23 @@
 import { ChainData, Token } from "@0xsquid/squid-types";
 import {
+  MULTICALL_ADDRESS,
   NATIVE_TOKEN,
+  address,
   getAllChains,
   getTokensOfChain,
   getViemClient,
 } from "../../common/squidDB.js";
 import { getSmartAccountFromChainData } from "./index.js";
 import { BiconomySmartAccountV2 } from "@biconomy/account";
-import { Hex, PublicClient, erc20Abi, formatUnits, getContract } from "viem";
+import { Hex, PublicClient, erc20Abi, formatUnits, multicall3Abi } from "viem";
+import z from "zod";
 
-const NUMBER_OF_RETRIES = 3;
-const MILLISECONDS_BETWEEN_RETRIES = 100;
+const BigIntResult = z.union([z.string(), z.number(), z.bigint()]);
+const NativeTokenResult = z.object({
+  success: z.boolean(),
+  returnData: address,
+});
+type Contract = typeof erc20Abi | typeof multicall3Abi;
 async function getAccountBalanceOfTokens(
   account: BiconomySmartAccountV2,
   tokens: Token[],
@@ -40,46 +47,46 @@ async function getAccountBalanceOfTokens(
 
   // Extract all ERC20 contracts and tokens
   const erc20Tokens = tokens.filter((v) => v.address !== NATIVE_TOKEN);
-  const erc20TokenContracts = erc20Tokens.map((v) =>
-    getContract({
+  const nativeBalanceContract = {
+    address: MULTICALL_ADDRESS as Hex,
+    abi: multicall3Abi as Contract,
+    functionName: "getEthBalance",
+    args: [accountAddress],
+    reference: nativeToken,
+  };
+  const tokenContracts = erc20Tokens
+    .map((v) => ({
       address: v.address as Hex,
-      abi: erc20Abi,
-      client,
-    }),
-  );
-  const erc20Balances = await Promise.allSettled(
-    erc20TokenContracts.map((v) => v.read.balanceOf([accountAddress])),
-  );
-  for (let i = 0; i < erc20TokenContracts.length; i++) {
-    const token = erc20Tokens[i];
-    const erc20Balance = erc20Balances[i];
-    if (erc20Balance.status === "fulfilled") {
-      if (erc20Balance.value === BigInt(0)) continue;
+      abi: erc20Abi as Contract,
+      functionName: "balanceOf",
+      args: [accountAddress],
+      reference: v,
+    }))
+    .concat([nativeBalanceContract]);
+  const allBalances = await client.multicall({
+    contracts: tokenContracts,
+  });
+  for (let i = 0; i < tokenContracts.length; i++) {
+    const balance = allBalances[i];
+    if (balance.status === "failure") continue;
 
-      balances.set(
-        token.symbol,
-        formatUnits(erc20Balance.value, token.decimals),
-      );
+    const isBigInt = await BigIntResult.safeParseAsync(balance.result);
+    const token = tokenContracts[i].reference;
+    if (isBigInt.success) {
+      const result = BigInt(isBigInt.data);
+      if (result === BigInt(0)) continue;
+      balances.set(token.symbol, formatUnits(result, token.decimals));
       continue;
     }
 
-    // Retry failed requests
-    let tries = 0;
-    while (tries < NUMBER_OF_RETRIES) {
-      try {
-        const balance = await erc20TokenContracts[i].read.balanceOf([
-          accountAddress,
-        ]);
-        if (balance === BigInt(0)) break;
-        balances.set(token.symbol, formatUnits(balance, token.decimals));
-        break;
-      } catch {
-        tries += 1;
-        await new Promise((resolve) =>
-          setTimeout(resolve, MILLISECONDS_BETWEEN_RETRIES),
-        );
-      }
-    }
+    const isNativeToken = await NativeTokenResult.safeParseAsync(
+      balance.result,
+    );
+    if (!isNativeToken.success) continue;
+
+    const nativeTokenBalance = BigInt(isNativeToken.data.returnData);
+    if (nativeTokenBalance === BigInt(0)) continue;
+    balances.set(token.symbol, formatUnits(nativeTokenBalance, token.decimals));
   }
 
   return balances;
