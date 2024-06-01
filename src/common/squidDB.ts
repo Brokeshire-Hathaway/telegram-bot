@@ -32,8 +32,11 @@ export const squid = new Squid({
 export let FUSE: Fuse<ChainData> | undefined;
 export const NATIVE_TOKEN = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
+const IGNORED_CHAINS = ["5", "314", "3141", "2222"];
 export function getAllChains() {
-  return squid.chains.filter((v) => v.chainType === "evm" && v.chainId !== "5");
+  return squid.chains.filter(
+    (v) => v.chainType === "evm" && !IGNORED_CHAINS.includes(v.chainId),
+  );
 }
 
 export function getChainByChainId(chainId: string | number) {
@@ -201,6 +204,7 @@ export async function getRoute(
 }
 
 const ARBITRUM_CHAIN_ID = "42161";
+export const MULTICALL_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
 export function getViemChain(network: ChainData): Chain {
   const rpc =
     !ENVIRONMENT.ARBITRUM_RPC_URL || network.chainId !== ARBITRUM_CHAIN_ID
@@ -217,6 +221,11 @@ export function getViemChain(network: ChainData): Chain {
       decimals: network.nativeCurrency.decimals,
       name: network.nativeCurrency.name,
       symbol: network.nativeCurrency.symbol,
+    },
+    contracts: {
+      multicall3: {
+        address: MULTICALL_ADDRESS,
+      },
     },
     rpcUrls: {
       default: {
