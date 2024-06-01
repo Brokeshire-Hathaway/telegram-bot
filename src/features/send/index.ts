@@ -128,7 +128,11 @@ router.post("/prepare", async (req: Request, res: Response) => {
 
     return res.json({
       success: true,
-      url: getUrl(uuid),
+      id: uuid,
+      sign_url: getUrl(uuid),
+      network_name: network.networkName,
+      token_symbol: token.symbol,
+      token_explorer_url: `${network.blockExplorerUrls[0]}token/${token.address}`,
     });
   } catch (error) {
     console.error(error);

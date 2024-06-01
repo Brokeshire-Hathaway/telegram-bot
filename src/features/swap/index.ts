@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import z from "zod";
 import { UniversalAddress } from "../send/index.js";
-import { costsToUsd } from "../../common/formatters.js";
+import { costsToUsd, formatAmount } from "../../common/formatters.js";
 import {
   RouteType,
   getNetworkInformation,
@@ -124,9 +124,28 @@ router.post("/preview", async (req: Request, res: Response) => {
         },
       ],
     );
+
+    console.log(fromNetwork);
+    console.log(fromToken);
+    console.log(toToken);
+    console.log(toNetwork);
+
     return res.json({
       success: true,
-      url: getUrl(uuid),
+      id: uuid,
+      sign_url: getUrl(uuid),
+      network_name: fromNetwork.networkName,
+      token_amount: formatAmount(route.estimate.fromAmount, {
+        decimals: fromToken.decimals,
+      }),
+      token_symbol: fromToken.symbol,
+      token_explorer_url: `${fromNetwork.blockExplorerUrls[0]}token/${fromToken.address}`,
+      to_network_name: toNetwork.networkName,
+      to_token_amount: formatAmount(route.estimate.toAmount, {
+        decimals: toToken.decimals,
+      }),
+      to_token_symbol: toToken.symbol,
+      to_token_explorer_url: `${toNetwork.blockExplorerUrls[0]}token/${toToken.address}`,
     });
   } catch (err) {
     console.error(err);

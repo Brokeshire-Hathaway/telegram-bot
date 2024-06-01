@@ -34,7 +34,10 @@ export function costsToUsd(
   );
 }
 
-function formatAmount(value: string | bigint, tokenData: { decimals: number }) {
+export function formatAmount(
+  value: string | bigint,
+  tokenData: { decimals: number },
+) {
   return formatUnits(BigInt(value), tokenData.decimals);
 }
 
