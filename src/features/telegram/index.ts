@@ -5,6 +5,7 @@ import { conversations } from "@grammyjs/conversations";
 import { limit } from "@grammyjs/ratelimiter";
 import { commands } from "./commands";
 import { walletCommands } from "./walletCommands";
+import { isUserWhitelisted } from "../user";
 
 export function startTelegramBot() {
   const bot = new Bot<MyContext>(ENVIRONMENT.TELEGRAM_BOT_TOKEN);
@@ -58,6 +59,10 @@ export function startTelegramBot() {
   const privateBot = bot.chatType("private");
   privateBot.on("message:text", async (ctx) => {
     if (!ctx.chat) return;
+    if (!(await isUserWhitelisted(ctx.chat.id))) {
+      await ctx.reply("Not whitelisted.");
+      return;
+    }
     await sendResponseFromAgentTeam(ctx, `/v1/threads/${ctx.chat.id}/private`);
   });
 
