@@ -12,7 +12,7 @@ import { getSendTransaction } from "./getTransactions.js";
 import { getSmartAccountFromChainData } from "../wallet/index.js";
 import { costsToUsd } from "../../common/formatters.js";
 import { erc20Abi, getContract, parseUnits } from "viem";
-import { createTransaction, getUrl } from "../frontendApi/common.js";
+import { createTransaction, getTransactionUrl } from "../frontendApi/common.js";
 import { BigNumberish, UserOperationStruct } from "@biconomy/account";
 import { findUsdPrice } from "../../common/coingeckoDB.js";
 import { ChainData } from "@0xsquid/squid-types";
@@ -129,7 +129,7 @@ router.post("/prepare", async (req: Request, res: Response) => {
     return res.json({
       success: true,
       id: uuid,
-      sign_url: getUrl(uuid),
+      sign_url: getTransactionUrl(uuid),
       network_name: network.networkName,
       token_symbol: token.symbol,
       token_explorer_url: `${network.blockExplorerUrls[0]}token/${token.address}`,

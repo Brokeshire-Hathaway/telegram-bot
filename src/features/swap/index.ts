@@ -9,7 +9,7 @@ import {
   getTokenInformation,
   routeFeesToTokenMap,
 } from "../../common/squidDB.js";
-import { createTransaction, getUrl } from "../frontendApi/common.js";
+import { createTransaction, getTransactionUrl } from "../frontendApi/common.js";
 
 // Create the router
 const router = express.Router();
@@ -128,7 +128,7 @@ router.post("/preview", async (req: Request, res: Response) => {
     return res.json({
       success: true,
       id: uuid,
-      sign_url: getUrl(uuid),
+      sign_url: getTransactionUrl(uuid),
       network_name: fromNetwork.networkName,
       token_amount: formatAmount(route.estimate.fromAmount, {
         decimals: fromToken.decimals,

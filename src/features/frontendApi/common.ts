@@ -110,6 +110,10 @@ export async function createTransaction(
   });
 }
 
-export function getUrl(identifier: string) {
+export function getTransactionUrl(identifier: string) {
   return `${ENVIRONMENT.FRONTEND_URL}/tx/${identifier}`;
+}
+
+export function getCodeUrl(identifier: string) {
+  return `${ENVIRONMENT.FRONTEND_URL}/join/${identifier}`;
 }
