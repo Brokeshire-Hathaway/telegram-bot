@@ -68,7 +68,7 @@ CREATE UNIQUE INDEX access_code_idx ON access_code (
 CREATE TABLE user_whitelist (
   id SERIAL PRIMARY KEY,
   access_code_id INT REFERENCES access_code(id),
-  user_id INT UNIQUE NOT NULL,
+  user_id BIGINT UNIQUE NOT NULL,
   username VARCHAR NOT NULL,
   is_admin BOOLEAN NOT NULL DEFAULT false,
   joined_at TIMESTAMPTZ NOT NULL DEFAULT now()
