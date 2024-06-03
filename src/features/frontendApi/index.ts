@@ -13,6 +13,8 @@ import { formatUnits } from "viem";
 import { USD_DISPLAY_DECIMALS } from "../../common/formatters.js";
 import getSwapTransactions from "../swap/getTransactions.js";
 import getSendTransactions from "../send/getTransactions.js";
+import { Code } from "../user/codes.js";
+import { ENVIRONMENT } from "../../common/settings.js";
 
 // Create the router
 const router = express.Router();
@@ -166,4 +168,23 @@ async function getTransactionsAndGasFee(
       transactionPreview.max_priority_fee_per_gas?.toString(),
   };
 }
+
+router.get("/code/:uuid", async (req: Request, res: Response) => {
+  const pool = await getPool();
+  try {
+    const accessCode = await pool.one(sql.type(
+      Code.pick({ created_by: true, code: true }),
+    )`
+      SELECT code, created_by FROM access_code
+      WHERE identifier = ${req.params.uuid} and remaining_uses > 0
+      `);
+    return res.json({
+      ...accessCode,
+      chatUrl: `https://t.me/${ENVIRONMENT.TELEGRAM_BOT_USERNAME}`,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Failed fetching access code" });
+  }
+});
 export default router;

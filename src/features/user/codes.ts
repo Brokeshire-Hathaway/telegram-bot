@@ -4,7 +4,7 @@ import { isUserWhitelisted } from ".";
 import { CommonQueryMethods } from "slonik";
 import { ENVIRONMENT } from "../../common/settings";
 
-const Code = z.object({
+export const Code = z.object({
   id: z.number(),
   identifier: z.string(),
   code: z.string(),
