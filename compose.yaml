@@ -34,8 +34,6 @@ services:
         max-file: "1"
     networks:
       - shared_network
-    depends_on:
-      - database
 
 secrets:
   db_name:
