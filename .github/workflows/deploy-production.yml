@@ -39,6 +39,7 @@ jobs:
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_NAME: ${{ secrets.DB_NAME }}
+          DB_HOST: ${{ secrets.DB_HOST }}
           FUNDING_WALLET_ID: ${{ secrets.FUNDING_WALLET_ID }}
           DB_PORT: ${{ vars.DB_PORT }}
           FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
