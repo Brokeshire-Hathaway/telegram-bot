@@ -180,7 +180,7 @@ router.get("/code/:uuid", async (req: Request, res: Response) => {
       `);
     return res.json({
       ...accessCode,
-      chatUrl: `https://t.me/${ENVIRONMENT.TELEGRAM_BOT_USERNAME}`,
+      chat_url: `https://t.me/${ENVIRONMENT.TELEGRAM_BOT_USERNAME}`,
     });
   } catch (error) {
     console.error(error);
