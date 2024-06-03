@@ -1,11 +1,16 @@
 import { Bot, GrammyError, HttpError, session } from "grammy";
-import { MyContext, sendResponseFromAgentTeam } from "./common";
+import {
+  MyContext,
+  sendFormattedMessage,
+  sendResponseFromAgentTeam,
+} from "./common";
 import { ENVIRONMENT } from "../../common/settings";
 import { conversations } from "@grammyjs/conversations";
 import { limit } from "@grammyjs/ratelimiter";
 import { commands } from "./commands";
 import { walletCommands } from "./walletCommands";
 import { addUserToWaitList, isUserWhitelisted } from "../user";
+import { DEFAULT_EMBER_MESSAGE } from "./messages";
 
 export function startTelegramBot() {
   const bot = new Bot<MyContext>(ENVIRONMENT.TELEGRAM_BOT_TOKEN);
@@ -62,7 +67,7 @@ export function startTelegramBot() {
     if (!(await isUserWhitelisted(ctx.chat.id))) {
       await Promise.all([
         addUserToWaitList(ctx.chat.id, ctx.chat.username || ""),
-        ctx.reply("Not whitelisted."),
+        sendFormattedMessage(ctx, DEFAULT_EMBER_MESSAGE),
       ]);
       return;
     }
