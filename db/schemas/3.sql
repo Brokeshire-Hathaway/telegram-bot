@@ -74,6 +74,13 @@ CREATE TABLE user_whitelist (
   joined_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+CREATE TABLE user_waitlist (
+  id SERIAL PRIMARY KEY,
+  user_id BIGINT UNIQUE NOT NULL,
+  username VARCHAR NOT NULL,
+  asked_to_join_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE TABLE migrations (
   schema_version INT UNIQUE NOT NULL,
   script_name VARCHAR,

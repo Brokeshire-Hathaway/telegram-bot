@@ -24,6 +24,13 @@ CREATE TABLE user_whitelist (
   joined_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+CREATE TABLE user_waitlist (
+  id SERIAL PRIMARY KEY,
+  user_id BIGINT UNIQUE NOT NULL,
+  username VARCHAR NOT NULL,
+  asked_to_join_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 INSERT INTO migrations(script_name, schema_version) VALUES ('2-3.sql', 3);
 
 COMMIT;
