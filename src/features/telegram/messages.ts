@@ -24,3 +24,13 @@ export const SUCCESS_FUND_MESSAGE = (
 ) => `Code redeemed successfully!
 
 [View airdrop on blockchain](${url}) or use /balance to see it here.`;
+
+export const DEFAULT_EMBER_MESSAGE = `Hello there! 🌟
+
+It seems like you're eager to dive into the world of crypto with Ember, and I'm just as excited to have you on board! 🚀
+
+If you're not yet part of the Ember crew, don't worry, you've been added to our waitlist. 📝 We'll reach out as soon as a spot opens up!
+
+Got an invite code? Fantastic! 🎉 Simply use the \`/join\` command followed by your code to unlock the full Ember experience.
+
+Can't wait to assist you on your crypto journey! 🔥`;
