@@ -6,6 +6,7 @@ const User = z.object({
   user_id: z.bigint(),
   username: z.string(),
   is_admin: z.boolean(),
+  access_code_id: z.number(),
 });
 
 export async function isUserWhitelisted(userId: number): Promise<boolean> {

@@ -3,7 +3,7 @@ import { fundWallet, getEmberWalletAddress } from "../wallet/fund";
 import { START_MESSAGE, SUCCESS_FUND_MESSAGE } from "./messages";
 import { MyContext, sendFormattedMessage } from "./common";
 import { isUserAdmin } from "../user";
-import { createReferralCode } from "../user/codes";
+import { createReferralCode, redeemCode } from "../user/codes";
 import { getCodeUrl } from "../frontendApi/common";
 
 export const commands = new Composer<MyContext>();
@@ -33,6 +33,20 @@ commands.command("fund", async (ctx) => {
     ctx.from.id,
     SUCCESS_FUND_MESSAGE(transactionUrl),
   );
+});
+
+commands.command("join", async (ctx) => {
+  if (!ctx.from || !ctx.from.username) return;
+
+  const codeRedemption = await redeemCode(
+    ctx.match,
+    ctx.from.id,
+    ctx.from.username,
+  );
+  if (codeRedemption === "failed")
+    return await ctx.reply("Code redemption failed");
+
+  return await ctx.reply("Code redemption successful!");
 });
 
 commands.command("createReferralUrl", async (ctx) => {
