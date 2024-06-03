@@ -125,11 +125,6 @@ router.post("/preview", async (req: Request, res: Response) => {
       ],
     );
 
-    console.log(fromNetwork);
-    console.log(fromToken);
-    console.log(toToken);
-    console.log(toNetwork);
-
     return res.json({
       success: true,
       id: uuid,
