@@ -1,10 +1,15 @@
 import { Composer } from "grammy";
 import { fundWallet, getEmberWalletAddress } from "../wallet/fund";
-import { START_MESSAGE, SUCCESS_FUND_MESSAGE } from "./messages";
+import {
+  CODE_REDEEMED_SUCCESS,
+  START_MESSAGE,
+  SUCCESS_FUND_MESSAGE,
+} from "./messages";
 import { MyContext, sendFormattedMessage } from "./common";
 import { isUserAdmin } from "../user";
-import { createReferralCode, redeemCode } from "../user/codes";
+import { createReferralCodes, redeemCode } from "../user/codes";
 import { getCodeUrl } from "../frontendApi/common";
+import { getPool } from "../../common/database";
 
 export const commands = new Composer<MyContext>();
 
@@ -38,15 +43,15 @@ commands.command("fund", async (ctx) => {
 commands.command("join", async (ctx) => {
   if (!ctx.from || !ctx.from.username) return;
 
-  const codeRedemption = await redeemCode(
-    ctx.match,
-    ctx.from.id,
-    ctx.from.username,
-  );
-  if (codeRedemption === "failed")
+  let codes;
+  try {
+    codes = await redeemCode(ctx.match, ctx.from.id, ctx.from.username);
+  } catch (error) {
+    console.log(error);
     return await ctx.reply("Code redemption failed");
+  }
 
-  return await ctx.reply("Code redemption successful!");
+  return await ctx.reply(CODE_REDEEMED_SUCCESS(codes));
 });
 
 commands.command("createReferralUrl", async (ctx) => {
@@ -54,9 +59,11 @@ commands.command("createReferralUrl", async (ctx) => {
   if (!(await isUserAdmin(ctx.from.id))) return;
 
   const numberOfUses = parseInt(ctx.match.trim());
-  const accessCode = await createReferralCode(
+  const accessCode = await createReferralCodes(
     numberOfUses,
     ctx.from.username || ctx.from.id.toString(),
+    await getPool(),
   );
-  return await ctx.reply(getCodeUrl(accessCode.identifier));
+  if (accessCode.length < 1) return;
+  return await ctx.reply(getCodeUrl(accessCode[0].identifier));
 });
