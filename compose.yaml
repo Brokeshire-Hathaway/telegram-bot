@@ -9,7 +9,7 @@ services:
       DB_PASSWORD_FILE: /run/secrets/db_password
       DB_NAME_FILE: /run/secrets/db_name
       DB_PORT: 5432
-      DB_HOST: database
+      DB_HOST:
       SECRET_SALT_FILE: /run/secrets/secret_salt
       TELEGRAM_BOT_USERNAME:
       TELEGRAM_BOT_TOKEN_FILE: /run/secrets/telegram_token
