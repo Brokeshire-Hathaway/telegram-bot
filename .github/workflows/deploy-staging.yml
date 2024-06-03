@@ -46,4 +46,4 @@ jobs:
           ENVIRONMENT: staging
           SQUID_INTEGRATOR_ID: ${{ secrets.SQUID_INTEGRATOR_ID }}
         run: |
-          docker compose -f compose.yaml -p ember-engine-$ENVIRONMENT up -d --build
+          docker compose -f compose.yaml -p ember-engine-$ENVIRONMENT up -d --build --remove-orphans
