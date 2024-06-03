@@ -34,3 +34,11 @@ If you're not yet part of the Ember crew, don't worry, you've been added to our 
 Got an invite code? Fantastic! 🎉 Simply use the \`/join\` command followed by your code to unlock the full Ember experience.
 
 Can't wait to assist you on your crypto journey! 🔥`;
+
+export const CODE_REDEEMED_SUCCESS = (codes: readonly { code: string }[]) => {
+  const codesMessage = codes.map((v) => `- ${v.code}`).join("\n");
+  return `Code redemption successful!
+
+You can invite your friends to use Ember with the following codes:
+${codesMessage}`;
+};

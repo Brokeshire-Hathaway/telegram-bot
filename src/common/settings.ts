@@ -21,6 +21,7 @@ const Settings = z.object({
   FUNDING_WALLET_ID: z.string().optional(),
   FRONTEND_URL: z.string(),
   SQUID_INTEGRATOR_ID: z.string(),
+  NUMBER_OF_CODES_PER_USER: z.number().default(5),
 
   // Feature flag for using's ember custom wallet implementation
   FF_EMBER_WALLET: booleanString.default(false),
