@@ -3,7 +3,7 @@ BEGIN TRANSACTION;
 CREATE TABLE access_code (
   id SERIAL PRIMARY KEY,
   identifier uuid UNIQUE NOT NULL DEFAULT gen_random_uuid(),
-  code VARCHAR(32) UNIQUE NOT NULL DEFAULT md5(random()::text),
+  code VARCHAR(32) UNIQUE NOT NULL DEFAULT substring(md5(random()::text), 1, 9),
   remaining_uses INT NOT NULL,
   created_by VARCHAR NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
