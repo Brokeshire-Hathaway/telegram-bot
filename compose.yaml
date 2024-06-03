@@ -37,28 +37,6 @@ services:
     depends_on:
       - database
 
-  database:
-    image: postgres
-    ports:
-      - "${DB_PORT}:5432"
-    environment:
-      POSTGRES_USER_FILE: /run/secrets/db_user
-      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
-      POSTGRES_DB_FILE: /run/secrets/db_name
-    volumes:
-      - type: volume
-        source: postgres_data
-        target: /var/lib/postgresql/data
-    networks:
-      - shared_network
-    secrets:
-      - db_name
-      - db_user
-      - db_password
-
-volumes:
-  postgres_data:
-
 secrets:
   db_name:
     environment: "DB_NAME"
