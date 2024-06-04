@@ -12,7 +12,7 @@ import {
   defineChain,
   http,
 } from "viem";
-import { address } from "./common";
+import { MULTICALL_ADDRESS, address } from "./common";
 import { addUsdPriceToToken, getCoingeckoToken } from "../common/coingeckoDB";
 import Fuse from "fuse.js";
 
@@ -91,6 +91,11 @@ export function getViemChain(network: ChainData): Chain {
       decimals: network.nativeCurrency.decimals,
       name: network.nativeCurrency.name,
       symbol: network.nativeCurrency.symbol,
+    },
+    contracts: {
+      multicall3: {
+        address: MULTICALL_ADDRESS,
+      },
     },
     rpcUrls: {
       default: {
