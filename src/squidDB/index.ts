@@ -241,6 +241,19 @@ export async function getRoute(
   toAddress: string,
   version: Version | undefined = undefined,
 ) {
+  if (fromNetworkChainId === toNetworkChainId)
+    return squid2._v2getRoute(
+      type,
+      amount,
+      fromNetworkChainId.toString(),
+      fromTokenAddress,
+      toNetworkChainId.toString(),
+      toTokenAddress,
+      slippage,
+      fromAddress,
+      toAddress,
+    );
+
   const squidVersion = getVersion(version);
   if (squidVersion === 2)
     return squid2._v2getRoute(
