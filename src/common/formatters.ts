@@ -1,6 +1,6 @@
 import { ChainData, Token } from "@0xsquid/squid-types";
 import { formatUnits, parseUnits } from "viem";
-import { TokenInformation } from "./squidDB";
+import { TokenInformation } from "../squidDB";
 
 export function formatTime(timeInSeconds: number) {
   if (timeInSeconds <= 1) {
