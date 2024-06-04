@@ -1,13 +1,13 @@
 import express, { Request, Response } from "express";
 import z from "zod";
+import { address, NATIVE_TOKEN } from "../../squidDB/common.js";
 import {
   getNetworkInformation,
   getTokenInformation,
-  address,
-  NATIVE_TOKEN,
   getViemClient,
   TokenInformation,
-} from "../../common/squidDB.js";
+  ChainData,
+} from "../../squidDB";
 import { getSendTransaction } from "./getTransactions.js";
 import { getSmartAccountFromChainData } from "../wallet/index.js";
 import { costsToUsd } from "../../common/formatters.js";
@@ -15,7 +15,6 @@ import { erc20Abi, getContract, parseUnits } from "viem";
 import { createTransaction, getTransactionUrl } from "../frontendApi/common.js";
 import { BigNumberish, UserOperationStruct } from "@biconomy/account";
 import { findUsdPrice } from "../../common/coingeckoDB.js";
-import { ChainData } from "@0xsquid/squid-types";
 
 // Create the router
 const router = express.Router();

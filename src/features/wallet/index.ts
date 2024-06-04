@@ -10,8 +10,7 @@ import {
 } from "@biconomy/account";
 import { privateKeyToAccount } from "viem/accounts";
 import { sepolia, mainnet } from "viem/chains";
-import { ChainData } from "@0xsquid/squid-types";
-import { getViemChain } from "../../common/squidDB.js";
+import { getViemChain, ChainData } from "../../squidDB";
 import { ENVIRONMENT } from "../../common/settings.js";
 
 function derivePrivateKey(uid: string): Uint8Array {

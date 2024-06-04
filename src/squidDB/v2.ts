@@ -1,19 +1,8 @@
 import { Squid } from "squidv2";
-import Fuse from "fuse.js";
 import z from "zod";
 import { getSmartAccountFromChainData } from "../features/wallet/index.js";
-import {
-  Chain,
-  PublicClient,
-  createPublicClient,
-  defineChain,
-  http,
-  parseUnits,
-} from "viem";
-import {
-  addUsdPriceToToken,
-  getCoingeckoToken,
-} from "../common/coingeckoDB.js";
+import { parseUnits } from "viem";
+import { addUsdPriceToToken } from "../common/coingeckoDB.js";
 import {
   ChainData,
   FeeCost,
@@ -27,7 +16,7 @@ const squidBaseUrl = ENVIRONMENT.IS_TESTNET
   ? "https://testnet.v2.api.squidrouter.com"
   : "https://v2.api.squidrouter.com";
 
-const squid = new Squid({
+export const _v2squid = new Squid({
   baseUrl: squidBaseUrl,
   integratorId: ENVIRONMENT.SQUID_INTEGRATOR_ID,
 });
