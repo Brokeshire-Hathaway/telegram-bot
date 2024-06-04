@@ -1,6 +1,6 @@
 import z from "zod";
 import { getPool, sql } from "../../common/database";
-import { address } from "../../common/squidDB";
+import { address } from "../../squidDB/common";
 import { ENVIRONMENT } from "../../common/settings";
 
 // All types for the API
