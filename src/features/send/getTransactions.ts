@@ -1,4 +1,3 @@
-import { type Transaction } from "@biconomy/account";
 import { encodeFunctionData, erc20Abi } from "viem";
 import { NATIVE_TOKEN } from "../../squidDB/common";
 
@@ -6,7 +5,7 @@ export function getSendTransaction(
   tokenAddress: `0x${string}`,
   recipientAddress: `0x${string}`,
   amount: bigint,
-): Transaction {
+) {
   if (tokenAddress !== NATIVE_TOKEN) {
     const data = encodeFunctionData({
       abi: erc20Abi,

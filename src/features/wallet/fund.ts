@@ -2,7 +2,7 @@ import { arbitrum, sepolia } from "viem/chains";
 import { getSmartAccount } from ".";
 import z from "zod";
 import { getSendTransaction } from "../send/getTransactions";
-import { NATIVE_TOKEN } from "../../common/squidDB";
+import { NATIVE_TOKEN } from "../../squidDB/common";
 import { parseEther } from "viem";
 import { ENVIRONMENT } from "../../common/settings";
 import { getPool, sql } from "../../common/database";

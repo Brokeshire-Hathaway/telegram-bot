@@ -30,7 +30,12 @@ import { addUsdPriceToToken, getCoingeckoToken } from "../common/coingeckoDB";
 import Fuse from "fuse.js";
 import { getSmartAccountFromChainData } from "../features/wallet";
 
-export type ChainData = ChainDataV1 | ChainDataV2;
+type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };
+type XOR<T, U> = T | U extends object
+  ? (Without<T, U> & U) | (Without<U, T> & T)
+  : T | U;
+
+export type ChainData = XOR<ChainDataV1, ChainDataV2>;
 
 const FUSE_OBJECTS: Record<Version, Fuse<ChainData> | undefined> = {
   1: undefined,
@@ -261,10 +266,6 @@ export async function getRoute(
     toAddress,
   );
 }
-type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };
-type XOR<T, U> = T | U extends object
-  ? (Without<T, U> & U) | (Without<U, T> & T)
-  : T | U;
 export type RouteRequest = XOR<
   NonNullable<RouteDataV1["transactionRequest"]>,
   SquidData
@@ -277,13 +278,13 @@ export function getTargetAddress(route: RouteRequest) {
 export type Transaction = {
   to: `0x${string}`;
   data?: string;
-  value?: string;
+  value?: bigint;
 };
 export function routeRequestToTransaction(route: RouteRequest): Transaction {
   return {
     to: getTargetAddress(route),
     data: route.data,
-    value: route.value,
+    value: BigInt(route.value),
   };
 }
 
@@ -320,4 +321,17 @@ export async function routeFeesToTokenMap(
     tokens.push(tokenInfo);
   }
   return [tokens, costs];
+}
+
+export function getTokensOfChain(
+  network: ChainData,
+  version: Version | undefined = undefined,
+) {
+  return getSquid(version).tokens.filter(
+    (v) => v.chainId.toString() === network.chainId.toString(),
+  );
+}
+
+export function getNetworkName(chain: ChainData) {
+  return chain.axelarChainName ? chain.axelarChainName : chain.networkName;
 }

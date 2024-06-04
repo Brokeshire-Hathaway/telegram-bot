@@ -1,12 +1,12 @@
-import { ChainData, Token } from "@0xsquid/squid-types";
+import { MULTICALL_ADDRESS, NATIVE_TOKEN, address } from "../../squidDB/common";
 import {
-  MULTICALL_ADDRESS,
-  NATIVE_TOKEN,
-  address,
   getAllChains,
   getTokensOfChain,
   getViemClient,
-} from "../../common/squidDB.js";
+  ChainData,
+  TokenInformation,
+  getNetworkName,
+} from "../../squidDB";
 import { getSmartAccountFromChainData } from "./index.js";
 import { BiconomySmartAccountV2 } from "@biconomy/account";
 import { Hex, PublicClient, erc20Abi, formatUnits, multicall3Abi } from "viem";
@@ -20,7 +20,7 @@ const NativeTokenResult = z.object({
 type Contract = typeof erc20Abi | typeof multicall3Abi;
 async function getAccountBalanceOfTokens(
   account: BiconomySmartAccountV2,
-  tokens: Token[],
+  tokens: Pick<TokenInformation, "symbol" | "address" | "decimals">[],
   client: PublicClient,
 ): Promise<Map<string, string>> {
   const accountAddress = await account.getAccountAddress();
@@ -97,7 +97,7 @@ async function getAccountBalanceOfChain(
   network: ChainData,
 ): Promise<[string, Map<string, string>]> {
   const tokens = getTokensOfChain(network);
-  if (tokens.length == 0) return [network.axelarChainName, new Map()];
+  if (tokens.length == 0) return [getNetworkName(network), new Map()];
   const account = await getSmartAccountFromChainData(userId, network);
   return [
     network.networkName,
