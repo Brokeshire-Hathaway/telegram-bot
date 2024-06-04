@@ -1,5 +1,6 @@
 import { encodeFunctionData, erc20Abi } from "viem";
 import { NATIVE_TOKEN } from "../../squidDB/common";
+import { Transaction } from "../../squidDB";
 
 export function getSendTransaction(
   tokenAddress: `0x${string}`,
@@ -25,6 +26,8 @@ export default function (
   tokenAddress: `0x${string}`,
   recipientAddress: `0x${string}`,
   amount: bigint,
-) {
-  return [getSendTransaction(tokenAddress, recipientAddress, amount)];
+): Transaction[] {
+  return [
+    getSendTransaction(tokenAddress, recipientAddress, amount) as Transaction,
+  ];
 }
