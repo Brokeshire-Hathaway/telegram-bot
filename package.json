@@ -6,7 +6,6 @@
   "license": "MIT",
   "type": "commonjs",
   "dependencies": {
-    "@0xsquid/sdk": "^2.8.0",
     "@0xsquid/squid-types": "^0.1.75",
     "@biconomy/account": "^4.0.0",
     "@grammyjs/conversations": "^1.1.2",
@@ -19,6 +18,8 @@
     "fuse.js": "^7.0.0",
     "grammy": "^1.19.2",
     "markdown-it": "^14.1.0",
+    "squidv1": "npm:@0xsquid/sdk@^1.0.0",
+    "squidv2": "npm:@0xsquid/sdk@^2.8.11",
     "slonik": "^44.0.0",
     "tslib": "^2.6.2",
     "viem": "2.8.6",

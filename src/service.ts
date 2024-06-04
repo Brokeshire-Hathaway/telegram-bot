@@ -3,7 +3,7 @@ import bodyParser from "body-parser";
 import sendRouter from "./features/send";
 import swapRouter from "./features/swap";
 import frontendApiRouter from "./features/frontendApi";
-import { initSquid } from "./common/squidDB";
+import { initSquid } from "./squidDB";
 import { ENVIRONMENT } from "./common/settings";
 import cors from "cors";
 
