@@ -1,20 +1,34 @@
-import { Token } from "@0xsquid/squid-types";
+import { SquidData, Token } from "@0xsquid/squid-types";
 import * as squid1 from "./v1";
 import * as squid2 from "./v2";
 import { ENVIRONMENT, Settings } from "../common/settings";
 import z from "zod";
-import { ChainData as ChainDataV1, TokenData } from "squidv1";
-import { ChainData as ChainDataV2 } from "@0xsquid/squid-types";
+import {
+  ChainData as ChainDataV1,
+  TokenData,
+  RouteData as RouteDataV1,
+  FeeCost as FeeCostV1,
+  GasCost as GasCostV1,
+} from "squidv1";
+import {
+  ChainData as ChainDataV2,
+  RouteResponse,
+  FeeCost as FeeCostV2,
+  GasCost as GasCostV2,
+} from "@0xsquid/squid-types";
 import {
   Chain,
+  Hex,
   PublicClient,
   createPublicClient,
   defineChain,
   http,
+  parseUnits,
 } from "viem";
-import { MULTICALL_ADDRESS, address } from "./common";
+import { MULTICALL_ADDRESS, RouteType, address } from "./common";
 import { addUsdPriceToToken, getCoingeckoToken } from "../common/coingeckoDB";
 import Fuse from "fuse.js";
+import { getSmartAccountFromChainData } from "../features/wallet";
 
 export type ChainData = ChainDataV1 | ChainDataV2;
 
@@ -163,4 +177,147 @@ export function getNetworkInformation(
   const searchNetwork = fuse.search(networkName);
   if (searchNetwork.length === 0) return undefined;
   return searchNetwork[0].item;
+}
+
+export function getChainByChainId(
+  chainId: string | number,
+  version: Version | undefined = undefined,
+) {
+  return getSquid(version).chains.find(
+    (v) => v.chainId.toString() === chainId.toString(),
+  );
+}
+
+type RouteToken = Pick<TokenInformation, "decimals" | "address">;
+export async function getRouteWithEmberAccount(
+  type: RouteType,
+  amount: string,
+  fromNetwork: ChainData,
+  fromToken: RouteToken,
+  toNetwork: ChainData,
+  toToken: RouteToken,
+  slippage: number,
+  identifier: string,
+  version: Version | undefined = undefined,
+) {
+  const account = await getSmartAccountFromChainData(identifier, fromNetwork);
+  const receiverAccount = await getSmartAccountFromChainData(
+    identifier,
+    toNetwork,
+  );
+  const fromAmount = parseUnits(
+    amount,
+    type === "swap" ? fromToken.decimals : toToken.decimals,
+  ).toString();
+  return await getRoute(
+    type,
+    fromAmount,
+    fromNetwork.chainId,
+    fromToken.address,
+    toNetwork.chainId,
+    toToken.address,
+    slippage,
+    await account.getAccountAddress(),
+    await receiverAccount.getAccountAddress(),
+    version,
+  );
+}
+
+export type RouteData = RouteDataV1 | RouteResponse["route"];
+export async function getRoute(
+  type: RouteType,
+  amount: string,
+  fromNetworkChainId: string | number,
+  fromTokenAddress: string,
+  toNetworkChainId: string | number,
+  toTokenAddress: string,
+  slippage: number,
+  fromAddress: string,
+  toAddress: string,
+  version: Version | undefined = undefined,
+) {
+  const squidVersion = getVersion(version);
+  if (squidVersion === 2)
+    return squid2._v2getRoute(
+      type,
+      amount,
+      fromNetworkChainId.toString(),
+      fromTokenAddress,
+      toNetworkChainId.toString(),
+      toTokenAddress,
+      slippage,
+      fromAddress,
+      toAddress,
+    );
+  return squid1._v1getRoute(
+    type,
+    amount,
+    fromNetworkChainId,
+    fromTokenAddress,
+    toNetworkChainId,
+    toTokenAddress,
+    slippage,
+    fromAddress,
+    toAddress,
+  );
+}
+type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };
+type XOR<T, U> = T | U extends object
+  ? (Without<T, U> & U) | (Without<U, T> & T)
+  : T | U;
+export type RouteRequest = XOR<
+  NonNullable<RouteDataV1["transactionRequest"]>,
+  SquidData
+>;
+
+export function getTargetAddress(route: RouteRequest) {
+  return (route.targetAddress ? route.targetAddress : route.target) as Hex;
+}
+
+export type Transaction = {
+  to: `0x${string}`;
+  data?: string;
+  value?: string;
+};
+export function routeRequestToTransaction(route: RouteRequest): Transaction {
+  return {
+    to: getTargetAddress(route),
+    data: route.data,
+    value: route.value,
+  };
+}
+
+function addCost(
+  costs: Map<string, bigint>,
+  txCosts: { token: { symbol: string; decimals: number }; amount: string }[],
+) {
+  for (const cost of txCosts) {
+    const previewCost = costs.get(cost.token.symbol) || BigInt(0);
+    costs.set(cost.token.symbol, previewCost + BigInt(cost.amount));
+  }
+}
+
+type FeeCost = FeeCostV1 | FeeCostV2;
+type GasCost = GasCostV1 | GasCostV2;
+export async function routeFeesToTokenMap(
+  feeCosts: FeeCost[],
+  gasCosts: GasCost[],
+): Promise<[TokenInformation[], Map<string, bigint>]> {
+  const tokenMap = new Map(feeCosts.map((v) => [v.token.symbol, v.token]));
+  for (const gasCost of gasCosts) {
+    tokenMap.set(gasCost.token.symbol, gasCost.token);
+  }
+  const costs = new Map<string, bigint>();
+  addCost(costs, feeCosts);
+  addCost(costs, gasCosts);
+  const tokens = [] as TokenInformation[];
+  for (const token of tokenMap.values()) {
+    if (!token.coingeckoId) throw Error("Coingecko id is not set for token");
+    const tokenInfo = await addUsdPriceToToken(token, {
+      id: token.coingeckoId,
+    });
+    if (!tokenInfo) continue;
+    tokens.push(tokenInfo);
+  }
+  return [tokens, costs];
 }

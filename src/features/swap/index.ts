@@ -3,12 +3,12 @@ import z from "zod";
 import { UniversalAddress } from "../send/index.js";
 import { costsToUsd, formatAmount } from "../../common/formatters.js";
 import {
-  RouteType,
   getNetworkInformation,
   getRouteWithEmberAccount,
   getTokenInformation,
   routeFeesToTokenMap,
-} from "../../common/squidDB.js";
+} from "../../squidDB";
+import { RouteType } from "../../squidDB/common.js";
 import { createTransaction, getTransactionUrl } from "../frontendApi/common.js";
 
 // Create the router

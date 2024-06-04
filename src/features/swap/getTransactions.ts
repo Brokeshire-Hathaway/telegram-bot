@@ -1,19 +1,23 @@
-import { Transaction } from "@biconomy/account";
-import { encodeFunctionData, getContract, erc20Abi } from "viem";
+import { encodeFunctionData, getContract, erc20Abi, Hex } from "viem";
 import {
-  NATIVE_TOKEN,
   getChainByChainId,
   getRoute,
   getTokenByAddresAndChainId,
   getViemClient,
-} from "../../common/squidDB.js";
-import { ChainData, SquidData, Token } from "@0xsquid/squid-types";
+  ChainData,
+  TokenInformation,
+  RouteRequest,
+  getTargetAddress,
+  routeRequestToTransaction,
+  Transaction,
+} from "../../squidDB";
+import { NATIVE_TOKEN } from "../../squidDB/common";
 
 async function preSwapContracts(
-  fromToken: Token,
+  fromToken: Pick<TokenInformation, "address">,
   network: ChainData,
   accountAddress: `0x${string}`,
-  route: SquidData,
+  route: RouteRequest,
   fromAmount: bigint,
 ): Promise<Transaction[]> {
   if (fromToken.address === NATIVE_TOKEN) return [];
@@ -27,7 +31,7 @@ async function preSwapContracts(
   });
   const allowance = await contract.read.allowance([
     accountAddress,
-    route.target as `0x${string}`,
+    getTargetAddress(route),
   ]);
   if (fromAmount <= allowance) {
     return [];
@@ -41,18 +45,10 @@ async function preSwapContracts(
   });
   return [
     {
-      to: fromToken.address,
+      to: fromToken.address as Hex,
       data: dataApprove,
     },
   ];
-}
-
-function buildTransaction(route: SquidData): Transaction {
-  return {
-    to: route.target,
-    data: route.data,
-    value: route.value,
-  };
 }
 
 export default async function (
@@ -76,21 +72,21 @@ export default async function (
   );
   if (!route.transactionRequest)
     throw new Error("Route could not be constructed");
-  const request = route.transactionRequest;
 
   const network = getChainByChainId(fromChainId);
   if (!network) throw new Error("Network could not be found");
 
   const fromToken = getTokenByAddresAndChainId(fromChainId, fromTokenAddress);
   if (!fromToken) throw new Error("Token could not be found");
+  const request = route.transactionRequest as RouteRequest;
   const transactions = (
     await preSwapContracts(
       fromToken,
       network,
       accountAddress,
-      route.transactionRequest,
+      request,
       fromAmount,
     )
-  ).concat([buildTransaction(request)]);
+  ).concat([routeRequestToTransaction(request)]);
   return transactions;
 }
