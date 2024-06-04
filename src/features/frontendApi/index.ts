@@ -1,10 +1,6 @@
 import express, { Request, Response } from "express";
-import {
-  address,
-  getAllChains,
-  getTokensDecimals,
-  getViemChain,
-} from "../../common/squidDB.js";
+import { address } from "../../squidDB/common.js";
+import { getAllChains, getTokensDecimals, getViemChain } from "../../squidDB";
 import { getPool, sql } from "../../common/database.js";
 import { Route, Transaction } from "./common.js";
 import { Transaction as DataTransaction } from "@biconomy/account";

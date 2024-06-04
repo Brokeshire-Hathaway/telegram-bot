@@ -5,7 +5,7 @@ const booleanString = z.preprocess(
   (val) => (val === "true" ? true : val === "false" ? false : val),
   z.boolean(),
 );
-const Settings = z.object({
+export const Settings = z.object({
   IS_TESTNET: booleanString,
   ARBITRUM_RPC_URL: z.string().optional(),
   EMBER_CORE_URL: z.string().url().default("http://ember-core"),
@@ -21,6 +21,7 @@ const Settings = z.object({
   FUNDING_WALLET_ID: z.string().optional(),
   FRONTEND_URL: z.string(),
   SQUID_INTEGRATOR_ID: z.string(),
+  SQUID_DEFAULT_VERSION: z.union([z.literal(1), z.literal(2)]).default(1),
   NUMBER_OF_CODES_PER_USER: z.number().default(5),
 
   // Feature flag for using's ember custom wallet implementation
