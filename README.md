@@ -36,6 +36,7 @@ DB_PORT=5432
 FUNDING_WALLET_ID="random_id_for_ember_wallet"
 FRONTEND_URL="http://127.0.0.1:3001"
 SQUID_INTEGRATOR_ID="ASK_FOR_SQUID_V2_INTEGRATOR_ID"
+SQUID_DEFAULT_VERSION=1
 ```
 
 _Warning: Defining `localhost` for the `FRONTEND_URL` environment variable
