@@ -17,7 +17,7 @@ export function getSendTransaction(
   return {
     to: recipientAddress,
     data: "0x",
-    value: amount,
+    value: amount.toString(),
   };
 }
 

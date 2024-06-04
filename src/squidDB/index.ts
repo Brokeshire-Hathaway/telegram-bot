@@ -29,6 +29,7 @@ import { MULTICALL_ADDRESS, RouteType, address } from "./common";
 import { addUsdPriceToToken, getCoingeckoToken } from "../common/coingeckoDB";
 import Fuse from "fuse.js";
 import { getSmartAccountFromChainData } from "../features/wallet";
+import { BigNumberish } from "@biconomy/account";
 
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };
 type XOR<T, U> = T | U extends object
@@ -291,13 +292,13 @@ export function getTargetAddress(route: RouteRequest) {
 export type Transaction = {
   to: `0x${string}`;
   data?: string;
-  value?: bigint;
+  value?: BigNumberish;
 };
 export function routeRequestToTransaction(route: RouteRequest): Transaction {
   return {
     to: getTargetAddress(route),
     data: route.data,
-    value: BigInt(route.value),
+    value: route.value as Hex,
   };
 }
 
