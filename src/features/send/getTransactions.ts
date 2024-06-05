@@ -26,8 +26,10 @@ export default function (
   tokenAddress: `0x${string}`,
   recipientAddress: `0x${string}`,
   amount: bigint,
-): Transaction[] {
-  return [
-    getSendTransaction(tokenAddress, recipientAddress, amount) as Transaction,
-  ];
+) {
+  return getSendTransaction(
+    tokenAddress,
+    recipientAddress,
+    amount,
+  ) as Transaction;
 }

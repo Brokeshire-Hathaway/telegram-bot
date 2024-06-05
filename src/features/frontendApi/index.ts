@@ -11,7 +11,7 @@ import { Route, Transaction } from "./common.js";
 import z from "zod";
 import { formatUnits } from "viem";
 import { USD_DISPLAY_DECIMALS } from "../../common/formatters.js";
-import getSwapTransactions from "../swap/getTransactions.js";
+import getSwapTransactions from "../swap/getTransaction.js";
 import getSendTransactions from "../send/getTransactions.js";
 import { Code } from "../user/codes.js";
 import { ENVIRONMENT } from "../../common/settings.js";
@@ -102,12 +102,11 @@ router.get("/transaction/:uuid", async (req: Request, res: Response) => {
       fees: formatUnits(transaction.fees, USD_DISPLAY_DECIMALS),
       total: formatUnits(transaction.total, USD_DISPLAY_DECIMALS),
       routes: transaction.routes.map((v) => ({
-        amount: formatUnits(
-          v.amount,
-          getTokensDecimals(v.chain_id, v.token_address),
-        ),
+        amount: v.amount.toString(),
+        decimals: getTokensDecimals(v.chain_id, v.token_address),
         type: v.type,
         token: v.token,
+        token_address: v.token_address,
         address: v.address,
         chain: v.chain,
         chain_id: v.chain_id,
@@ -121,7 +120,7 @@ router.get("/transaction/:uuid", async (req: Request, res: Response) => {
 });
 
 type ConsolidatedTransaction = {
-  transactions: DataTransaction[];
+  transaction: DataTransaction;
   max_fee_per_gas?: string;
   call_gas_limit?: string;
   max_priority_fee_per_gas?: string;
@@ -132,10 +131,10 @@ async function getTransactionsAndGasFee(
 ): Promise<ConsolidatedTransaction> {
   if (transactionPreview.routes.length < 2)
     throw new Error("Inconsistent route, try again later.");
-  let transactions;
+  let transaction;
   switch (transactionPreview.routes[0].type) {
     case "swap":
-      transactions = await getSwapTransactions(
+      transaction = await getSwapTransactions(
         accountAddress,
         transactionPreview.routes[0].chain_id,
         transactionPreview.routes[0].token_address,
@@ -151,7 +150,7 @@ async function getTransactionsAndGasFee(
       );
       if (!recipientAddress.success)
         throw new Error("Address belongs to owner");
-      transactions = getSendTransactions(
+      transaction = getSendTransactions(
         transactionPreview.routes[0].token_address,
         recipientAddress.data,
         transactionPreview.routes[0].amount,
@@ -159,9 +158,9 @@ async function getTransactionsAndGasFee(
       break;
     }
   }
-  if (!transactions) throw new Error("Transactions not found");
+  if (!transaction) throw new Error("Transactions not found");
   return {
-    transactions,
+    transaction,
     call_gas_limit: transactionPreview.call_gas_limit?.toString(),
     max_fee_per_gas: transactionPreview.max_fee_per_gas?.toString(),
     max_priority_fee_per_gas:
