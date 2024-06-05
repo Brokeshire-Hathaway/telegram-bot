@@ -41,7 +41,7 @@ async function preSwapContracts(
   const dataApprove = encodeFunctionData({
     abi: erc20Abi,
     functionName: "approve",
-    args: [route.target as `0x${string}`, fromAmount],
+    args: [getTargetAddress(route), fromAmount],
   });
   return [
     {
