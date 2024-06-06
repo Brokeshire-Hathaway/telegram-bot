@@ -186,4 +186,37 @@ router.get("/code/:uuid", async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Failed fetching access code" });
   }
 });
+
+const Wallet = z.object({
+  address: address,
+});
+router.post("/wallet/:uuid", async (req: Request, res: Response) => {
+  const result = await Wallet.safeParseAsync(req.body);
+  if (!result.success) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid request body",
+      error: result.error,
+    });
+  }
+  const body = result.data;
+  const pool = await getPool();
+  try {
+    await pool.query(sql.typeAlias("void")`
+      INSERT INTO "user_address" (user_id, address)
+      VALUES (
+        (
+          SELECT "user".id FROM "transaction"
+          INNER JOIN "user" ON "user".id = "transaction".created_by
+          WHERE "transaction".identifier = ${req.params.uuid}
+        ),
+        ${body.address}
+      )
+      ON CONFLICT (user_id, "address") DO NOTHING
+    `);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Failed fetching access code" });
+  }
+});
 export default router;

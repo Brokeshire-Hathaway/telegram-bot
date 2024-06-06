@@ -82,6 +82,9 @@ CREATE TABLE "user_address" (
   "address" VARCHAR NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+CREATE UNIQUE INDEX user_address_idx ON "user_address" (
+  user_id, "address"
+);
 
 CREATE TABLE user_waitlist (
   id SERIAL PRIMARY KEY,
