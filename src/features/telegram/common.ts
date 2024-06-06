@@ -2,6 +2,7 @@ import { ConversationFlavor } from "@grammyjs/conversations";
 import { Context, SessionFlavor } from "grammy";
 import MarkdownIt from "markdown-it";
 import { messageEmber } from "../messageEmber/messageEmber";
+import { telemetryChatMessage } from "../telemetry";
 
 interface MySession {}
 export type MyContext = Context & SessionFlavor<MySession> & ConversationFlavor;
@@ -9,6 +10,7 @@ export type MyContext = Context & SessionFlavor<MySession> & ConversationFlavor;
 export async function sendResponseFromAgentTeam(
   ctx: MyContext,
   endpoint: string,
+  telemetry: boolean = false,
 ) {
   let messageId: number | undefined;
   let text: string | undefined;
@@ -45,6 +47,7 @@ export async function sendResponseFromAgentTeam(
       onActivity,
     );
     await sendFormattedMessage(ctx, reply);
+    if (telemetry) await telemetryChatMessage(ctx.from.id, reply, true);
   } catch (error) {
     console.error(error);
     await sendFormattedMessage(

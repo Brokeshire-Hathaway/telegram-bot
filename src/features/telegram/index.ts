@@ -11,6 +11,7 @@ import { commands } from "./commands";
 import { walletCommands } from "./walletCommands";
 import { addUserToWaitList, isUserWhitelisted } from "../user";
 import { DEFAULT_EMBER_MESSAGE } from "./messages";
+import { telemetryChatMessage } from "../telemetry";
 
 export function startTelegramBot() {
   const bot = new Bot<MyContext>(ENVIRONMENT.TELEGRAM_BOT_TOKEN);
@@ -71,7 +72,12 @@ export function startTelegramBot() {
       ]);
       return;
     }
-    await sendResponseFromAgentTeam(ctx, `/v1/threads/${ctx.chat.id}/private`);
+    await sendResponseFromAgentTeam(
+      ctx,
+      `/v1/threads/${ctx.chat.id}/private`,
+      true,
+    );
+    await telemetryChatMessage(ctx.chat.id, ctx.message.text);
   });
 
   bot.start();
