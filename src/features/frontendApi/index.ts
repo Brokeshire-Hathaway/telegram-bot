@@ -72,6 +72,7 @@ router.get("/transaction/:uuid", async (req: Request, res: Response) => {
         WHERE
           "transaction".identifier = ${req.params.uuid}
           AND "transaction".created_at >= NOW() - INTERVAL '5 minutes'
+          AND NOT "transaction".has_executed
         ORDER BY route.order
       )
       SELECT
@@ -170,6 +171,32 @@ async function getTransactionsAndGasFee(
   };
 }
 
+const TransactionPost = z.object({
+  has_executed: z.boolean(),
+});
+router.put("/transaction/:uuid", async (req: Request, res: Response) => {
+  const result = await TransactionPost.safeParseAsync(req.body);
+  if (!result.success) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid request body",
+      error: result.error,
+    });
+  }
+  const body = result.data;
+  const pool = await getPool();
+  try {
+    await pool.query(sql.typeAlias("void")`
+      UPDATE "transaction"
+      SET has_executed = ${body.has_executed}
+      WHERE identifier = ${req.params.uuid}
+    `);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Failed update executing" });
+  }
+});
+
 router.get("/code/:uuid", async (req: Request, res: Response) => {
   const pool = await getPool();
   try {
@@ -218,7 +245,7 @@ router.post("/wallet/:uuid", async (req: Request, res: Response) => {
     `);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Failed fetching access code" });
+    return res.status(500).json({ message: "Failed updating address" });
   }
 });
 export default router;
