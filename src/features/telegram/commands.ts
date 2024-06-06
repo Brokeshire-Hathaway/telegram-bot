@@ -2,11 +2,12 @@ import { Composer } from "grammy";
 import { fundWallet, getEmberWalletAddress } from "../wallet/fund";
 import {
   CODE_REDEEMED_SUCCESS,
+  DEFAULT_EMBER_MESSAGE,
   START_MESSAGE,
   SUCCESS_FUND_MESSAGE,
 } from "./messages";
 import { MyContext, sendFormattedMessage } from "./common";
-import { isUserAdmin } from "../user";
+import { addUserToWaitList, isUserAdmin, isUserWhitelisted } from "../user";
 import { createReferralCodes, redeemCode } from "../user/codes";
 import { getCodeUrl } from "../frontendApi/common";
 import { getPool } from "../../common/database";
@@ -15,6 +16,13 @@ export const commands = new Composer<MyContext>();
 
 commands.command("start", async (ctx) => {
   if (!ctx.from) return;
+  if (!(await isUserWhitelisted(ctx.chat.id))) {
+    await Promise.all([
+      addUserToWaitList(ctx.chat.id, ctx.chat.username || ""),
+      sendFormattedMessage(ctx, DEFAULT_EMBER_MESSAGE),
+    ]);
+    return;
+  }
   return await sendFormattedMessage(ctx, START_MESSAGE);
 });
 
@@ -51,7 +59,8 @@ commands.command("join", async (ctx) => {
     return await ctx.reply("Code redemption failed");
   }
 
-  return await ctx.reply(CODE_REDEEMED_SUCCESS(codes));
+  await ctx.reply(CODE_REDEEMED_SUCCESS(codes));
+  return await sendFormattedMessage(ctx, START_MESSAGE);
 });
 
 commands.command("createReferralUrl", async (ctx) => {
