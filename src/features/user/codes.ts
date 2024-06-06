@@ -53,7 +53,7 @@ export async function redeemCode(
         WHERE user_id = ${id};
     `);
     await transaction.query(sql.typeAlias("void")`
-        INSERT INTO user_whitelist (user_id, username, access_code_id)
+        INSERT INTO "user" (telegram_id, username, access_code_id)
         VALUES (${id}, ${username}, ${accessCode.id})
     `);
     return await createReferralCodes(
