@@ -12,8 +12,8 @@ const User = z.object({
 export async function isUserWhitelisted(userId: number): Promise<boolean> {
   const pool = await getPool();
   return await pool.exists(sql.typeAlias("id")`
-    SELECT id FROM user_whitelist
-    WHERE user_id = ${BigInt(userId)}
+    SELECT id FROM "user"
+    WHERE telegram_id = ${BigInt(userId)}
   `);
 }
 
@@ -29,7 +29,7 @@ export async function addUserToWaitList(userId: number, username: string) {
 export async function isUserAdmin(userId: number) {
   const pool = await getPool();
   return await pool.exists(sql.type(User.pick({ is_admin: true }))`
-    SELECT is_admin FROM user_whitelist
-    WHERE user_id = ${BigInt(userId)} and is_admin
+    SELECT is_admin FROM "user"
+    WHERE telegram_id = ${BigInt(userId)} and is_admin
   `);
 }
