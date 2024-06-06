@@ -46,6 +46,7 @@ type TransactionCreate = z.infer<typeof TransactionCreate>;
 export async function createTransaction(
   transaction: TransactionCreate,
   routes: RouteCreate[],
+  userId: number | string,
 ) {
   const pool = await getPool();
   return pool.transaction(async (dbTransaction) => {
@@ -57,14 +58,16 @@ export async function createTransaction(
           total,
           call_gas_limit,
           max_fee_per_gas,
-          max_priority_fee_per_gas
+          max_priority_fee_per_gas,
+          created_by
         )
         VALUES (
             ${transaction.fees},
             ${transaction.total},
             ${transaction.call_gas_limit || null},
             ${transaction.max_fee_per_gas || null},
-            ${transaction.max_priority_fee_per_gas || null}
+            ${transaction.max_priority_fee_per_gas || null},
+            (SELECT id FROM "user" WHERE telegram_id = ${BigInt(userId)})
         )
         RETURNING id, identifier
     `);
