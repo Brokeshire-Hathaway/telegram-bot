@@ -1,8 +1,7 @@
 import { ENVIRONMENT } from "../../common/settings";
 
 const EXPLANATION_EMBER_WALLET = ENVIRONMENT.FF_EMBER_WALLET
-  ? `
-- Check your Ember wallet address using \`/address\`.
+  ? `- Check your Ember wallet address using \`/address\`.
 - Send funds in your preferred EVM chain to that address.
 - Check the funds were added to your account correctly using the \`/balance\` command.
 
@@ -10,14 +9,21 @@ What you can do:
 `
   : "";
 
-export const START_MESSAGE = `Hi! To start using Ember:
-  ${EXPLANATION_EMBER_WALLET}
+export const START_MESSAGE = `Hey there, crypto enthusiast! 🔥 I'm Ember, your charismatic companion in the vast universe of crypto and DeFi! 😎🚀 Whether you're a seasoned trader or just starting out, I'm here to light up your journey.
 
-- Ask Ember about what he can do for you.
-- Ask about a project or token to get an overview and market data.
-- Also support contract addresses for new tokens that might not be in our database.
-- Send tokens to any wallet by chatting with Ember.
-- Swap different tokens between any pair of EVM chains.`;
+Curious about what Ember can do for you? Here's the lowdown: 
+
+1️⃣ Ask Ember Anything: From the latest DeFi trends to sharing my knowledge about the entire crypto cosmos, I'm here to answer your crypto queries. Just ask!
+
+2️⃣ Deep Dive into Projects/Tokens: Want to know more about a particular project or token? I'll provide you with a comprehensive overview and up-to-the-minute market data. 📊
+
+3️⃣ New Token Support: Got a fresh token that's not in our database yet? No worries! Share the contract address, and I'll dig up all the info you need. 🕵️‍♂️
+
+4️⃣ Send Tokens with Ease: Need to transfer tokens to another wallet? Chat with me, and I'll handle the transaction securely and swiftly. 💸
+
+5️⃣ Swap Tokens Across Chains: Ready to swap tokens between EVM chains? I'm your go-to AI for seamless, cross-chain transactions. 🔄
+
+So, whether you're here to trade, learn, or just have some fun, I'm all fired up to assist you! Let's get this crypto party started! 🎉`;
 
 export const SUCCESS_FUND_MESSAGE = (
   url: string,
@@ -37,8 +43,11 @@ Can't wait to assist you on your crypto journey! 🔥`;
 
 export const CODE_REDEEMED_SUCCESS = (codes: readonly { code: string }[]) => {
   const codesMessage = codes.map((v) => `- ${v.code}`).join("\n");
-  return `Code redemption successful!
+  return `Congratulations! 🎉 Your exclusive invite code has been successfully redeemed. You now have 5 shiny new invite codes to share with your friends and fellow crypto enthusiasts. 💌
 
-You can invite your friends to use Ember with the following codes:
-${codesMessage}`;
+${codesMessage}
+
+Spread the warmth and bring more people into our growing family! 🌟 Rewards await, but be sure to only invite individuals who will actively engage with Ember. Inactive users won't contribute to unlocking more invite codes and rewards for you. 
+
+Together, let's fuel the flames of DeFi innovation! 🔐🔗💰`;
 };
