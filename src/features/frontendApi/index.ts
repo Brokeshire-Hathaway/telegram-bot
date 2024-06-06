@@ -69,7 +69,9 @@ router.get("/transaction/:uuid", async (req: Request, res: Response) => {
           ) as route
         FROM "transaction"
         LEFT JOIN route ON route.transaction_id = "transaction".id
-        WHERE "transaction".identifier = ${req.params.uuid}
+        WHERE
+          "transaction".identifier = ${req.params.uuid}
+          AND "transaction".created_at >= NOW() - INTERVAL '5 minutes'
         ORDER BY route.order
       )
       SELECT
