@@ -123,6 +123,7 @@ router.post("/prepare", async (req: Request, res: Response) => {
           address: body.recipient_address,
         },
       ],
+      body.sender_address.identifier,
     );
 
     return res.json({
