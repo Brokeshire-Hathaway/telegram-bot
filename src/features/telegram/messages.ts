@@ -1,17 +1,6 @@
-import { ENVIRONMENT } from "../../common/settings";
-
-const EXPLANATION_EMBER_WALLET = ENVIRONMENT.FF_EMBER_WALLET
-  ? `- Check your Ember wallet address using \`/address\`.
-- Send funds in your preferred EVM chain to that address.
-- Check the funds were added to your account correctly using the \`/balance\` command.
-
-What you can do:
-`
-  : "";
-
 export const START_MESSAGE = `Hey there, crypto enthusiast! 🔥 I'm Ember, your charismatic companion in the vast universe of crypto and DeFi! 😎🚀 Whether you're a seasoned trader or just starting out, I'm here to light up your journey.
 
-Curious about what Ember can do for you? Here's the lowdown: 
+Curious about what Ember can do for you? Here's the lowdown:
 
 1️⃣ Ask Ember Anything: From the latest DeFi trends to sharing my knowledge about the entire crypto cosmos, I'm here to answer your crypto queries. Just ask!
 
@@ -47,7 +36,7 @@ export const CODE_REDEEMED_SUCCESS = (codes: readonly { code: string }[]) => {
 
 ${codesMessage}
 
-Spread the warmth and bring more people into our growing family! 🌟 Rewards await, but be sure to only invite individuals who will actively engage with Ember. Inactive users won't contribute to unlocking more invite codes and rewards for you. 
+Spread the warmth and bring more people into our growing family! 🌟 Rewards await, but be sure to only invite individuals who will actively engage with Ember. Inactive users won't contribute to unlocking more invite codes and rewards for you.
 
 Together, let's fuel the flames of DeFi innovation! 🔐🔗💰`;
 };

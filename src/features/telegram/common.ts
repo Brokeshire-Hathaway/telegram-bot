@@ -109,9 +109,11 @@ function markdownToHtml(messages: string, italicize: boolean): string {
     },
   );
 
-  // Replace all occurrences of <p> and </p> because Markdown-It doesn't have an easy way to disable them
+  // Replace all occurrences of <p>, <h[0-9]> and </p> because Markdown-It doesn't have an easy way to disable them
   html = html.replace(/<p>/g, italicize ? "<i>" : "");
   html = html.replace(/<\/p>/g, italicize ? "</i>\n" : "\n");
+  html = html.replace(/<h[0-9]>/g, "<b>");
+  html = html.replace(/<\/h[0-9]>/g, "</b>");
 
   // Telegram specific syntax formatting
   html = html.replace(/\|\|(.*?)\|\|/g, "<tg-spoiler>$1</tg-spoiler>");
