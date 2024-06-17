@@ -1,18 +1,14 @@
 export const START_MESSAGE = `Hey there, crypto enthusiast! 🔥 I'm Ember, your charismatic companion in the vast universe of crypto and DeFi! 😎🚀 Whether you're a seasoned trader or just starting out, I'm here to light up your journey.
 
-Curious about what Ember can do for you? Here's the lowdown:
+Curious about what Ember can do for you? Try the following messages:
 
-1️⃣ Ask Ember Anything: From the latest DeFi trends to sharing my knowledge about the entire crypto cosmos, I'm here to answer your crypto queries. Just ask!
+1️⃣ Give me information on arb
 
-2️⃣ Deep Dive into Projects/Tokens: Want to know more about a particular project or token? I'll provide you with a comprehensive overview and up-to-the-minute market data. 📊
+2️⃣ I want to buy 5 matic in polygon
 
-3️⃣ New Token Support: Got a fresh token that's not in our database yet? No worries! Share the contract address, and I'll dig up all the info you need. 🕵️‍♂️
+3️⃣ Send 0.01 eth to Jack
 
-4️⃣ Send Tokens with Ease: Need to transfer tokens to another wallet? Chat with me, and I'll handle the transaction securely and swiftly. 💸
-
-5️⃣ Swap Tokens Across Chains: Ready to swap tokens between EVM chains? I'm your go-to AI for seamless, cross-chain transactions. 🔄
-
-So, whether you're here to trade, learn, or just have some fun, I'm all fired up to assist you! Let's get this crypto party started! 🎉`;
+Use \`/help\` to learn more ways you can use Ember.`;
 
 export const SUCCESS_FUND_MESSAGE = (
   url: string,
@@ -22,13 +18,9 @@ export const SUCCESS_FUND_MESSAGE = (
 
 export const DEFAULT_EMBER_MESSAGE = `Hello there! 🌟
 
-It seems like you're eager to dive into the world of crypto with Ember, and I'm just as excited to have you on board! 🚀
+Got an invite code? 🎉 Simply use the \`/join\` command followed by your code to unlock the full Ember experience.
 
-If you're not yet part of the Ember crew, don't worry, you've been added to our waitlist. 📝 We'll reach out as soon as a spot opens up!
-
-Got an invite code? Fantastic! 🎉 Simply use the \`/join\` command followed by your code to unlock the full Ember experience.
-
-Can't wait to assist you on your crypto journey! 🔥`;
+If you're not yet part of the Ember crew, don't worry, you've been added to our waitlist. 📝 We'll reach out as soon as a spot opens up!`;
 
 export const CODE_REDEEMED_SUCCESS = (codes: readonly { code: string }[]) => {
   const codesMessage = codes.map((v) => `- ${v.code}`).join("\n");
@@ -40,3 +32,5 @@ Spread the warmth and bring more people into our growing family! 🌟 Rewards aw
 
 Together, let's fuel the flames of DeFi innovation! 🔐🔗💰`;
 };
+
+export const HELP_MESSAGE = `Help message placeholder here.`;
