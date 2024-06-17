@@ -20,27 +20,32 @@ commands.command("start", async (ctx) =>
   ),
 );
 
-commands.command("emberWalletAddress", async (ctx) => {
-  await ctx.reply(await getEmberWalletAddress());
-});
+commands.command("emberWalletAddress", async (ctx) =>
+  whiteListMiddleware(
+    ctx,
+    async (ctx) => await ctx.reply(await getEmberWalletAddress()),
+  ),
+);
 
-commands.command("fund", async (ctx) => {
-  if (!ctx.from || !ctx.from.username) return;
-  let transactionUrl;
-  try {
-    transactionUrl = await fundWallet(
-      ctx.from.id.toString(),
-      ctx.from.username,
-      ctx.match,
+commands.command("fund", async (ctx) =>
+  whiteListMiddleware(ctx, async (ctx) => {
+    if (!ctx.from || !ctx.from.username) return;
+    let transactionUrl;
+    try {
+      transactionUrl = await fundWallet(
+        ctx.from.id.toString(),
+        ctx.from.username,
+        ctx.match,
+      );
+    } catch (error) {
+      return ctx.reply(`Failed funding wallet: ${error}`);
+    }
+    return await ctx.api.sendMessage(
+      ctx.from.id,
+      SUCCESS_FUND_MESSAGE(transactionUrl),
     );
-  } catch (error) {
-    return ctx.reply(`Failed funding wallet: ${error}`);
-  }
-  return await ctx.api.sendMessage(
-    ctx.from.id,
-    SUCCESS_FUND_MESSAGE(transactionUrl),
-  );
-});
+  }),
+);
 
 commands.command("join", async (ctx) => {
   if (!ctx.from || !ctx.from.username) return;
