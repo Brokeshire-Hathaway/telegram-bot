@@ -130,6 +130,31 @@ AS
     ) u4
 ;
 
+CREATE MATERIALIZED VIEW mv_user_information
+AS
+    SELECT
+        telegram_id,
+        username,
+        true as did_user_joined,
+        COALESCE(json_agg(ua."address") FILTER (WHERE ua.user_id IS NOT NULL), '[]') AS addresses,
+        COALESCE(json_agg(m."message" ORDER BY m.created_at ASC) FILTER (WHERE m.user_id IS NOT NULL), '[]') AS messages
+    FROM "user"
+    LEFT JOIN "user_address" ua ON ua.user_id = "user".id
+    LEFT JOIN "message" m ON m.user_id = "user".id
+    WHERE access_code_id = 7
+    GROUP BY "user".id
+
+    UNION ALL
+
+    SELECT
+        user_id as telegram_id,
+        username,
+        false as did_user_joined,
+        '[]' AS addresses,
+        '[]' AS messages
+    FROM "user_waitlist"
+;
+
 CREATE TABLE migrations (
   schema_version INT UNIQUE NOT NULL,
   script_name VARCHAR,
