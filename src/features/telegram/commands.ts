@@ -2,29 +2,23 @@ import { Composer } from "grammy";
 import { fundWallet, getEmberWalletAddress } from "../wallet/fund";
 import {
   CODE_REDEEMED_SUCCESS,
-  DEFAULT_EMBER_MESSAGE,
   START_MESSAGE,
   SUCCESS_FUND_MESSAGE,
 } from "./messages";
-import { MyContext, sendFormattedMessage } from "./common";
-import { addUserToWaitList, isUserAdmin, isUserWhitelisted } from "../user";
+import { MyContext, sendFormattedMessage, whiteListMiddleware } from "./common";
+import { isUserAdmin } from "../user";
 import { createReferralCodes, redeemCode } from "../user/codes";
 import { getCodeUrl } from "../frontendApi/common";
 import { getPool } from "../../common/database";
 
 export const commands = new Composer<MyContext>();
 
-commands.command("start", async (ctx) => {
-  if (!ctx.from) return;
-  if (!(await isUserWhitelisted(ctx.chat.id))) {
-    await Promise.all([
-      addUserToWaitList(ctx.chat.id, ctx.chat.username || ""),
-      sendFormattedMessage(ctx, DEFAULT_EMBER_MESSAGE),
-    ]);
-    return;
-  }
-  return await sendFormattedMessage(ctx, START_MESSAGE);
-});
+commands.command("start", async (ctx) =>
+  whiteListMiddleware(
+    ctx,
+    async (ctx) => await sendFormattedMessage(ctx, START_MESSAGE),
+  ),
+);
 
 commands.command("emberWalletAddress", async (ctx) => {
   await ctx.reply(await getEmberWalletAddress());

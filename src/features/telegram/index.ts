@@ -1,16 +1,14 @@
 import { Bot, GrammyError, HttpError, session } from "grammy";
 import {
   MyContext,
-  sendFormattedMessage,
   sendResponseFromAgentTeam,
+  whiteListMiddleware,
 } from "./common";
 import { ENVIRONMENT } from "../../common/settings";
 import { conversations } from "@grammyjs/conversations";
 import { limit } from "@grammyjs/ratelimiter";
 import { commands } from "./commands";
 import { walletCommands } from "./walletCommands";
-import { addUserToWaitList, isUserWhitelisted } from "../user";
-import { DEFAULT_EMBER_MESSAGE } from "./messages";
 import { telemetryChatMessage } from "../telemetry";
 
 export function startTelegramBot() {
@@ -63,22 +61,17 @@ export function startTelegramBot() {
   });
 
   const privateBot = bot.chatType("private");
-  privateBot.on("message:text", async (ctx) => {
-    if (!ctx.chat) return;
-    if (!(await isUserWhitelisted(ctx.chat.id))) {
-      await Promise.all([
-        addUserToWaitList(ctx.chat.id, ctx.chat.username || ""),
-        sendFormattedMessage(ctx, DEFAULT_EMBER_MESSAGE),
-      ]);
-      return;
-    }
-    await sendResponseFromAgentTeam(
-      ctx,
-      `/v1/threads/${ctx.chat.id}/private`,
-      true,
-    );
-    await telemetryChatMessage(ctx.chat.id, ctx.message.text);
-  });
+  privateBot.on("message:text", async (ctx) =>
+    whiteListMiddleware(ctx, async (ctx) => {
+      if (!ctx.chat) return;
+      await sendResponseFromAgentTeam(
+        ctx,
+        `/v1/threads/${ctx.chat.id}/private`,
+        true,
+      );
+      await telemetryChatMessage(ctx.chat.id, ctx.message.text);
+    }),
+  );
 
   bot.start();
 }

@@ -3,6 +3,8 @@ import { Context, SessionFlavor } from "grammy";
 import MarkdownIt from "markdown-it";
 import { messageEmber } from "../messageEmber/messageEmber";
 import { telemetryChatMessage } from "../telemetry";
+import { addUserToWaitList, isUserWhitelisted } from "../user";
+import { DEFAULT_EMBER_MESSAGE } from "./messages";
 
 interface MySession {}
 export type MyContext = Context & SessionFlavor<MySession> & ConversationFlavor;
@@ -118,4 +120,25 @@ function markdownToHtml(messages: string, italicize: boolean): string {
   // Telegram specific syntax formatting
   html = html.replace(/\|\|(.*?)\|\|/g, "<tg-spoiler>$1</tg-spoiler>");
   return html;
+}
+
+type NeededContext = MyContext & {
+  chat?: {
+    id: number;
+    username?: string;
+  };
+};
+export async function whiteListMiddleware<T, C extends NeededContext>(
+  ctx: C,
+  next: (ctx: C) => Promise<T>,
+): Promise<T | undefined> {
+  if (!ctx.chat) return;
+  if (!(await isUserWhitelisted(ctx.chat.id))) {
+    await Promise.all([
+      addUserToWaitList(ctx.chat.id, ctx.chat.username || ""),
+      sendFormattedMessage(ctx, DEFAULT_EMBER_MESSAGE),
+    ]);
+    return;
+  }
+  return await next(ctx);
 }
