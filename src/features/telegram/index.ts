@@ -49,27 +49,55 @@ export function startTelegramBot() {
     `.*@${ENVIRONMENT.TELEGRAM_BOT_USERNAME}.*`,
     "i",
   );
-  groupBot.hears(emberUserRegex, async (ctx) => {
-    if (!ctx.chat) return;
-    await sendResponseFromAgentTeam(ctx, `/v1/threads/${ctx.chat.id}/group`);
-  });
-  groupBot.on("message:text", async (ctx) => {
-    const replyMessageUsername = ctx.message?.reply_to_message?.from?.username;
-    if (replyMessageUsername !== ENVIRONMENT.TELEGRAM_BOT_USERNAME) return;
-    if (!ctx.chat) return;
-    await sendResponseFromAgentTeam(ctx, `/v1/threads/${ctx.chat.id}/group`);
-  });
+  groupBot.hears(emberUserRegex, async (ctx) =>
+    whiteListMiddleware(
+      ctx,
+      async (ctx) => {
+        if (!ctx.chat || !ctx.message.text) return;
+        await Promise.all([
+          telemetryChatMessage(ctx.chat.id, ctx.message.text),
+          sendResponseFromAgentTeam(ctx, `/v1/threads/${ctx.chat.id}/group`),
+        ]);
+      },
+      true,
+    ),
+  );
+  groupBot.on("message:text", async (ctx) =>
+    whiteListMiddleware(
+      ctx,
+      async (ctx) => {
+        if (!ctx.chat) return;
+        const saveMessagePromise = telemetryChatMessage(
+          ctx.chat.id,
+          ctx.message.text,
+        );
+        const replyMessageUsername =
+          ctx.message?.reply_to_message?.from?.username;
+        if (replyMessageUsername !== ENVIRONMENT.TELEGRAM_BOT_USERNAME) {
+          await saveMessagePromise;
+          return;
+        }
+        await Promise.all([
+          sendResponseFromAgentTeam(ctx, `/v1/threads/${ctx.chat.id}/group`),
+          saveMessagePromise,
+        ]);
+      },
+      true,
+    ),
+  );
 
   const privateBot = bot.chatType("private");
   privateBot.on("message:text", async (ctx) =>
     whiteListMiddleware(ctx, async (ctx) => {
       if (!ctx.chat) return;
-      await sendResponseFromAgentTeam(
-        ctx,
-        `/v1/threads/${ctx.chat.id}/private`,
-        true,
-      );
-      await telemetryChatMessage(ctx.chat.id, ctx.message.text);
+      await Promise.all([
+        telemetryChatMessage(ctx.chat.id, ctx.message.text),
+        sendResponseFromAgentTeam(
+          ctx,
+          `/v1/threads/${ctx.chat.id}/private`,
+          true,
+        ),
+      ]);
     }),
   );
 

@@ -3,7 +3,7 @@ import { Context, SessionFlavor } from "grammy";
 import MarkdownIt from "markdown-it";
 import { messageEmber } from "../messageEmber/messageEmber";
 import { telemetryChatMessage } from "../telemetry";
-import { addUserToWaitList, isUserWhitelisted } from "../user";
+import { addUserToWaitList, isUserWhitelisted, whiteListUser } from "../user";
 import { DEFAULT_EMBER_MESSAGE } from "./messages";
 
 interface MySession {}
@@ -131,14 +131,19 @@ type NeededContext = MyContext & {
 export async function whiteListMiddleware<T, C extends NeededContext>(
   ctx: C,
   next: (ctx: C) => Promise<T>,
+  automaticWhiteList: boolean = false,
 ): Promise<T | undefined> {
   if (!ctx.chat) return;
-  if (!(await isUserWhitelisted(ctx.chat.id))) {
+  const isWhiteListed = await isUserWhitelisted(ctx.chat.id);
+  if (!isWhiteListed && !automaticWhiteList) {
     await Promise.all([
       addUserToWaitList(ctx.chat.id, ctx.chat.username || ""),
       sendFormattedMessage(ctx, DEFAULT_EMBER_MESSAGE),
     ]);
     return;
+  }
+  if (!isWhiteListed) {
+    await whiteListUser(ctx.chat.id, ctx.chat.title || "");
   }
   return await next(ctx);
 }

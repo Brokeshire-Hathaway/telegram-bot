@@ -33,3 +33,18 @@ export async function isUserAdmin(userId: number) {
     WHERE telegram_id = ${BigInt(userId)} and is_admin
   `);
 }
+
+export async function whiteListUser(userId: number, username: string) {
+  const pool = await getPool();
+  const id = BigInt(userId);
+  return await pool.transaction(async (transaction) => {
+    await transaction.query(sql.typeAlias("void")`
+        DELETE FROM user_waitlist
+        WHERE user_id = ${id};
+    `);
+    await transaction.query(sql.typeAlias("void")`
+        INSERT INTO "user" (telegram_id, username, access_code_id)
+        VALUES (${id}, ${username}, null)
+    `);
+  });
+}
