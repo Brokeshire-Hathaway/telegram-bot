@@ -35,11 +35,15 @@ export async function getUserLastMessages(
   const id = BigInt(userId);
   return await pool.many(
     sql.type(LastMessage)`
-      SELECT message, is_response FROM "message"
-      INNER JOIN "user" ON "user".id = "message".user_id
-      WHERE "user".telegram_id = ${id}
-      ORDER BY "message".created_at DESC
-      LIMIT ${numberOfMessages}
+      WITH user_context AS (
+        SELECT message, is_response, "message".created_at FROM "message"
+        INNER JOIN "user" ON "user".id = "message".user_id
+        WHERE "user".telegram_id = ${id}
+        ORDER BY "message".created_at ASC
+        LIMIT ${numberOfMessages}
+      )
+      SELECT message, is_response FROM user_context
+      ORDER BY created_at DESC
     `,
   );
 }

@@ -52,7 +52,7 @@ export async function sendResponseFromAgentTeam(
       ctx.message.text,
       endpoint,
       onActivity,
-      lastMessages.slice(1, lastMessages.length),
+      lastMessages.slice(0, lastMessages.length - 1),
     );
     await sendFormattedMessage(ctx, reply);
     if (telemetry) await telemetryChatMessage(ctx.chat.id, reply, true);
