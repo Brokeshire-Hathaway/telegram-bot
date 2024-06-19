@@ -18,7 +18,7 @@ export const SUCCESS_FUND_MESSAGE = (
 
 export const DEFAULT_EMBER_MESSAGE = `Hello there! 🌟
 
-Got an invite code? 🎉 Simply send */join <your invite code>* to unlock the full Ember experience.
+Got an invite code? 🎉 Simply send */join &lt;your invite code&gt;* to unlock the full Ember experience.
 
 Example: \`/join 12345abcd\`
 
