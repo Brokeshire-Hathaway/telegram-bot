@@ -47,20 +47,12 @@ export async function sendResponseFromAgentTeam(
       ctx.chat.id,
       ENVIRONMENT.NUMBER_OF_MESSAGES_FOR_CONTEXT + 1,
     );
-    const context = lastMessages
-      .slice(0, lastMessages.length - 1)
-      .map((v, i) =>
-        v.is_response
-          ? `Ember response:\n${v.message}`
-          : `Message ${i}:\n${v.message}`,
-      )
-      .join("\n");
     const reply = await messageEmber(
       ctx.chat.id.toString()!,
       ctx.message.text,
       endpoint,
       onActivity,
-      context,
+      lastMessages.slice(1, lastMessages.length),
     );
     await sendFormattedMessage(ctx, reply);
     if (telemetry) await telemetryChatMessage(ctx.chat.id, reply, true);

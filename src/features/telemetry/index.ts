@@ -24,6 +24,8 @@ const Message = z.object({
   is_response: z.boolean(),
   created_at: z.date(),
 });
+const LastMessage = Message.pick({ message: true, is_response: true });
+export type LastMessage = z.infer<typeof LastMessage>;
 
 export async function getUserLastMessages(
   userId: number,
@@ -32,16 +34,12 @@ export async function getUserLastMessages(
   const pool = await getPool();
   const id = BigInt(userId);
   return await pool.many(
-    sql.type(Message.pick({ message: true, is_response: true }))`
-      WITH user_context AS (
-        SELECT message, "message".created_at, is_response FROM "message"
-        INNER JOIN "user" ON "user".id = "message".user_id
-        WHERE "user".telegram_id = ${id}
-        ORDER BY "message".created_at DESC
-        LIMIT ${numberOfMessages}
-      )
-      SELECT message, is_response FROM user_context
-      ORDER BY created_at ASC
+    sql.type(LastMessage)`
+      SELECT message, is_response FROM "message"
+      INNER JOIN "user" ON "user".id = "message".user_id
+      WHERE "user".telegram_id = ${id}
+      ORDER BY "message".created_at DESC
+      LIMIT ${numberOfMessages}
     `,
   );
 }

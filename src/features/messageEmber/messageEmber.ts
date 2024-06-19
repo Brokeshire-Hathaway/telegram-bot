@@ -1,5 +1,6 @@
 import z from "zod";
 import { ENVIRONMENT } from "../../common/settings";
+import { LastMessage } from "../telemetry";
 
 const ChatEmberRespons = z.object({
   status: z.union([
@@ -15,7 +16,7 @@ export async function messageEmber(
   message: string,
   endpoint: string,
   onActivity: (message: string) => void,
-  context: string,
+  context: LastMessage[],
 ): Promise<string> {
   const URL = ENVIRONMENT.EMBER_CORE_URL + endpoint;
   const messagePayload = { sender_uid: senderUid, message, context };
