@@ -15,9 +15,10 @@ export async function messageEmber(
   message: string,
   endpoint: string,
   onActivity: (message: string) => void,
+  context: string,
 ): Promise<string> {
   const URL = ENVIRONMENT.EMBER_CORE_URL + endpoint;
-  const messagePayload = { sender_uid: senderUid, message };
+  const messagePayload = { sender_uid: senderUid, message, context };
   const payload = JSON.stringify(messagePayload);
   const response = await fetch(URL, {
     method: "POST",

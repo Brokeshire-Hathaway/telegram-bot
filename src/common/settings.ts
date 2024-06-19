@@ -23,6 +23,7 @@ export const Settings = z.object({
   SQUID_INTEGRATOR_ID: z.string(),
   SQUID_DEFAULT_VERSION: z.union([z.literal(1), z.literal(2)]).default(1),
   NUMBER_OF_CODES_PER_USER: z.number().default(5),
+  NUMBER_OF_MESSAGES_FOR_CONTEXT: z.number().default(5),
 
   // Feature flag for using's ember custom wallet implementation
   FF_EMBER_WALLET: booleanString.default(false),

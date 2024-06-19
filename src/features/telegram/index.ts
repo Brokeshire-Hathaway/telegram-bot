@@ -56,7 +56,11 @@ export function startTelegramBot() {
         if (!ctx.chat || !ctx.message.text) return;
         await Promise.all([
           telemetryChatMessage(ctx.chat.id, ctx.message.text),
-          sendResponseFromAgentTeam(ctx, `/v1/threads/${ctx.chat.id}/group`),
+          sendResponseFromAgentTeam(
+            ctx,
+            `/v1/threads/${ctx.chat.id}/group`,
+            true,
+          ),
         ]);
       },
       true,
@@ -78,7 +82,11 @@ export function startTelegramBot() {
           return;
         }
         await Promise.all([
-          sendResponseFromAgentTeam(ctx, `/v1/threads/${ctx.chat.id}/group`),
+          sendResponseFromAgentTeam(
+            ctx,
+            `/v1/threads/${ctx.chat.id}/group`,
+            true,
+          ),
           saveMessagePromise,
         ]);
       },

@@ -2,9 +2,10 @@ import { ConversationFlavor } from "@grammyjs/conversations";
 import { Context, SessionFlavor } from "grammy";
 import MarkdownIt from "markdown-it";
 import { messageEmber } from "../messageEmber/messageEmber";
-import { telemetryChatMessage } from "../telemetry";
+import { getUserLastMessages, telemetryChatMessage } from "../telemetry";
 import { addUserToWaitList, isUserWhitelisted, whiteListUser } from "../user";
 import { DEFAULT_EMBER_MESSAGE } from "./messages";
+import { ENVIRONMENT } from "../../common/settings";
 
 interface MySession {}
 export type MyContext = Context & SessionFlavor<MySession> & ConversationFlavor;
@@ -39,17 +40,30 @@ export async function sendResponseFromAgentTeam(
     }
   };
 
-  if (!ctx.from || !ctx.message || !ctx.message.text) return;
+  if (!ctx.chat || !ctx.message || !ctx.message.text) return;
 
   try {
+    const lastMessages = await getUserLastMessages(
+      ctx.chat.id,
+      ENVIRONMENT.NUMBER_OF_MESSAGES_FOR_CONTEXT + 1,
+    );
+    const context = lastMessages
+      .slice(0, lastMessages.length - 1)
+      .map((v, i) =>
+        v.is_response
+          ? `Ember response:\n${v.message}`
+          : `Message ${i}:\n${v.message}`,
+      )
+      .join("\n");
     const reply = await messageEmber(
-      ctx.from.id.toString()!,
+      ctx.chat.id.toString()!,
       ctx.message.text,
       endpoint,
       onActivity,
+      context,
     );
     await sendFormattedMessage(ctx, reply);
-    if (telemetry) await telemetryChatMessage(ctx.from.id, reply, true);
+    if (telemetry) await telemetryChatMessage(ctx.chat.id, reply, true);
   } catch (error) {
     console.error(error);
     await sendFormattedMessage(
