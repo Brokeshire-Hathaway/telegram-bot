@@ -18,14 +18,14 @@ export const SUCCESS_FUND_MESSAGE = (
 
 export const DEFAULT_EMBER_MESSAGE = `Hello there! 🌟
 
-Got an invite code? 🎉 Simply send \`/join <invite code>\` with your code to unlock the full Ember experience.
+Got an invite code? 🎉 Simply send */join <your invite code>* to unlock the full Ember experience.
 
 Example: \`/join 12345abcd\`
 
 If you're not yet part of the Ember crew, don't worry, you've been added to our waitlist. 📝 We'll reach out as soon as a spot opens up!`;
 
 export const CODE_REDEEMED_SUCCESS = (codes: readonly { code: string }[]) => {
-  const codesMessage = codes.map((v) => `• ${v.code}`).join("\n");
+  const codesMessage = codes.map((v) => ` • ${v.code}`).join("\n");
   return `Congratulations! 🎉 Your exclusive invite code has been successfully redeemed. Welcome to the Ember family.
 
 **Level 1:** You now have 5 shiny new invite codes to share with your friends and fellow crypto enthusiasts. 💌

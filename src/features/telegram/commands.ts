@@ -66,7 +66,7 @@ commands.command("join", async (ctx) => {
     return await ctx.reply("Code redemption failed");
   }
 
-  await ctx.reply(CODE_REDEEMED_SUCCESS(codes));
+  await sendFormattedMessage(ctx, CODE_REDEEMED_SUCCESS(codes));
   return await sendFormattedMessage(ctx, START_MESSAGE);
 });
 
