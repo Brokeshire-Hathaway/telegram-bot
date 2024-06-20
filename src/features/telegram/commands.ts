@@ -56,7 +56,12 @@ commands.command("fund", async (ctx) =>
 );
 
 commands.command("join", async (ctx) => {
-  if (!ctx.from || !ctx.from.username) return;
+  if (!ctx.from) return;
+  if (!ctx.from.username) {
+    return await ctx.reply(
+      "A username is needed in order to join the full Ember experience.",
+    );
+  }
 
   let codes;
   try {
