@@ -58,9 +58,7 @@ commands.command("fund", async (ctx) =>
 commands.command("join", async (ctx) => {
   if (!ctx.from) return;
   if (!ctx.from.username) {
-    return await ctx.reply(
-      "A username is needed in order to join the full Ember experience.",
-    );
+    return await ctx.reply("You must set a Telegram username to join Ember.");
   }
 
   let codes;

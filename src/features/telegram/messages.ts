@@ -1,6 +1,6 @@
 export const START_MESSAGE = `Hey there, crypto enthusiast! 🔥 I'm Ember, your personal crypto companion. 😎🚀 Whether you're a seasoned trader or just starting out, I'm here to light up your journey through the DeFi universe. 🌌
 
-Curious about what Ember can do for you? Try the following messages:
+Curious about what I can do for you? Try the following messages:
 
 1️⃣ \`Swap arb for op\`
 
@@ -8,7 +8,7 @@ Curious about what Ember can do for you? Try the following messages:
 
 3️⃣ \`Price of Arweave\`
 
-Use \`/help\` to discover even more things that Ember can do. 💁‍♂️`;
+Use \`/help\` to discover even more things that I can do. 💁‍♂️`;
 
 export const SUCCESS_FUND_MESSAGE = (
   url: string,
@@ -37,4 +37,16 @@ Rewards await, but be sure to only invite people who will actively engage with E
 Together, let's fuel the flames of DeFi innovation! 🔐🔗💰`;
 };
 
-export const HELP_MESSAGE = `Help message placeholder here.`;
+export const HELP_MESSAGE = `Hi, I'm Ember, your personal crypto companion. Ask me to do anything for you in the entire crypto cosmos. I'm here to take action and guide you along your journey. 🧞‍♂️ 
+
+Here's a list of things I can do for you:
+
+1️⃣ Swap Tokens Across Chains: Ready to swap tokens between chains? I'm your go-to AI for seamless, cross-chain transactions. 🔄
+
+2️⃣ Send Tokens with Ease: Need to transfer tokens to another wallet? Chat with me, and I'll handle the transaction securely and swiftly. 💸
+
+4️⃣ Deep Dive into Projects/Tokens: Want to know more about a particular project or token? I'll provide you with a comprehensive overview and up-to-the-minute market data. 📊
+
+3️⃣ New Token Support: Got a fresh token that's not in my virtual brain yet? No worries! Share the contract address, and I'll take care of the rest. 🕵️‍♂️
+
+So, whether you're here to trade, learn, or just have some fun, I'm all fired up to assist you! Let's get this crypto party started! 🎉`;
