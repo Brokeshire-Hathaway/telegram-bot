@@ -79,10 +79,7 @@ router.post("/preview", async (req: Request, res: Response) => {
     }
 
     // Swap fee costs
-    const feeCosts = await routeFeesToTokenMap(
-      route.estimate.feeCosts,
-      route.estimate.gasCosts,
-    );
+    const feeCosts = await routeFeesToTokenMap(route.estimate.feeCosts);
     const fees = costsToUsd(...feeCosts);
     const feeOfFromAmount = feeCosts[1].get(fromToken.symbol);
     if (!feeOfFromAmount) {

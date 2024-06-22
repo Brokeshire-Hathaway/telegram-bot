@@ -8,12 +8,9 @@ import {
   TokenInformation,
   ChainData,
 } from "../../squidDB";
-import { getSendTransaction } from "./getTransactions.js";
-import { getSmartAccountFromChainData } from "../wallet/index.js";
 import { costsToUsd } from "../../common/formatters.js";
 import { erc20Abi, getContract, parseUnits } from "viem";
 import { createTransaction, getTransactionUrl } from "../frontendApi/common.js";
-import { BigNumberish, UserOperationStruct } from "@biconomy/account";
 import { findUsdPrice } from "../../common/coingeckoDB.js";
 
 // Create the router
@@ -64,18 +61,7 @@ router.post("/prepare", async (req: Request, res: Response) => {
       .json({ success: false, message: "Token not supported" });
 
   const amount = parseUnits(body.amount, token.decimals);
-  const contract = getSendTransaction(
-    token.address as `0x${string}`,
-    body.recipient_address,
-    amount,
-  );
   try {
-    const account = await getSmartAccountFromChainData(
-      body.sender_address.identifier,
-      network,
-    );
-    const userOp = await account.buildUserOp([contract]);
-    const gasFee = getGasFee(userOp);
     const nativeToken =
       token.address !== NATIVE_TOKEN
         ? await getTokenInformation(network.chainId, NATIVE_TOKEN)
@@ -85,24 +71,11 @@ router.post("/prepare", async (req: Request, res: Response) => {
         .status(500)
         .json({ success: false, message: "Native token not found" });
 
-    const gasFeeUsd = costsToUsd(
-      [nativeToken],
-      new Map([[nativeToken.symbol, gasFee]]),
-    );
-    const tokenCosts = getCosts(amount, token, gasFee, nativeToken);
+    const tokenCosts = getCosts(amount, token, BigInt(0), nativeToken);
     const uuid = await createTransaction(
       {
         total: costsToUsd(...tokenCosts),
-        fees: gasFeeUsd,
-        call_gas_limit: userOp.callGasLimit
-          ? BigInt(userOp.callGasLimit)
-          : undefined,
-        max_fee_per_gas: userOp.maxFeePerGas
-          ? BigInt(userOp.maxFeePerGas)
-          : undefined,
-        max_priority_fee_per_gas: userOp.maxPriorityFeePerGas
-          ? BigInt(userOp.maxPriorityFeePerGas)
-          : undefined,
+        fees: BigInt(0),
       },
       [
         {
@@ -141,22 +114,6 @@ router.post("/prepare", async (req: Request, res: Response) => {
       .json({ success: false, message: `Error creating user transaction` });
   }
 });
-
-function bigNumberishToBigInt(
-  number: BigNumberish | undefined,
-  fallback: number = 0,
-): bigint {
-  return number ? BigInt(number) : BigInt(fallback);
-}
-
-function getGasFee(userOp: Partial<UserOperationStruct>) {
-  return (
-    (bigNumberishToBigInt(userOp.verificationGasLimit) +
-      bigNumberishToBigInt(userOp.callGasLimit) +
-      bigNumberishToBigInt(userOp.preVerificationGas)) *
-    bigNumberishToBigInt(userOp.maxFeePerGas, 1)
-  );
-}
 
 async function getTokenInfoOfAddress(
   address: `0x${string}`,

@@ -8,13 +8,11 @@ import {
   TokenData,
   RouteData as RouteDataV1,
   FeeCost as FeeCostV1,
-  GasCost as GasCostV1,
 } from "squidv1";
 import {
   ChainData as ChainDataV2,
   RouteResponse,
   FeeCost as FeeCostV2,
-  GasCost as GasCostV2,
 } from "@0xsquid/squid-types";
 import {
   Chain,
@@ -313,18 +311,12 @@ function addCost(
 }
 
 type FeeCost = FeeCostV1 | FeeCostV2;
-type GasCost = GasCostV1 | GasCostV2;
 export async function routeFeesToTokenMap(
   feeCosts: FeeCost[],
-  gasCosts: GasCost[],
 ): Promise<[TokenInformation[], Map<string, bigint>]> {
   const tokenMap = new Map(feeCosts.map((v) => [v.token.symbol, v.token]));
-  for (const gasCost of gasCosts) {
-    tokenMap.set(gasCost.token.symbol, gasCost.token);
-  }
   const costs = new Map<string, bigint>();
   addCost(costs, feeCosts);
-  addCost(costs, gasCosts);
   const tokens = [] as TokenInformation[];
   for (const token of tokenMap.values()) {
     if (!token.coingeckoId) throw Error("Coingecko id is not set for token");
