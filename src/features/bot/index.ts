@@ -7,10 +7,6 @@ import {
 import { ENVIRONMENT } from "../../common/settings";
 import { conversations } from "@grammyjs/conversations";
 import { limit } from "@grammyjs/ratelimiter";
-import { commands } from "./commands";
-import { walletCommands } from "./walletCommands";
-import { telemetryChatMessage } from "../telemetry";
-
 export function startTelegramBot() {
   const bot = new Bot<MyContext>(ENVIRONMENT.TELEGRAM_BOT_TOKEN);
 
@@ -27,9 +23,6 @@ export function startTelegramBot() {
       },
     }),
   );
-  bot.use(commands);
-  if (ENVIRONMENT.FF_EMBER_WALLET) bot.use(walletCommands);
-
   // Handle errors
   bot.catch((err) => {
     const ctx = err.ctx;
@@ -50,62 +43,28 @@ export function startTelegramBot() {
     "i",
   );
   groupBot.hears(emberUserRegex, async (ctx) =>
-    whiteListMiddleware(
-      ctx,
-      async (ctx) => {
-        if (!ctx.chat || !ctx.message.text) return;
-        await Promise.all([
-          telemetryChatMessage(ctx.chat.id, ctx.message.text),
-          sendResponseFromAgentTeam(
-            ctx,
-            `/v1/threads/${ctx.chat.id}/group`,
-            true,
-          ),
-        ]);
-      },
-      true,
-    ),
+    whiteListMiddleware(ctx, async (ctx) => {
+      if (!ctx.chat || !ctx.message.text) return;
+      await sendResponseFromAgentTeam(ctx, true, ctx.chat.title);
+    }),
   );
   groupBot.on("message:text", async (ctx) =>
-    whiteListMiddleware(
-      ctx,
-      async (ctx) => {
-        if (!ctx.chat) return;
-        const saveMessagePromise = telemetryChatMessage(
-          ctx.chat.id,
-          ctx.message.text,
-        );
-        const replyMessageUsername =
-          ctx.message?.reply_to_message?.from?.username;
-        if (replyMessageUsername !== ENVIRONMENT.TELEGRAM_BOT_USERNAME) {
-          await saveMessagePromise;
-          return;
-        }
-        await Promise.all([
-          sendResponseFromAgentTeam(
-            ctx,
-            `/v1/threads/${ctx.chat.id}/group`,
-            true,
-          ),
-          saveMessagePromise,
-        ]);
-      },
-      true,
-    ),
+    whiteListMiddleware(ctx, async (ctx) => {
+      if (!ctx.chat) return;
+      const replyMessageUsername =
+        ctx.message?.reply_to_message?.from?.username;
+      if (replyMessageUsername !== ENVIRONMENT.TELEGRAM_BOT_USERNAME) {
+        return;
+      }
+      await sendResponseFromAgentTeam(ctx, true, ctx.chat.title);
+    }),
   );
 
   const privateBot = bot.chatType("private");
   privateBot.on("message:text", async (ctx) =>
     whiteListMiddleware(ctx, async (ctx) => {
       if (!ctx.chat) return;
-      await Promise.all([
-        telemetryChatMessage(ctx.chat.id, ctx.message.text),
-        sendResponseFromAgentTeam(
-          ctx,
-          `/v1/threads/${ctx.chat.id}/private`,
-          true,
-        ),
-      ]);
+      await sendResponseFromAgentTeam(ctx, false, ctx.from.username);
     }),
   );
 

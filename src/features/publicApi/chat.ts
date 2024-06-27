@@ -1,6 +1,5 @@
 import z from "zod";
 import { ENVIRONMENT } from "../../common/settings";
-import { LastMessage } from "../telemetry";
 
 const ChatEmberRespons = z.object({
   status: z.union([
@@ -11,23 +10,28 @@ const ChatEmberRespons = z.object({
   message: z.string(),
 });
 
-export async function messageEmber(
+export default async function (
   senderUid: string,
   message: string,
-  endpoint: string,
+  isGroup: boolean,
+  username: string | undefined,
   onActivity: (message: string) => void,
-  context: LastMessage[],
 ): Promise<string> {
-  const URL = ENVIRONMENT.EMBER_CORE_URL + endpoint;
-  const messagePayload = { sender_uid: senderUid, message, context };
-  const payload = JSON.stringify(messagePayload);
-  const response = await fetch(URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetch(
+    `${ENVIRONMENT.EMBER_API_URL}/public_chat/telegram`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id: senderUid,
+        message,
+        is_group: isGroup,
+        username,
+      }),
     },
-    body: payload,
-  });
+  );
 
   if (!response.ok || response.body == null) {
     throw new Error("Failed to connect to Ember server");
@@ -36,10 +40,8 @@ export async function messageEmber(
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   while (true) {
-    const readableStream = await reader.read();
-    const { done, value } = readableStream;
-    const decodedValue = decoder.decode(value);
-    const { event, rawData } = parseSseResponse(decodedValue);
+    const { done, value } = await reader.read();
+    const { event, rawData } = parseSseResponse(decoder.decode(value));
     if (done && event !== "done") {
       throw new Error("Invalid response");
     }

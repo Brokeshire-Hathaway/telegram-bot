@@ -1,19 +1,17 @@
 import { ConversationFlavor } from "@grammyjs/conversations";
 import { Context, SessionFlavor } from "grammy";
 import MarkdownIt from "markdown-it";
-import { messageEmber } from "../messageEmber/messageEmber";
-import { getUserLastMessages, telemetryChatMessage } from "../telemetry";
-import { addUserToWaitList, isUserWhitelisted, whiteListUser } from "../user";
+import chat from "../publicApi/chat";
 import { DEFAULT_EMBER_MESSAGE } from "./messages";
-import { ENVIRONMENT } from "../../common/settings";
+import { addUser, isUserWhitelisted } from "../publicApi/user";
 
 interface MySession {}
 export type MyContext = Context & SessionFlavor<MySession> & ConversationFlavor;
 
 export async function sendResponseFromAgentTeam(
   ctx: MyContext,
-  endpoint: string,
-  telemetry: boolean = false,
+  isGroup: boolean,
+  username: string | undefined,
 ) {
   let messageId: number | undefined;
   let text: string | undefined;
@@ -43,19 +41,14 @@ export async function sendResponseFromAgentTeam(
   if (!ctx.chat || !ctx.message || !ctx.message.text) return;
 
   try {
-    const lastMessages = await getUserLastMessages(
-      ctx.chat.id,
-      ENVIRONMENT.NUMBER_OF_MESSAGES_FOR_CONTEXT + 1,
-    );
-    const reply = await messageEmber(
+    const reply = await chat(
       ctx.chat.id.toString()!,
       ctx.message.text,
-      endpoint,
+      isGroup,
+      username,
       onActivity,
-      lastMessages.slice(0, lastMessages.length - 1),
     );
     await sendFormattedMessage(ctx, reply);
-    if (telemetry) await telemetryChatMessage(ctx.chat.id, reply, true);
   } catch (error) {
     console.error(error);
     await sendFormattedMessage(
@@ -143,13 +136,13 @@ export async function whiteListMiddleware<T, C extends NeededContext>(
   const isWhiteListed = await isUserWhitelisted(ctx.chat.id);
   if (!isWhiteListed && !automaticWhiteList) {
     await Promise.all([
-      addUserToWaitList(ctx.chat.id, ctx.chat.username || ""),
+      addUser(ctx.chat.id, ctx.chat.username),
       sendFormattedMessage(ctx, DEFAULT_EMBER_MESSAGE),
     ]);
     return;
   }
   if (!isWhiteListed) {
-    await whiteListUser(ctx.chat.id, ctx.chat.title || "");
+    await addUser(ctx.chat.id, ctx.chat.title, false);
   }
   return await next(ctx);
 }
