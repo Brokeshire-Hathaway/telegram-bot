@@ -30,3 +30,30 @@ export async function addUser<T>(
     },
   );
 }
+
+interface CodeRedeemResponse {
+  user_id: number;
+  codes: {
+    identifier: string;
+    code: string;
+  }[];
+}
+export async function redeemCode<T>(
+  id: T,
+  username: string | null | undefined,
+  code: string,
+) {
+  const response = await fetch(
+    `${ENVIRONMENT.EMBER_API_URL}/public/telegram/user/${id}/join`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        username,
+        code,
+      }),
+    },
+  );
+  if (!response.ok) throw new Error("Code redemption failed.");
+
+  return (await response.json()) as CodeRedeemResponse;
+}
