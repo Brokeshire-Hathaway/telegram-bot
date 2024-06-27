@@ -7,6 +7,7 @@ import {
 import { ENVIRONMENT } from "../../common/settings";
 import { conversations } from "@grammyjs/conversations";
 import { limit } from "@grammyjs/ratelimiter";
+import { commands } from "./commands";
 export function startTelegramBot() {
   const bot = new Bot<MyContext>(ENVIRONMENT.TELEGRAM_BOT_TOKEN);
 
@@ -23,6 +24,7 @@ export function startTelegramBot() {
       },
     }),
   );
+  bot.use(commands);
   // Handle errors
   bot.catch((err) => {
     const ctx = err.ctx;
