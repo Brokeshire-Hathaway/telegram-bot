@@ -31,12 +31,29 @@ export async function addUser<T>(
   );
 }
 
-interface CodeRedeemResponse {
+interface CodeCreateResponse {
+  url: string;
+  code: string;
+}
+export async function createReferralUrl<T>(id: T, numberOfUses: number) {
+  const response = await fetch(
+    `${ENVIRONMENT.EMBER_API_URL}/public/telegram/code`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        user_chat_id: id,
+        remaining_uses: numberOfUses,
+      }),
+    },
+  );
+  if (!response.ok) throw new Error("Code redemption failed.");
+
+  return ((await response.json()) as CodeCreateResponse).url;
+}
+
+interface UserJoinResponse {
   user_id: number;
-  codes: {
-    identifier: string;
-    code: string;
-  }[];
+  codes: CodeCreateResponse[];
 }
 export async function redeemCode<T>(
   id: T,
@@ -55,5 +72,5 @@ export async function redeemCode<T>(
   );
   if (!response.ok) throw new Error("Code redemption failed.");
 
-  return (await response.json()) as CodeRedeemResponse;
+  return (await response.json()) as UserJoinResponse;
 }

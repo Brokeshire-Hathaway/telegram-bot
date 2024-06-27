@@ -6,7 +6,9 @@ import {
   SUCCESS_FUND_MESSAGE,
 } from "./messages";
 import { MyContext, sendFormattedMessage, whiteListMiddleware } from "./common";
-import { isUserAdmin, redeemCode } from "../publicApi/user";
+import { createReferralUrl, isUserAdmin, redeemCode } from "../publicApi/user";
+
+export const commands = new Composer<MyContext>();
 
 commands.command("start", async (ctx) =>
   whiteListMiddleware(
@@ -39,3 +41,14 @@ commands.command("join", async (ctx) => {
   return await sendFormattedMessage(ctx, START_MESSAGE);
 });
 
+commands.command("createReferralUrl", async (ctx) => {
+  if (!ctx.from) return;
+  if (!(await isUserAdmin(ctx.from.id))) return;
+
+  const numberOfUses = parseInt(ctx.match.trim());
+  const accessCodeUrl = await createReferralUrl(
+    ctx.from.id.toString(),
+    numberOfUses,
+  );
+  return await ctx.reply(accessCodeUrl);
+});
