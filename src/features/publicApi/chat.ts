@@ -17,21 +17,18 @@ export default async function (
   username: string | undefined,
   onActivity: (message: string) => void,
 ): Promise<string> {
-  const response = await fetch(
-    `${ENVIRONMENT.EMBER_API_URL}/public_chat/telegram`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        user_id: senderUid,
-        message,
-        is_group: isGroup,
-        username,
-      }),
+  const response = await fetch(`${ENVIRONMENT.EMBER_API_URL}/chat`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
     },
-  );
+    body: JSON.stringify({
+      user_id: senderUid,
+      message,
+      is_group: isGroup,
+      username,
+    }),
+  });
 
   if (!response.ok || response.body == null) {
     throw new Error("Failed to connect to Ember server");
