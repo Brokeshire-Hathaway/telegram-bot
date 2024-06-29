@@ -1,8 +1,6 @@
 {
-  "name": "ember-engine",
+  "name": "telegram-bot",
   "version": "0.6.0",
-  "repository": "https://github.com/Firepot-Finance/chatgpt-companion.git",
-  "author": "firepot_devs",
   "license": "MIT",
   "type": "commonjs",
   "dependencies": {

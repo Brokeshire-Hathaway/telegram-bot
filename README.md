@@ -1,22 +1,12 @@
-# ember-engine
+# Telegram BOT
 
 ## Setup
 
 To run the project, you need to have the package manager:
 
 - [pnpm](https://pnpm.io/)
-- [docker](https://www.docker.com/)
-- [docker-compose](https://docs.docker.com/compose/)
 
-After installing `pnpm`, you need to run the databases locally. The database used for
-this service is `postgres`. Run the following command in the root of the
-repository:
-
-```bash
-docker compose -f compose.local.yaml up -d
-```
-
-Then, create a test bot by writing to [BotFather](https://t.me/BotFather) and
+Create a test bot by writing to [BotFather](https://t.me/BotFather) and
 get a token with the username you choose for the test bot. When creating the bot, make
 sure to disable privacy mode to have seemless experience with group chats.
 
@@ -25,23 +15,8 @@ After that, create the `.env` file in the root of the directory as such:
 ```sh
 TELEGRAM_BOT_USERNAME="THE_USERNAME_YOU_SELECTED"
 TELEGRAM_BOT_TOKEN="THE_TOKEN_BOT_FATHER_GAVE_YOU"
-SECRET_SALT="my_secret_salt"
-EMBER_CORE_URL="http://localhost:8000"
-IS_TESTNET="true"
-DB_USER="user"
-DB_PASSWORD="password"
-DB_NAME="db"
-DB_HOST="localhost"
-DB_PORT=5432
-FUNDING_WALLET_ID="random_id_for_ember_wallet"
-FRONTEND_URL="http://127.0.0.1:3001"
-SQUID_INTEGRATOR_ID="ASK_FOR_SQUID_V2_INTEGRATOR_ID"
-SQUID_DEFAULT_VERSION=1
+EMBER_API_URL="http://localhost:3001/v1/public/telegram"
 ```
-
-_Warning: Defining `localhost` for the `FRONTEND_URL` environment variable
-(like so `FRONTEND_URL="http://localhost:5173"`) will break Telegram's ability
-to render a hyperlink to the transaction. Therefore, `127.0.0.1` must be used._
 
 Lastly, run:
 
@@ -53,13 +28,13 @@ pnpm dev
 If it was successfull, you should see in your console something like:
 
 ```bash
-(node:12714) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
---import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./"));'
-(Use `node --trace-warnings ...` to show where the warning was created)
-chunk count: 21
 
-...ready
-Transaction service running at http://0.0.0.0:3000
+> telegram-bot@0.6.0 dev /home/your_user/documents/ember-agi/telegram-bot
+> node --import tsx -r dotenv/config src/index.ts
+
+Running telegram bot for user EmberAGITestBot
+(node:470331) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
 ```
 
 ## Linting
