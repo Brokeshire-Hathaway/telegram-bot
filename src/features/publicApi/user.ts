@@ -35,12 +35,17 @@ interface CodeCreateResponse {
 export async function createReferralUrl<T>(id: T, numberOfUses: number) {
   const response = await fetch(`${ENVIRONMENT.EMBER_API_URL}/code`, {
     method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
     body: JSON.stringify({
       user_chat_id: id,
       remaining_uses: numberOfUses,
     }),
   });
-  if (!response.ok) throw new Error("Code redemption failed.");
+  if (!response.ok) {
+    throw new Error(`Referral URL failed: ${await response.text()}`);
+  }
 
   return ((await response.json()) as CodeCreateResponse).url;
 }

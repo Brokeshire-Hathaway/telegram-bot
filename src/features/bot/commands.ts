@@ -23,6 +23,7 @@ commands.command("help", async (ctx) =>
     async (ctx) => await sendFormattedMessage(ctx, HELP_MESSAGE),
   ),
 );
+
 commands.command("join", async (ctx) => {
   if (!ctx.from) return;
   if (!ctx.from.username) {
@@ -46,9 +47,14 @@ commands.command("createReferralUrl", async (ctx) => {
   if (!(await isUserAdmin(ctx.from.id))) return;
 
   const numberOfUses = parseInt(ctx.match.trim());
-  const accessCodeUrl = await createReferralUrl(
-    ctx.from.id.toString(),
-    numberOfUses,
-  );
-  return await ctx.reply(accessCodeUrl);
+  try {
+    const accessCodeUrl = await createReferralUrl(
+      ctx.from.id.toString(),
+      numberOfUses,
+    );
+    return await ctx.reply(accessCodeUrl);
+  } catch (error) {
+    console.log(error);
+    await ctx.reply(`${error}`);
+  }
 });
