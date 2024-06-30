@@ -5,13 +5,14 @@ import {
   whiteListMiddleware,
 } from "./common";
 import { ENVIRONMENT } from "../../common/settings";
-import { conversations } from "@grammyjs/conversations";
+import { conversations, createConversation } from "@grammyjs/conversations";
 import { limit } from "@grammyjs/ratelimiter";
 import { commands } from "./commands";
+import newIntegration from "./newIntegration";
+
 export function startTelegramBot() {
   const bot = new Bot<MyContext>(ENVIRONMENT.TELEGRAM_BOT_TOKEN);
-
-  bot.use(session());
+  bot.use(session({ type: "multi", conversation: {} }));
   bot.use(conversations());
   bot.use(
     limit({
@@ -24,7 +25,9 @@ export function startTelegramBot() {
       },
     }),
   );
+  bot.use(createConversation(newIntegration, "integration"));
   bot.use(commands);
+
   // Handle errors
   bot.catch((err) => {
     const ctx = err.ctx;

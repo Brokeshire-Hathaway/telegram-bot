@@ -1,10 +1,5 @@
 import { Composer } from "grammy";
-import {
-  CODE_REDEEMED_SUCCESS,
-  HELP_MESSAGE,
-  START_MESSAGE,
-  SUCCESS_FUND_MESSAGE,
-} from "./messages";
+import { CODE_REDEEMED_SUCCESS, HELP_MESSAGE, START_MESSAGE } from "./messages";
 import { MyContext, sendFormattedMessage, whiteListMiddleware } from "./common";
 import { createReferralUrl, isUserAdmin, redeemCode } from "../publicApi/user";
 
@@ -57,4 +52,8 @@ commands.command("createReferralUrl", async (ctx) => {
     console.log(error);
     await ctx.reply(`${error}`);
   }
+});
+
+commands.command("newIntegration", async (ctx) => {
+  await ctx.conversation.enter("integration");
 });
