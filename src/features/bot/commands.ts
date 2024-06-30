@@ -55,5 +55,7 @@ commands.command("createReferralUrl", async (ctx) => {
 });
 
 commands.command("newIntegration", async (ctx) => {
+  if (!ctx.from) return;
+  if (!(await isUserAdmin(ctx.from.id))) return;
   await ctx.conversation.enter("integration");
 });
