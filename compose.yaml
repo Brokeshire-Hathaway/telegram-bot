@@ -5,7 +5,7 @@ services:
     environment:
       TELEGRAM_BOT_USERNAME:
       TELEGRAM_BOT_TOKEN_FILE: /run/secrets/telegram_token
-      EMBER_API_URL: http://ember-api
+      EMBER_API_URL: http://ember-api/v1/public/telegram
       FF_EMBER_WALLET:
     secrets:
       - telegram_token
