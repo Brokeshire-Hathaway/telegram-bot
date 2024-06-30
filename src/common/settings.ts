@@ -35,3 +35,7 @@ function preProcessEnv() {
 }
 
 export const ENVIRONMENT = Settings.parse(preProcessEnv());
+
+export function getEmberTGUrl() {
+  return `${ENVIRONMENT.EMBER_API_URL}/public/telegram`;
+}

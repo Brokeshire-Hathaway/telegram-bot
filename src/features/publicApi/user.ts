@@ -1,16 +1,12 @@
-import { ENVIRONMENT } from "../../common/settings";
+import { getEmberTGUrl } from "../../common/settings";
 
 export async function isUserWhitelisted<T>(id: T) {
-  const response = await fetch(
-    `${ENVIRONMENT.EMBER_API_URL}/user/${id}/is_whitelisted`,
-  );
+  const response = await fetch(`${getEmberTGUrl()}/user/${id}/is_whitelisted`);
   return response.ok && ((await response.json()) as boolean);
 }
 
 export async function isUserAdmin<T>(id: T) {
-  const response = await fetch(
-    `${ENVIRONMENT.EMBER_API_URL}/user/${id}/is_admin`,
-  );
+  const response = await fetch(`${getEmberTGUrl()}/user/${id}/is_admin`);
   return response.ok && ((await response.json()) as boolean);
 }
 
@@ -20,7 +16,7 @@ export async function addUser<T>(
   addToWaitList: boolean = true,
 ) {
   const endpoint = addToWaitList ? "user_waitlist" : "user";
-  return await fetch(`${ENVIRONMENT.EMBER_API_URL}/${endpoint}/${id}`, {
+  return await fetch(`${getEmberTGUrl()}/${endpoint}/${id}`, {
     method: "PUT",
     body: JSON.stringify({
       username,
@@ -33,7 +29,7 @@ interface CodeCreateResponse {
   code: string;
 }
 export async function createReferralUrl<T>(id: T, numberOfUses: number) {
-  const response = await fetch(`${ENVIRONMENT.EMBER_API_URL}/code`, {
+  const response = await fetch(`${getEmberTGUrl()}/code`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
@@ -59,7 +55,7 @@ export async function redeemCode<T>(
   username: string | null | undefined,
   code: string,
 ) {
-  const response = await fetch(`${ENVIRONMENT.EMBER_API_URL}/user/${id}/join`, {
+  const response = await fetch(`${getEmberTGUrl()}/user/${id}/join`, {
     method: "POST",
     body: JSON.stringify({
       username,

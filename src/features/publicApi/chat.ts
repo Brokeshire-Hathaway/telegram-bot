@@ -1,5 +1,5 @@
 import z from "zod";
-import { ENVIRONMENT } from "../../common/settings";
+import { getEmberTGUrl } from "../../common/settings";
 
 const ChatEmberRespons = z.object({
   status: z.union([
@@ -17,7 +17,7 @@ export default async function (
   username: string | undefined,
   onActivity: (message: string) => void,
 ): Promise<string> {
-  const response = await fetch(`${ENVIRONMENT.EMBER_API_URL}/chat`, {
+  const response = await fetch(`${getEmberTGUrl()}/chat`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
