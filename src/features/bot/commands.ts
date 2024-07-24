@@ -42,6 +42,12 @@ commands.command("createReferralUrl", async (ctx) => {
   if (!(await isUserAdmin(ctx.from.id))) return;
 
   const numberOfUses = parseInt(ctx.match.trim());
+  if (isNaN(numberOfUses) || numberOfUses <= 0) {
+    return await ctx.reply(
+      "Please provide a valid positive number for the number of uses.",
+    );
+  }
+
   try {
     const accessCodeUrl = await createReferralUrl(
       ctx.from.id.toString(),
