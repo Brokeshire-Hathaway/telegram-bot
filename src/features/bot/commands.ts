@@ -30,7 +30,9 @@ commands.command("join", async (ctx) => {
     user = await redeemCode(ctx.from.id, ctx.from.username, ctx.match);
   } catch (error) {
     console.log(error);
-    return await ctx.reply("Code redemption failed");
+    return await ctx.reply(
+      "Code redemption failed due to internal server error.",
+    );
   }
 
   await sendFormattedMessage(ctx, CODE_REDEEMED_SUCCESS(user.codes));

@@ -55,6 +55,7 @@ export async function redeemCode<T>(
   username: string | null | undefined,
   code: string,
 ) {
+  console.log(`id: ${id}, username: ${username}, code: ${code}`);
   const response = await fetch(`${getEmberTGUrl()}/user/${id}/join`, {
     method: "POST",
     body: JSON.stringify({
