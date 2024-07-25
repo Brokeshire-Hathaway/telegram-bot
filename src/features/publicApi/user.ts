@@ -62,8 +62,12 @@ export async function redeemCode<T>(
       code,
     }),
   });
-  if (!response.ok)
-    throw new Error(`Code redemption failed: ${await response.text()}`);
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Code redemption failed (${response.status}): ${errorText}`,
+    );
+  }
 
   return (await response.json()) as UserJoinResponse;
 }
