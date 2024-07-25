@@ -18,6 +18,9 @@ export async function addUser<T>(
   const endpoint = addToWaitList ? "user_waitlist" : "user";
   return await fetch(`${getEmberTGUrl()}/${endpoint}/${id}`, {
     method: "PUT",
+    headers: {
+      "content-type": "application/json",
+    },
     body: JSON.stringify({
       username,
     }),
