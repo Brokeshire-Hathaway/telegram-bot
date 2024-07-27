@@ -48,21 +48,29 @@ export function startTelegramBot() {
     "i",
   );
   groupBot.hears(emberUserRegex, async (ctx) =>
-    whiteListMiddleware(ctx, async (ctx) => {
-      if (!ctx.chat || !ctx.message.text) return;
-      await sendResponseFromAgentTeam(ctx, true, ctx.chat.title);
-    }),
+    whiteListMiddleware(
+      ctx,
+      async (ctx) => {
+        if (!ctx.chat || !ctx.message.text) return;
+        await sendResponseFromAgentTeam(ctx, true, ctx.chat.title);
+      },
+      true,
+    ),
   );
   groupBot.on("message:text", async (ctx) =>
-    whiteListMiddleware(ctx, async (ctx) => {
-      if (!ctx.chat) return;
-      const replyMessageUsername =
-        ctx.message?.reply_to_message?.from?.username;
-      if (replyMessageUsername !== ENVIRONMENT.TELEGRAM_BOT_USERNAME) {
-        return;
-      }
-      await sendResponseFromAgentTeam(ctx, true, ctx.chat.title);
-    }),
+    whiteListMiddleware(
+      ctx,
+      async (ctx) => {
+        if (!ctx.chat) return;
+        const replyMessageUsername =
+          ctx.message?.reply_to_message?.from?.username;
+        if (replyMessageUsername !== ENVIRONMENT.TELEGRAM_BOT_USERNAME) {
+          return;
+        }
+        await sendResponseFromAgentTeam(ctx, true, ctx.chat.title);
+      },
+      true,
+    ),
   );
 
   const privateBot = bot.chatType("private");
