@@ -31,20 +31,9 @@ jobs:
       - name: Deploy containers in server
         env:
           DOCKER_HOST: ssh://${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}
-          SECRET_SALT: ${{ secrets.SECRET_SALT }}
           TELEGRAM_BOT_USERNAME: ${{ vars.TELEGRAM_BOT_USERNAME }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          ARBITRUM_RPC_URL: ${{ secrets.ARBITRUM_RPC_URL }}
-          IS_TESTNET: ${{ vars.IS_TESTNET }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_HOST: ${{ secrets.DB_HOST }}
-          FUNDING_WALLET_ID: ${{ secrets.FUNDING_WALLET_ID }}
-          DB_PORT: ${{ vars.DB_PORT }}
-          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
           FF_EMBER_WALLET: ${{ vars.FF_EMBER_WALLET }}
           ENVIRONMENT: production
-          SQUID_INTEGRATOR_ID: ${{ secrets.SQUID_INTEGRATOR_ID }}
         run: |
-          docker compose -f compose.yaml -p ember-engine-$ENVIRONMENT up -d --build --remove-orphans
+          docker compose -f compose.yaml -p telegram-bot-$ENVIRONMENT up -d --build --remove-orphans
