@@ -15,7 +15,7 @@ After that, create the `.env` file in the root of the directory as such:
 ```sh
 TELEGRAM_BOT_USERNAME="THE_USERNAME_YOU_SELECTED"
 TELEGRAM_BOT_TOKEN="THE_TOKEN_BOT_FATHER_GAVE_YOU"
-EMBER_API_URL="http://localhost:3001/v1/public/telegram"
+EMBER_API_URL="http://localhost:3001/v1"
 ```
 
 Lastly, run:
