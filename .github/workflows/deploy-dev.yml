@@ -11,6 +11,7 @@ on:
       - tsconfig.*
       - .github/workflows/deploy-dev.yml
       - compose.yaml
+  workflow_dispatch:
 
 jobs:
   build_and_push:
