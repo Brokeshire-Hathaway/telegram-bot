@@ -28,20 +28,6 @@ export function startTelegramBot() {
   bot.use(createConversation(newIntegration, "integration"));
   bot.use(commands);
 
-  // Handle errors
-  bot.catch((err) => {
-    const ctx = err.ctx;
-    console.error(`Error while handling update ${ctx.update.update_id}:`);
-    const e = err.error;
-    if (e instanceof GrammyError) {
-      console.error("Error in request:", e.description);
-    } else if (e instanceof HttpError) {
-      console.error("Could not contact Telegram:", e);
-    } else {
-      console.error("Unknown error:", e);
-    }
-  });
-
   const groupBot = bot.chatType(["group", "supergroup"]);
   const emberUserRegex = new RegExp(
     `.*@${ENVIRONMENT.TELEGRAM_BOT_USERNAME}.*`,
@@ -80,6 +66,20 @@ export function startTelegramBot() {
       await sendResponseFromAgentTeam(ctx, false, ctx.from.username);
     }),
   );
+
+  // Handle errors
+  bot.catch((err) => {
+    const ctx = err.ctx;
+    console.error(`Error while handling update ${ctx.update.update_id}:`);
+    const e = err.error;
+    if (e instanceof GrammyError) {
+      console.error("Error in request:", e.description);
+    } else if (e instanceof HttpError) {
+      console.error("Could not contact Telegram:", e);
+    } else {
+      console.error("Unknown error:", e);
+    }
+  });
 
   bot.start();
 }
