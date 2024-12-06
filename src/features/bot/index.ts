@@ -6,7 +6,6 @@ import {
 } from "./common";
 import { ENVIRONMENT } from "../../common/settings";
 import { conversations, createConversation } from "@grammyjs/conversations";
-import { limit } from "@grammyjs/ratelimiter";
 import { commands } from "./commands";
 import newIntegration from "./newIntegration";
 
@@ -14,17 +13,6 @@ export function startTelegramBot() {
   const bot = new Bot<MyContext>(ENVIRONMENT.TELEGRAM_BOT_TOKEN);
   bot.use(session({ type: "multi", conversation: {} }));
   bot.use(conversations());
-  bot.use(
-    limit({
-      timeFrame: 3000,
-      limit: 1,
-      onLimitExceeded: async (ctx) => {
-        await ctx.reply(
-          "You're going to fry my circuits. 🥴 Please slow down.",
-        );
-      },
-    }),
-  );
   bot.use(createConversation(newIntegration, "integration"));
   bot.use(commands);
 
