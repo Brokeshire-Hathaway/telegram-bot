@@ -52,7 +52,7 @@ export function startTelegramBot() {
       ctx,
       async (ctx) => {
         if (!ctx.chat || !ctx.message.text) return;
-        await sendResponseFromAgentTeam(ctx, false, ctx.chat.title);
+        await sendResponseFromAgentTeam(ctx, true, ctx.chat.title);
       },
       true,
     ),
@@ -67,7 +67,7 @@ export function startTelegramBot() {
         if (replyMessageUsername !== ENVIRONMENT.TELEGRAM_BOT_USERNAME) {
           return;
         }
-        await sendResponseFromAgentTeam(ctx, false, ctx.chat.title);
+        await sendResponseFromAgentTeam(ctx, true, ctx.chat.title);
       },
       true,
     ),
