@@ -26,7 +26,12 @@ export function startTelegramBot() {
       ctx,
       async (ctx) => {
         if (!ctx.chat || !ctx.message.text) return;
-        await sendResponseFromAgentTeam(ctx, true, ctx.chat.title);
+        await sendResponseFromAgentTeam(
+          ctx,
+          ctx.message.text,
+          true,
+          ctx.chat.title,
+        );
       },
       true,
     ),
@@ -41,7 +46,12 @@ export function startTelegramBot() {
         if (replyMessageUsername !== ENVIRONMENT.TELEGRAM_BOT_USERNAME) {
           return;
         }
-        await sendResponseFromAgentTeam(ctx, true, ctx.chat.title);
+        await sendResponseFromAgentTeam(
+          ctx,
+          ctx.message.text,
+          true,
+          ctx.chat.title,
+        );
       },
       true,
     ),
@@ -51,9 +61,24 @@ export function startTelegramBot() {
   privateBot.on("message:text", async (ctx) =>
     whiteListMiddleware(ctx, async (ctx) => {
       if (!ctx.chat) return;
-      await sendResponseFromAgentTeam(ctx, false, ctx.from.username);
+      await sendResponseFromAgentTeam(
+        ctx,
+        ctx.message.text,
+        false,
+        ctx.from.username,
+      );
     }),
   );
+  privateBot.on("callback_query:data", async (ctx) => {
+    if (!ctx.chat) return;
+    await sendResponseFromAgentTeam(
+      ctx,
+      ctx.callbackQuery.data,
+      false,
+      ctx.from.username,
+    );
+    await ctx.answerCallbackQuery(); // remove loading animation
+  });
 
   // Handle errors
   bot.catch((err) => {

@@ -1,5 +1,5 @@
 import { ConversationFlavor } from "@grammyjs/conversations";
-import { Context, SessionFlavor } from "grammy";
+import { Context, InlineKeyboard, Keyboard, SessionFlavor } from "grammy";
 import MarkdownIt from "markdown-it";
 import chat from "../publicApi/chat";
 import { DEFAULT_EMBER_MESSAGE } from "./messages";
@@ -10,6 +10,7 @@ export type MyContext = Context & SessionFlavor<MySession> & ConversationFlavor;
 
 export async function sendResponseFromAgentTeam(
   ctx: MyContext,
+  message: string,
   isGroup: boolean,
   username: string | undefined,
 ) {
@@ -38,17 +39,37 @@ export async function sendResponseFromAgentTeam(
     }
   };
 
-  if (!ctx.chat || !ctx.message || !ctx.message.text) return;
+  if (!ctx.chat) return;
 
   try {
     const reply = await chat(
       ctx.chat.id.toString()!,
-      ctx.message.text,
+      message,
       isGroup,
       username,
       onActivity,
     );
-    await sendFormattedMessage(ctx, reply);
+    let keyboard: Keyboard | InlineKeyboard | undefined;
+    if (reply.suggestions && !isGroup) {
+      const labelDataPairs = reply.suggestions.map((str, index) => [
+        str,
+        index.toString(),
+      ]);
+      const buttonRow = labelDataPairs.map(([label, data]) => [
+        InlineKeyboard.text(label, data),
+      ]);
+      keyboard = InlineKeyboard.from(buttonRow);
+    } else {
+      keyboard = new Keyboard()
+        .text("Analyze pepe")
+        .row()
+        .text("Buy $BROKEAGI on solana")
+        .row()
+        .text("Swap usd for eth from base to arbitrum")
+        .placeholder("tell me to do something")
+        .resized();
+    }
+    await sendFormattedMessage(ctx, reply.message, false, keyboard);
   } catch (error) {
     console.error(error);
     await sendFormattedMessage(
@@ -82,6 +103,7 @@ export async function sendFormattedMessage(
   ctx: MyContext,
   message: string,
   italicize = false,
+  keyboard?: Keyboard | InlineKeyboard,
 ) {
   if (!ctx.chat) return;
   return await ctx.api.sendMessage(
@@ -92,6 +114,7 @@ export async function sendFormattedMessage(
       link_preview_options: {
         is_disabled: true,
       },
+      reply_markup: keyboard,
     },
   );
 }

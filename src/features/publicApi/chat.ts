@@ -1,14 +1,20 @@
 import z from "zod";
 import { getEmberTGUrl } from "../../common/settings";
 
-const ChatEmberRespons = z.object({
+const ChatEmberResponse = z.object({
   status: z.union([
     z.literal("done"),
     z.literal("processing"),
     z.literal("error"),
   ]),
   message: z.string(),
+  suggestions: z.array(z.string()).nullish(),
 });
+
+interface ChatResponse {
+  message: string;
+  suggestions?: string[];
+}
 
 export default async function (
   senderUid: string,
@@ -16,7 +22,7 @@ export default async function (
   isGroup: boolean,
   username: string | undefined,
   onActivity: (message: string) => void,
-): Promise<string> {
+): Promise<ChatResponse> {
   const response = await fetch(`${getEmberTGUrl()}/chat`, {
     method: "POST",
     headers: {
@@ -39,6 +45,8 @@ export default async function (
   while (true) {
     const { done, value } = await reader.read();
     const { event, rawData } = parseSseResponse(decoder.decode(value));
+    console.log("=== event ===", event);
+    console.log("=== rawData ===", rawData);
     if (done && event !== "done") {
       throw new Error("Invalid response");
     }
@@ -47,20 +55,25 @@ export default async function (
       continue;
     }
 
-    const data = await ChatEmberRespons.safeParseAsync(JSON.parse(rawData));
+    const data = await ChatEmberResponse.safeParseAsync(JSON.parse(rawData));
     if (!data.success) {
       throw new Error("Invalid response");
     }
     const response = data.data;
+    const chatResponse: ChatResponse = {
+      message: response.message,
+      suggestions: response.suggestions ?? undefined,
+    };
 
     switch (event) {
       case "done":
-        return response.message;
+        return chatResponse;
       case "activity":
         onActivity(response.message);
         continue;
       case "error":
-        return `Error: ${response.message}`;
+        chatResponse.message = `Error: ${response.message}`;
+        return chatResponse;
       default:
         throw new Error("Invalid response");
     }
@@ -68,6 +81,7 @@ export default async function (
 }
 
 function parseSseResponse(value: string) {
+  console.log("=== value ===", value);
   const lines = value.split("\n");
   let event = undefined;
   let rawData = undefined;
