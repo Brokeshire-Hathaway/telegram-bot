@@ -115,6 +115,7 @@ function markdownToHtml(messages: string, italicize: boolean): string {
   html = html.replace(/<\/p>/g, italicize ? "</i>\n" : "\n");
   html = html.replace(/<h[0-9]>/g, "<b>");
   html = html.replace(/<\/h[0-9]>/g, "</b>");
+  html = html.replace(/<br>/g, "\n");
 
   // Telegram specific syntax formatting
   html = html.replace(/\|\|(.*?)\|\|/g, "<tg-spoiler>$1</tg-spoiler>");
