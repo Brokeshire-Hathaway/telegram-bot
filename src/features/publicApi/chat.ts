@@ -1,6 +1,13 @@
 import z from "zod";
 import { getEmberTGUrl } from "../../common/settings";
 
+const SyntacticSuggestionSchema = z.object({
+  label: z.string(),
+  id: z.string(),
+});
+
+type SyntacticSuggestion = z.infer<typeof SyntacticSuggestionSchema>;
+
 const ChatEmberResponse = z.object({
   status: z.union([
     z.literal("done"),
@@ -8,17 +15,22 @@ const ChatEmberResponse = z.object({
     z.literal("error"),
   ]),
   message: z.string(),
-  suggestions: z.array(z.string()).nullish(),
+  intent_suggestions: z.array(z.string()).nullish(),
+  expression_suggestions: z.array(SyntacticSuggestionSchema).nullish(),
 });
+
+export type MessageType = "chat" | "intent" | "expression";
 
 interface ChatResponse {
   message: string;
-  suggestions?: string[];
+  intent_suggestions?: string[];
+  expression_suggestions?: SyntacticSuggestion[];
 }
 
 export default async function (
   senderUid: string,
   message: string,
+  messageType: MessageType,
   isGroup: boolean,
   username: string | undefined,
   onActivity: (message: string) => void,
@@ -31,6 +43,7 @@ export default async function (
     body: JSON.stringify({
       user_id: senderUid,
       message,
+      message_type: messageType,
       is_group: isGroup,
       username,
     }),
@@ -62,14 +75,15 @@ export default async function (
     const response = data.data;
     const chatResponse: ChatResponse = {
       message: response.message,
-      suggestions: response.suggestions ?? undefined,
+      intent_suggestions: response.intent_suggestions ?? undefined,
+      expression_suggestions: response.expression_suggestions ?? undefined,
     };
 
     switch (event) {
       case "done":
         return chatResponse;
       case "activity":
-        onActivity(response.message);
+        onActivity(response.message ?? "Error: empty message");
         continue;
       case "error":
         chatResponse.message = `Error: ${response.message}`;

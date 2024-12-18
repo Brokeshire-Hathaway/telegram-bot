@@ -1,7 +1,7 @@
 import { ConversationFlavor } from "@grammyjs/conversations";
 import { Context, InlineKeyboard, Keyboard, SessionFlavor } from "grammy";
 import MarkdownIt from "markdown-it";
-import chat from "../publicApi/chat";
+import chat, { MessageType } from "../publicApi/chat";
 import { DEFAULT_EMBER_MESSAGE } from "./messages";
 import { addUser, isUserWhitelisted } from "../publicApi/user";
 
@@ -11,6 +11,7 @@ export type MyContext = Context & SessionFlavor<MySession> & ConversationFlavor;
 export async function sendResponseFromAgentTeam(
   ctx: MyContext,
   message: string,
+  messageType: MessageType,
   isGroup: boolean,
   username: string | undefined,
 ) {
@@ -45,30 +46,38 @@ export async function sendResponseFromAgentTeam(
     const reply = await chat(
       ctx.chat.id.toString()!,
       message,
+      messageType,
       isGroup,
       username,
       onActivity,
     );
     let keyboard: Keyboard | InlineKeyboard | undefined;
-    if (reply.suggestions && !isGroup) {
-      const labelDataPairs = reply.suggestions.map((str, index) => [
-        str,
-        index.toString(),
+    if (reply.expression_suggestions != undefined && !isGroup) {
+      const labelDataPairs = reply.expression_suggestions.map((suggestion) => [
+        suggestion.label,
+        suggestion.id,
       ]);
       const buttonRow = labelDataPairs.map(([label, data]) => [
         InlineKeyboard.text(label, data),
       ]);
       keyboard = InlineKeyboard.from(buttonRow);
-    } else {
-      keyboard = new Keyboard()
-        .text("Analyze pepe")
-        .row()
-        .text("Buy $BROKEAGI on solana")
-        .row()
-        .text("Swap usd for eth from base to arbitrum")
-        .placeholder("tell me to do something")
-        .resized();
+    } else if (reply.intent_suggestions != undefined && !isGroup) {
+      const buttonRows = reply.intent_suggestions.map((suggestion) => [
+        Keyboard.text(suggestion),
+      ]);
+      keyboard = Keyboard.from(buttonRows);
     }
+
+    // } else {
+    //   keyboard = new Keyboard()
+    //     .text("Analyze pepe")
+    //     .row()
+    //     .text("Buy $BROKEAGI on solana")
+    //     .row()
+    //     .text("Swap usd for eth from base to arbitrum")
+    //     .placeholder("tell me to do something")
+    //     .resized();
+    // }
     await sendFormattedMessage(ctx, reply.message, false, keyboard);
   } catch (error) {
     console.error(error);

@@ -29,6 +29,7 @@ export function startTelegramBot() {
         await sendResponseFromAgentTeam(
           ctx,
           ctx.message.text,
+          "chat",
           true,
           ctx.chat.title,
         );
@@ -49,6 +50,7 @@ export function startTelegramBot() {
         await sendResponseFromAgentTeam(
           ctx,
           ctx.message.text,
+          "chat",
           true,
           ctx.chat.title,
         );
@@ -64,20 +66,51 @@ export function startTelegramBot() {
       await sendResponseFromAgentTeam(
         ctx,
         ctx.message.text,
+        "chat",
         false,
         ctx.from.username,
       );
     }),
   );
+  privateBot.callbackQuery("intent:any", async (ctx) => {
+    whiteListMiddleware(ctx, async (ctx) => {
+      await ctx.answerCallbackQuery(); // remove loading animation
+      if (!ctx.chat) return;
+      await sendResponseFromAgentTeam(
+        ctx,
+        String(ctx.match),
+        "intent",
+        false,
+        ctx.from.username,
+      );
+    });
+  });
+  privateBot.callbackQuery("expression:any", async (ctx) => {
+    whiteListMiddleware(ctx, async (ctx) => {
+      await ctx.answerCallbackQuery(); // remove loading animation
+      if (!ctx.chat) return;
+      await sendResponseFromAgentTeam(
+        ctx,
+        String(ctx.match),
+        "expression",
+        false,
+        ctx.from.username,
+      );
+    });
+  });
   privateBot.on("callback_query:data", async (ctx) => {
-    if (!ctx.chat) return;
-    await sendResponseFromAgentTeam(
-      ctx,
-      ctx.callbackQuery.data,
-      false,
-      ctx.from.username,
-    );
     await ctx.answerCallbackQuery(); // remove loading animation
+    console.warn("Unhandled callback_query:data", ctx.callbackQuery.data);
+    whiteListMiddleware(ctx, async (ctx) => {
+      if (!ctx.chat) return;
+      await sendResponseFromAgentTeam(
+        ctx,
+        ctx.callbackQuery.data,
+        "chat",
+        false,
+        ctx.from.username,
+      );
+    });
   });
 
   // Handle errors
