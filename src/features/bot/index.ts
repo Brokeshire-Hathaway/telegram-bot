@@ -60,8 +60,53 @@ export function startTelegramBot() {
   );
 
   const privateBot = bot.chatType("private");
+  privateBot.on("callback_query:data", async (ctx) => {
+    await ctx.answerCallbackQuery(); // remove loading animation
+    console.warn("Unhandled callback_query:data", ctx.callbackQuery.data);
+    whiteListMiddleware(ctx, async (ctx) => {
+      if (!ctx.chat) return;
+      // Extract the text before the colon
+      const [type, value] = ctx.callbackQuery.data.split(":");
+      console.log("\n=== callback_query:data ===\n", {
+        full: ctx.callbackQuery.data,
+        type,
+        value,
+      });
+
+      switch (type) {
+        case "intent":
+          await sendResponseFromAgentTeam(
+            ctx,
+            value,
+            "intent",
+            false,
+            ctx.from.username,
+          );
+          break;
+        case "expression":
+          await sendResponseFromAgentTeam(
+            ctx,
+            value,
+            "expression",
+            false,
+            ctx.from.username,
+          );
+          break;
+        default:
+          await sendResponseFromAgentTeam(
+            ctx,
+            ctx.callbackQuery.data,
+            "chat",
+            false,
+            ctx.from.username,
+          );
+          break;
+      }
+    });
+  });
   privateBot.on("message:text", async (ctx) =>
     whiteListMiddleware(ctx, async (ctx) => {
+      console.log("\n=== message:text ===\n", ctx.message.text);
       if (!ctx.chat) return;
       await sendResponseFromAgentTeam(
         ctx,
@@ -72,46 +117,6 @@ export function startTelegramBot() {
       );
     }),
   );
-  privateBot.callbackQuery("intent:any", async (ctx) => {
-    whiteListMiddleware(ctx, async (ctx) => {
-      await ctx.answerCallbackQuery(); // remove loading animation
-      if (!ctx.chat) return;
-      await sendResponseFromAgentTeam(
-        ctx,
-        String(ctx.match),
-        "intent",
-        false,
-        ctx.from.username,
-      );
-    });
-  });
-  privateBot.callbackQuery("expression:any", async (ctx) => {
-    whiteListMiddleware(ctx, async (ctx) => {
-      await ctx.answerCallbackQuery(); // remove loading animation
-      if (!ctx.chat) return;
-      await sendResponseFromAgentTeam(
-        ctx,
-        String(ctx.match),
-        "expression",
-        false,
-        ctx.from.username,
-      );
-    });
-  });
-  privateBot.on("callback_query:data", async (ctx) => {
-    await ctx.answerCallbackQuery(); // remove loading animation
-    console.warn("Unhandled callback_query:data", ctx.callbackQuery.data);
-    whiteListMiddleware(ctx, async (ctx) => {
-      if (!ctx.chat) return;
-      await sendResponseFromAgentTeam(
-        ctx,
-        ctx.callbackQuery.data,
-        "chat",
-        false,
-        ctx.from.username,
-      );
-    });
-  });
 
   // Handle errors
   bot.catch((err) => {

@@ -51,34 +51,42 @@ export async function sendResponseFromAgentTeam(
       username,
       onActivity,
     );
-    let keyboard: Keyboard | InlineKeyboard | undefined;
-    if (reply.expression_suggestions != undefined && !isGroup) {
+
+    let sentExpressionMessage = false;
+
+    if (reply.expression_suggestions && !isGroup) {
       const labelDataPairs = reply.expression_suggestions.map((suggestion) => [
         suggestion.label,
         suggestion.id,
       ]);
       const buttonRow = labelDataPairs.map(([label, data]) => [
-        InlineKeyboard.text(label, data),
+        InlineKeyboard.text(label, `expression:${data}`),
       ]);
-      keyboard = InlineKeyboard.from(buttonRow);
-    } else if (reply.intent_suggestions != undefined && !isGroup) {
+      const expressionKeyboard = InlineKeyboard.from(buttonRow);
+
+      await sendFormattedMessage(ctx, reply.message, false, expressionKeyboard);
+      sentExpressionMessage = true;
+    }
+
+    if (reply.intent_suggestions && !isGroup) {
       const buttonRows = reply.intent_suggestions.map((suggestion) => [
         Keyboard.text(suggestion),
       ]);
-      keyboard = Keyboard.from(buttonRows);
-    }
+      const intentKeyboard = Keyboard.from(buttonRows).resized();
 
-    // } else {
-    //   keyboard = new Keyboard()
-    //     .text("Analyze pepe")
-    //     .row()
-    //     .text("Buy $BROKEAGI on solana")
-    //     .row()
-    //     .text("Swap usd for eth from base to arbitrum")
-    //     .placeholder("tell me to do something")
-    //     .resized();
-    // }
-    await sendFormattedMessage(ctx, reply.message, false, keyboard);
+      if (sentExpressionMessage) {
+        await sendFormattedMessage(
+          ctx,
+          "Is there anything else I can help you with?",
+          false,
+          intentKeyboard,
+        );
+      } else {
+        await sendFormattedMessage(ctx, reply.message, false, intentKeyboard);
+      }
+    } else if (!sentExpressionMessage) {
+      await sendFormattedMessage(ctx, reply.message);
+    }
   } catch (error) {
     console.error(error);
     await sendFormattedMessage(
