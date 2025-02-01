@@ -15,7 +15,7 @@ After that, create the `.env` file in the root of the directory as such:
 ```sh
 TELEGRAM_BOT_USERNAME="THE_USERNAME_YOU_SELECTED"
 TELEGRAM_BOT_TOKEN="THE_TOKEN_BOT_FATHER_GAVE_YOU"
-EMBER_API_URL="http://localhost:3001/v1"
+BROKESHIRE_API_URL="http://localhost:3001/v1"
 ```
 
 Lastly, run:
@@ -29,10 +29,10 @@ If it was successfull, you should see in your console something like:
 
 ```bash
 
-> telegram-bot@0.6.0 dev /home/your_user/documents/ember-agi/telegram-bot
+> telegram-bot@0.6.0 dev /home/your_user/documents/brokeshire-agi/telegram-bot
 > node --import tsx -r dotenv/config src/index.ts
 
-Running telegram bot for user EmberAGITestBot
+Running telegram bot for user BrokeshireAGITestBot
 (node:470331) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 ```
@@ -60,5 +60,5 @@ Additionally, all of them have a default value so they can be unset in the
 
 The current feature flags of the project are:
 
-- `FF_EMBER_WALLET`: Feature flag for using the custom made wallet using
+- `FF_BROKESHIRE_WALLET`: Feature flag for using the custom made wallet using
   Biconomy SDK, if activated the `/balance` and `/address` command are enabled.

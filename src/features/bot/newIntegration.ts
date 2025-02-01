@@ -65,16 +65,19 @@ interface Integration {
   entrypoint: string;
 }
 async function createIntegration(name: string, isPublic: boolean) {
-  const response = await fetch(`${ENVIRONMENT.EMBER_API_URL}/integration`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
+  const response = await fetch(
+    `${ENVIRONMENT.BROKESHIRE_API_URL}/integration`,
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        name,
+        is_public: isPublic,
+      }),
     },
-    body: JSON.stringify({
-      name,
-      is_public: isPublic,
-    }),
-  });
+  );
   if (!response.ok) {
     throw new Error(`Error creating integration: ${await response.text()}`);
   }

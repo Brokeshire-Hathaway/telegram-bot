@@ -22,7 +22,9 @@ commands.command("help", async (ctx) =>
 commands.command("join", async (ctx) => {
   if (!ctx.from) return;
   if (!ctx.from.username) {
-    return await ctx.reply("You must set a Telegram username to join Ember.");
+    return await ctx.reply(
+      "You must set a Telegram username to join Brokeshire.",
+    );
   }
 
   let user;

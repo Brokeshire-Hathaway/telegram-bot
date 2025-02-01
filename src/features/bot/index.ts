@@ -17,11 +17,11 @@ export function startTelegramBot() {
   bot.use(commands);
 
   const groupBot = bot.chatType(["group", "supergroup"]);
-  const emberUserRegex = new RegExp(
+  const brokeshireUserRegex = new RegExp(
     `.*@${ENVIRONMENT.TELEGRAM_BOT_USERNAME}.*`,
     "i",
   );
-  groupBot.hears(emberUserRegex, async (ctx) =>
+  groupBot.hears(brokeshireUserRegex, async (ctx) =>
     whiteListMiddleware(
       ctx,
       async (ctx) => {

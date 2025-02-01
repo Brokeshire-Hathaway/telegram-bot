@@ -6,10 +6,10 @@ const booleanString = z.preprocess(
   z.boolean(),
 );
 export const Settings = z.object({
-  EMBER_API_URL: z.string().url().default("http://ember-core"),
+  BROKESHIRE_API_URL: z.string().url().default("http://brokeshire-core"),
   TELEGRAM_BOT_USERNAME: z.string(),
   TELEGRAM_BOT_TOKEN: z.string(),
-  FF_EMBER_WALLET: booleanString.default(false),
+  FF_BROKESHIRE_WALLET: booleanString.default(false),
 });
 
 type SettingsKeys = keyof z.infer<typeof Settings>;
@@ -36,6 +36,6 @@ function preProcessEnv() {
 
 export const ENVIRONMENT = Settings.parse(preProcessEnv());
 
-export function getEmberTGUrl() {
-  return `${ENVIRONMENT.EMBER_API_URL}/public/telegram`;
+export function getBrokeshireTGUrl() {
+  return `${ENVIRONMENT.BROKESHIRE_API_URL}/public/telegram`;
 }

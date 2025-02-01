@@ -1,12 +1,14 @@
-import { getEmberTGUrl } from "../../common/settings";
+import { getBrokeshireTGUrl } from "../../common/settings";
 
 export async function isUserWhitelisted<T>(id: T) {
-  const response = await fetch(`${getEmberTGUrl()}/user/${id}/is_whitelisted`);
+  const response = await fetch(
+    `${getBrokeshireTGUrl()}/user/${id}/is_whitelisted`,
+  );
   return response.ok && ((await response.json()) as boolean);
 }
 
 export async function isUserAdmin<T>(id: T) {
-  const response = await fetch(`${getEmberTGUrl()}/user/${id}/is_admin`);
+  const response = await fetch(`${getBrokeshireTGUrl()}/user/${id}/is_admin`);
   return response.ok && ((await response.json()) as boolean);
 }
 
@@ -16,7 +18,7 @@ export async function addUser<T>(
   addToWaitList: boolean = true,
 ) {
   const endpoint = addToWaitList ? "user_waitlist" : "user";
-  return await fetch(`${getEmberTGUrl()}/${endpoint}/${id}`, {
+  return await fetch(`${getBrokeshireTGUrl()}/${endpoint}/${id}`, {
     method: "PUT",
     headers: {
       "content-type": "application/json",
@@ -32,7 +34,7 @@ interface CodeCreateResponse {
   code: string;
 }
 export async function createReferralUrl<T>(id: T, numberOfUses: number) {
-  const response = await fetch(`${getEmberTGUrl()}/code`, {
+  const response = await fetch(`${getBrokeshireTGUrl()}/code`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
@@ -59,7 +61,7 @@ export async function redeemCode<T>(
   code: string,
 ) {
   console.log(`id: ${id}, username: ${username}, code: ${code}`);
-  const response = await fetch(`${getEmberTGUrl()}/user/${id}/join`, {
+  const response = await fetch(`${getBrokeshireTGUrl()}/user/${id}/join`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

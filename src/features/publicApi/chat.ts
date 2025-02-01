@@ -1,5 +1,5 @@
 import z from "zod";
-import { getEmberTGUrl } from "../../common/settings";
+import { getBrokeshireTGUrl } from "../../common/settings";
 
 const SyntacticSuggestionSchema = z.object({
   label: z.string(),
@@ -8,7 +8,7 @@ const SyntacticSuggestionSchema = z.object({
 
 type SyntacticSuggestion = z.infer<typeof SyntacticSuggestionSchema>;
 
-const ChatEmberResponse = z.object({
+const ChatBrokeshireResponse = z.object({
   status: z.union([
     z.literal("done"),
     z.literal("processing"),
@@ -35,7 +35,7 @@ export default async function (
   username: string | undefined,
   onActivity: (message: string) => void,
 ): Promise<ChatResponse> {
-  const response = await fetch(`${getEmberTGUrl()}/chat`, {
+  const response = await fetch(`${getBrokeshireTGUrl()}/chat`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -50,7 +50,7 @@ export default async function (
   });
 
   if (!response.ok || response.body == null) {
-    throw new Error("Failed to connect to Ember server");
+    throw new Error("Failed to connect to Brokeshire server");
   }
 
   const reader = response.body.getReader();
@@ -68,7 +68,9 @@ export default async function (
       continue;
     }
 
-    const data = await ChatEmberResponse.safeParseAsync(JSON.parse(rawData));
+    const data = await ChatBrokeshireResponse.safeParseAsync(
+      JSON.parse(rawData),
+    );
     if (!data.success) {
       throw new Error("Invalid response");
     }

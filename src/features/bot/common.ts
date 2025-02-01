@@ -2,7 +2,7 @@ import { ConversationFlavor } from "@grammyjs/conversations";
 import { Context, InlineKeyboard, Keyboard, SessionFlavor } from "grammy";
 import MarkdownIt from "markdown-it";
 import chat, { MessageType } from "../publicApi/chat";
-import { DEFAULT_EMBER_MESSAGE } from "./messages";
+import { DEFAULT_BROKESHIRE_MESSAGE } from "./messages";
 import { addUser, isUserWhitelisted } from "../publicApi/user";
 
 interface MySession {}
@@ -178,7 +178,7 @@ export async function whiteListMiddleware<T, C extends NeededContext>(
   if (!isWhiteListed && !automaticWhiteList) {
     await Promise.all([
       addUser(ctx.chat.id, ctx.chat.username),
-      sendFormattedMessage(ctx, DEFAULT_EMBER_MESSAGE),
+      sendFormattedMessage(ctx, DEFAULT_BROKESHIRE_MESSAGE),
     ]);
     return;
   }

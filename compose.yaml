@@ -5,8 +5,8 @@ services:
     environment:
       TELEGRAM_BOT_USERNAME:
       TELEGRAM_BOT_TOKEN_FILE: /run/secrets/telegram_token
-      EMBER_API_URL: http://ember-api-${ENVIRONMENT}/v1
-      FF_EMBER_WALLET:
+      BROKESHIRE_API_URL: http://brokeshire-api-${ENVIRONMENT}/v1
+      FF_BROKESHIRE_WALLET:
     secrets:
       - telegram_token
     logging:
@@ -22,5 +22,5 @@ secrets:
 
 networks:
   shared_network:
-    name: ember-main-${ENVIRONMENT}
+    name: brokeshire-main-${ENVIRONMENT}
     external: true

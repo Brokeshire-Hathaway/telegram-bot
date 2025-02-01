@@ -33,7 +33,7 @@ jobs:
           DOCKER_HOST: ssh://${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}
           TELEGRAM_BOT_USERNAME: ${{ vars.TELEGRAM_BOT_USERNAME }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          FF_EMBER_WALLET: ${{ vars.FF_EMBER_WALLET }}
+          FF_BROKESHIRE_WALLET: ${{ vars.FF_BROKESHIRE_WALLET }}
           ENVIRONMENT: production
         run: |
           docker compose -f compose.yaml -p telegram-bot-$ENVIRONMENT up -d --build --remove-orphans
